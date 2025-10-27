@@ -1,13 +1,11 @@
 import 'package:dio/dio.dart' as dio;
 import 'package:get/get.dart';
+import 'package:flutter/foundation.dart';
 
 class ApiProvider extends GetxService {
-  // Base URL statis (bisa diganti kapan saja kalau perlu)
-  static const String baseUrl = "https://example.com/api";
-
+  static const String baseUrl = "http://192.168.100.3/qbsc_saas/public/api";
   late dio.Dio _dio;
 
-  // Inisialisasi Dio
   Future<ApiProvider> init() async {
     dio.BaseOptions options = dio.BaseOptions(
       baseUrl: baseUrl,
@@ -21,41 +19,39 @@ class ApiProvider extends GetxService {
 
     _dio = dio.Dio(options);
 
-    // Tambahkan Interceptor untuk debugging
-    _dio.interceptors.add(
-      dio.LogInterceptor(requestBody: true, responseBody: true),
-    );
+    if (kDebugMode) {
+      _dio.interceptors.add(
+        dio.LogInterceptor(requestBody: true, responseBody: true),
+      );
+    }
 
     return this;
   }
 
-  // GET request
+  dio.Dio get client => _dio;
+
   Future<dio.Response> get(
     String endpoint, {
     Map<String, dynamic>? query,
   }) async {
     try {
-      final response = await _dio.get(endpoint, queryParameters: query);
-      return response;
+      return await _dio.get(endpoint, queryParameters: query);
     } on dio.DioException catch (e) {
       throw _handleError(e);
     }
   }
 
-  // POST request
   Future<dio.Response> post(
     String endpoint, {
     Map<String, dynamic>? data,
   }) async {
     try {
-      final response = await _dio.post(endpoint, data: data);
-      return response;
+      return await _dio.post(endpoint, data: data);
     } on dio.DioException catch (e) {
       throw _handleError(e);
     }
   }
 
-  // Error handler sederhana
   Exception _handleError(dio.DioException e) {
     if (e.response != null) {
       return Exception("Error ${e.response?.statusCode}: ${e.response?.data}");

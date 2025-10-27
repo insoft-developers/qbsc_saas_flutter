@@ -1,26 +1,41 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:qbsc_saas/app/controllers/auth_controller.dart';
+import 'package:qbsc_saas/app/data/api_provider.dart';
+import 'package:qbsc_saas/app/views/home_view.dart';
 import 'package:qbsc_saas/app/views/login_view.dart';
 
-void main() {
-  runApp(const LoginApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Pastikan GetX tahu ApiProvider dulu sebelum menjalankan app
+  await initServices();
+  runApp(MyApp());
 }
 
-class LoginApp extends StatelessWidget {
-  const LoginApp({super.key});
+Future<void> initServices() async {
+  await Get.putAsync<ApiProvider>(() async => await ApiProvider().init());
+  final auth = Get.put(AuthController());
+  await auth.checkLoginStatus(); // 🔥 Cek status login saat start
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'QBSC',
+    return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        textTheme: GoogleFonts.poppinsTextTheme(),
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
-        useMaterial3: true,
+      title: 'QBSC SaaS',
+      home: const Scaffold(
+        body: Center(child: CircularProgressIndicator()), // sementara loading
       ),
-      home: const LoginView(),
+      getPages: [
+        GetPage(name: '/login', page: () => const LoginView()),
+        GetPage(name: '/home', page: () => HomeView()),
+      ],
     );
   }
 }

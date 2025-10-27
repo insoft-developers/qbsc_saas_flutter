@@ -1,6 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:qbsc_saas/app/controllers/auth_controller.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -11,6 +13,7 @@ class LoginView extends StatefulWidget {
 
 class _LoginViewState extends State<LoginView>
     with SingleTickerProviderStateMixin {
+  final AuthController _authController = Get.put(AuthController());
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   bool isPasswordVisible = false;
@@ -65,7 +68,10 @@ class _LoginViewState extends State<LoginView>
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         SizedBox(height: 8),
-                        Image.asset('assets/images/logo_satpam.png'),
+                        Image.asset(
+                          'assets/images/logo_satpam.png',
+                          width: 200,
+                        ),
                         const SizedBox(height: 16),
                         Text(
                           "LOGIN",
@@ -74,14 +80,6 @@ class _LoginViewState extends State<LoginView>
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                             letterSpacing: 1.5,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          "masukkan no whatsapp dan password anda",
-                          style: GoogleFonts.poppins(
-                            color: Colors.white70,
-                            fontSize: 14,
                           ),
                         ),
                         const SizedBox(height: 32),
@@ -119,7 +117,12 @@ class _LoginViewState extends State<LoginView>
                               elevation: 4,
                               shadowColor: Colors.indigoAccent.withOpacity(0.6),
                             ),
-                            onPressed: () {},
+                            onPressed: () {
+                              _authController.login(
+                                emailController.text,
+                                passwordController.text,
+                              );
+                            },
                             child: const Text(
                               "Masuk",
                               style: TextStyle(
@@ -144,7 +147,7 @@ class _LoginViewState extends State<LoginView>
                             GestureDetector(
                               onTap: () {},
                               child: Text(
-                                "Daftar Sekarang",
+                                "Daftar",
                                 style: GoogleFonts.poppins(
                                   color: Colors.blueAccent.shade100,
                                   fontWeight: FontWeight.w600,
