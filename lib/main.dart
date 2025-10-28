@@ -1,24 +1,16 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:qbsc_saas/app/controllers/auth_controller.dart';
 import 'package:qbsc_saas/app/data/api_provider.dart';
 import 'package:qbsc_saas/app/views/home_view.dart';
 import 'package:qbsc_saas/app/views/login_view.dart';
+import 'package:qbsc_saas/app/views/splash_view.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Pastikan GetX tahu ApiProvider dulu sebelum menjalankan app
-  await initServices();
-  runApp(MyApp());
-}
-
-Future<void> initServices() async {
   await Get.putAsync<ApiProvider>(() async => await ApiProvider().init());
-  final auth = Get.put(AuthController());
-  await auth.checkLoginStatus(); // 🔥 Cek status login saat start
+  Get.put(AuthController()); // Daftarkan controller
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -29,13 +21,14 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'QBSC SaaS',
-      home: const Scaffold(
-        body: Center(child: CircularProgressIndicator()), // sementara loading
-      ),
+      initialRoute: '/splash', // 🔹 mulai dari splash screen
       getPages: [
+        GetPage(name: '/splash', page: () => const SplashView()),
         GetPage(name: '/login', page: () => const LoginView()),
         GetPage(name: '/home', page: () => HomeView()),
       ],
     );
   }
 }
+
+/// 🔹 SplashScreen — untuk memastikan Get sudah siap sebelum navigasi
