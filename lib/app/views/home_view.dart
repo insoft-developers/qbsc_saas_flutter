@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:qbsc_saas/app/controllers/auth_controller.dart';
+import 'package:qbsc_saas/app/data/api_provider.dart';
 
 class HomeView extends StatelessWidget {
   HomeView({super.key});
@@ -39,21 +40,45 @@ class HomeView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Obx(
-                () => Text(
-                  'Selamat datang, ${controller.userName.value}',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1A237E),
-                  ),
+              // 🔹 Tambah bagian foto profil
+              Center(
+                child: Column(
+                  children: [
+                    Obx(() {
+                      // Misalnya controller.userPhoto.value berisi URL foto profil
+                      final photoUrl =
+                          "${ApiProvider.imageUrl}/${controller.userPhoto.value}";
+                      return CircleAvatar(
+                        radius: 45,
+                        backgroundColor: Colors.indigo.shade100,
+                        backgroundImage: photoUrl.isNotEmpty
+                            ? NetworkImage(photoUrl)
+                            : const AssetImage(
+                                    'assets/images/satpam_default.png',
+                                  )
+                                  as ImageProvider,
+                      );
+                    }),
+                    const SizedBox(height: 12),
+                    Obx(
+                      () => Text(
+                        'Selamat datang, ${controller.userName.value}',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1A237E),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Pilih menu di bawah untuk mulai bekerja:',
+                      style: TextStyle(fontSize: 14, color: Colors.black54),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 8),
-              const Text(
-                'Pilih menu di bawah untuk mulai bekerja:',
-                style: TextStyle(fontSize: 14, color: Colors.black54),
-              ),
+
               const SizedBox(height: 24),
 
               // 🔹 Grid menu (6 tombol)

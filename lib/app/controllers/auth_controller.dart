@@ -8,6 +8,7 @@ class AuthController extends GetxController {
   var isLoading = false.obs;
   var token = ''.obs;
   var userName = ''.obs;
+  var userPhoto = ''.obs;
 
   final ApiProvider api = Get.find<ApiProvider>();
 
@@ -23,6 +24,7 @@ class AuthController extends GetxController {
 
       token.value = response.data['token'] ?? '';
       userName.value = response.data['data']['name'] ?? 'Unknown';
+      userPhoto.value = response.data['data']['face_photo_path'];
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', token.value);
