@@ -35,83 +35,114 @@ class HomeView extends StatelessWidget {
         ],
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 🔹 Tambah bagian foto profil
-              Center(
-                child: Column(
-                  children: [
-                    Obx(() {
-                      // Misalnya controller.userPhoto.value berisi URL foto profil
-                      final photoUrl =
-                          "${ApiProvider.imageUrl}/${controller.userPhoto.value}";
-                      return CircleAvatar(
-                        radius: 45,
-                        backgroundColor: Colors.indigo.shade100,
-                        backgroundImage: photoUrl.isNotEmpty
-                            ? NetworkImage(photoUrl)
-                            : const AssetImage(
-                                    'assets/images/satpam_default.png',
-                                  )
-                                  as ImageProvider,
-                      );
-                    }),
-                    const SizedBox(height: 12),
-                    Obx(
-                      () => Text(
-                        'Selamat datang, ${controller.userName.value}',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1A237E),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Pilih menu di bawah untuk mulai bekerja:',
-                      style: TextStyle(fontSize: 14, color: Colors.black54),
-                    ),
-                  ],
-                ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Lebar layar
+            final double width = constraints.maxWidth;
+            final bool isTablet = width >= 600;
+            final bool isDesktop = width >= 900;
+
+            // Jumlah kolom adaptif
+            int crossAxisCount = 2;
+            if (isTablet) crossAxisCount = 3;
+            if (isDesktop) crossAxisCount = 4;
+
+            // Ukuran teks & ikon disesuaikan
+            double iconSize = isTablet ? 42 : 34;
+            double fontSize = isTablet ? 16 : 14;
+            double avatarRadius = isTablet ? 55 : 45;
+
+            return Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: isTablet ? 40 : 16,
+                vertical: isTablet ? 30 : 20,
               ),
-
-              const SizedBox(height: 24),
-
-              // 🔹 Grid menu (6 tombol)
-              Expanded(
-                child: GridView.builder(
-                  itemCount: menuItems.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 1.1,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 🔹 Foto profil dan sambutan
+                  Center(
+                    child: Column(
+                      children: [
+                        Obx(() {
+                          final photoUrl =
+                              "${ApiProvider.imageUrl}/${controller.userPhoto.value}";
+                          return CircleAvatar(
+                            radius: avatarRadius,
+                            backgroundColor: Colors.indigo.shade100,
+                            backgroundImage: photoUrl.isNotEmpty
+                                ? NetworkImage(photoUrl)
+                                : const AssetImage(
+                                        'assets/images/satpam_default.png',
+                                      )
+                                      as ImageProvider,
+                          );
+                        }),
+                        const SizedBox(height: 12),
+                        Obx(
+                          () => Text(
+                            'Selamat datang, ${controller.userName.value}',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: isTablet ? 22 : 20,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF1A237E),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Pilih menu di bawah untuk mulai bekerja:',
+                          style: TextStyle(
+                            fontSize: isTablet ? 16 : 14,
+                            color: Colors.black54,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  itemBuilder: (context, index) {
-                    final item = menuItems[index];
-                    return _buildMenuCard(
-                      context,
-                      icon: item['icon'],
-                      label: item['label'],
-                      onTap: () {
-                        Get.snackbar(
-                          'Menu',
-                          'Kamu menekan: ${item['label']}',
-                          snackPosition: SnackPosition.BOTTOM,
-                          backgroundColor: Colors.indigo.shade100,
-                          colorText: Colors.black87,
+
+                  const SizedBox(height: 24),
+
+                  // 🔹 Grid menu (responsif)
+                  Expanded(
+                    child: GridView.builder(
+                      itemCount: menuItems.length,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        childAspectRatio: isTablet ? 1.1 : 1.0,
+                      ),
+                      itemBuilder: (context, index) {
+                        final item = menuItems[index];
+                        return _buildMenuCard(
+                          context,
+                          icon: item['icon'],
+                          label: item['label'],
+                          iconSize: iconSize,
+                          fontSize: fontSize,
+                          onTap: () {
+                            // Get.snackbar(
+                            //   'Menu',
+                            //   'Kamu menekan: ${item['label']}',
+                            //   snackPosition: SnackPosition.BOTTOM,
+                            //   backgroundColor: Colors.indigo.shade100,
+                            //   colorText: Colors.black87,
+                            // );
+                            var buttonName = item['label'];
+                            if (buttonName == 'Absensi QR') {
+                              Get.toNamed('/absensi');
+                            }
+                          },
                         );
                       },
-                    );
-                  },
-                ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
@@ -121,6 +152,8 @@ class HomeView extends StatelessWidget {
     BuildContext context, {
     required IconData icon,
     required String label,
+    required double iconSize,
+    required double fontSize,
     required VoidCallback onTap,
   }) {
     return InkWell(
@@ -147,15 +180,16 @@ class HomeView extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               padding: const EdgeInsets.all(18),
-              child: Icon(icon, color: Colors.indigo.shade600, size: 34),
+              child: Icon(icon, color: Colors.indigo.shade600, size: iconSize),
             ),
             const SizedBox(height: 12),
             Text(
               label,
-              style: const TextStyle(
-                fontSize: 14,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: fontSize,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF1A237E),
+                color: const Color(0xFF1A237E),
               ),
             ),
           ],

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:qbsc_saas/app/controllers/auth_controller.dart';
 import 'package:qbsc_saas/app/data/api_provider.dart';
+import 'package:qbsc_saas/app/services/face_services.dart';
+import 'package:qbsc_saas/app/views/absensi/absensi.dart';
 import 'package:qbsc_saas/app/views/home_view.dart';
 import 'package:qbsc_saas/app/views/login_view.dart';
 import 'package:qbsc_saas/app/views/splash_view.dart';
@@ -9,6 +11,8 @@ import 'package:qbsc_saas/app/views/splash_view.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Get.putAsync<ApiProvider>(() async => await ApiProvider().init());
+  Get.put(FaceService());
+
   Get.put(AuthController()); // Daftarkan controller
   runApp(MyApp());
 }
@@ -26,6 +30,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/splash', page: () => const SplashView()),
         GetPage(name: '/login', page: () => const LoginView()),
         GetPage(name: '/home', page: () => HomeView()),
+        GetPage(name: '/absensi', page: () => Absensi()),
       ],
     );
   }

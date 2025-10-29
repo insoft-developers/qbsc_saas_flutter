@@ -9,6 +9,7 @@ class AuthController extends GetxController {
   var token = ''.obs;
   var userName = ''.obs;
   var userPhoto = ''.obs;
+  var userId = ''.obs;
 
   final ApiProvider api = Get.find<ApiProvider>();
 
@@ -25,10 +26,13 @@ class AuthController extends GetxController {
       token.value = response.data['token'] ?? '';
       userName.value = response.data['data']['name'] ?? 'Unknown';
       userPhoto.value = response.data['data']['face_photo_path'];
+      userId.value = response.data['data']['id'].toString();
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', token.value);
       await prefs.setString('userName', userName.value);
+      await prefs.setString('userId', userId.value);
+      await prefs.setString('userPhoto', userPhoto.value);
 
       // Navigasi dengan sedikit delay agar UI halus
       Future.delayed(const Duration(milliseconds: 300), () {
