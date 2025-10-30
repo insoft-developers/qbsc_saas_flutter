@@ -3,6 +3,7 @@ class ApiEndpoint {
   static const String login = "/login";
   static const String register = "/auth/register";
   static const String verifyFace = '/verify_face';
+  static const String absenActive = '/absen_active';
 
   // User
   static const String profile = "/user/profile";

@@ -11,7 +11,7 @@ class HomeView extends StatelessWidget {
   final List<Map<String, dynamic>> menuItems = [
     {'icon': Icons.supervised_user_circle, 'label': 'Data Satpam'},
     {'icon': Icons.assignment, 'label': 'Laporan Harian'},
-    {'icon': Icons.qr_code, 'label': 'Absensi QR'},
+    {'icon': Icons.qr_code, 'label': 'Absensi'},
     {'icon': Icons.location_on, 'label': 'Patroli'},
     {'icon': Icons.notifications_active, 'label': 'Notifikasi'},
     {'icon': Icons.settings, 'label': 'Pengaturan'},
@@ -131,8 +131,8 @@ class HomeView extends StatelessWidget {
                             //   colorText: Colors.black87,
                             // );
                             var buttonName = item['label'];
-                            if (buttonName == 'Absensi QR') {
-                              Get.toNamed('/absensi');
+                            if (buttonName == 'Absensi') {
+                              Get.toNamed('/absensi_list');
                             }
                           },
                         );

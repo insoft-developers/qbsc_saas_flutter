@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:path_provider/path_provider.dart';
@@ -9,8 +10,10 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+// ignore: must_be_immutable
 class Absensi extends StatefulWidget {
-  const Absensi({super.key});
+  String absenModel;
+  Absensi({super.key, required this.absenModel});
 
   @override
   State<Absensi> createState() => _AbsensiState();
@@ -144,11 +147,19 @@ class _AbsensiState extends State<Absensi> {
         final XFile? image = await _cameraController.takePicture();
         if (image == null) return;
 
+        final position = await _getCurrentLocation();
+
         var request = http.MultipartRequest(
           'POST',
           Uri.parse("http://192.168.100.3:8000/api/verify_face"),
         );
         request.fields['user_id'] = userId;
+        request.fields['absen_model'] = widget.absenModel;
+        if (position != null) {
+          request.fields['latitude'] = position.latitude.toString();
+          request.fields['longitude'] = position.longitude.toString();
+        }
+
         request.files.add(
           await http.MultipartFile.fromPath("image", image.path),
         );
@@ -162,6 +173,15 @@ class _AbsensiState extends State<Absensi> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(data['message'] ?? 'Gagal memverifikasi')),
         );
+
+        if (data['success']) {
+          // Ganti 'DashboardView()' dengan nama halaman dashboard kamu
+          Future.delayed(const Duration(seconds: 1), () {
+            Get.offAllNamed('/absensi_list'); // jika pakai GetX route
+            // atau:
+            // Navigator.pushReplacementNamed(context, '/dashboard');
+          });
+        }
       } else {
         ScaffoldMessenger.of(
           context,
@@ -175,6 +195,54 @@ class _AbsensiState extends State<Absensi> {
     } finally {
       setState(() => _isVerifying = false);
     }
+  }
+
+  Future<Position?> _getCurrentLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Cek apakah layanan lokasi aktif
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Kalau lokasi belum aktif, arahkan ke pengaturan lokasi
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Silakan aktifkan lokasi terlebih dahulu"),
+        ),
+      );
+
+      await Geolocator.openLocationSettings(); // buka pengaturan lokasi
+      return null;
+    }
+
+    // Cek izin lokasi
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Izin lokasi ditolak")));
+        return null;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Izin lokasi ditolak permanen. Aktifkan izin melalui pengaturan aplikasi.",
+          ),
+        ),
+      );
+      await Geolocator.openAppSettings(); // buka pengaturan aplikasi
+      return null;
+    }
+
+    // Ambil posisi jika semua sudah oke
+    return await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
   }
 
   @override
