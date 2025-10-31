@@ -4,7 +4,7 @@ import 'package:qbsc_saas/app/controllers/absen_controller.dart';
 import 'package:qbsc_saas/app/controllers/auth_controller.dart';
 import 'package:qbsc_saas/app/data/api_provider.dart';
 import 'package:qbsc_saas/app/services/face_services.dart';
-import 'package:qbsc_saas/app/views/absensi/absensi.dart';
+import 'package:qbsc_saas/app/utils/app_prefs.dart';
 import 'package:qbsc_saas/app/views/absensi/absensi_list.dart';
 import 'package:qbsc_saas/app/views/home_view.dart';
 import 'package:qbsc_saas/app/views/login_view.dart';
@@ -13,6 +13,7 @@ import 'package:qbsc_saas/app/views/splash_view.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Get.putAsync<ApiProvider>(() async => await ApiProvider().init());
+  await AppPrefs.init();
   Get.put(FaceService());
   Get.put(AuthController()); // Daftarkan controller
   Get.put(AbsenController());

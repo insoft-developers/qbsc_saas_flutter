@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:qbsc_saas/app/controllers/absen_controller.dart';
 import 'package:qbsc_saas/app/controllers/auth_controller.dart';
 
 class SplashView extends StatefulWidget {
@@ -12,6 +13,7 @@ class SplashView extends StatefulWidget {
 
 class _SplashViewState extends State<SplashView> {
   final AuthController auth = Get.find<AuthController>();
+  final AbsenController absenController = Get.find<AbsenController>();
 
   @override
   void initState() {
@@ -22,6 +24,7 @@ class _SplashViewState extends State<SplashView> {
   Future<void> _init() async {
     await Future.delayed(const Duration(seconds: 1));
     await auth.checkLoginStatus();
+    await absenController.getLocationData();
   }
 
   @override

@@ -15,22 +15,56 @@ class AbsensiCard extends StatelessWidget {
     required this.tanggal,
   });
 
+  LinearGradient getStatusGradient(String status) {
+    switch (status) {
+      case 'masuk':
+        return LinearGradient(
+          colors: [Colors.blueAccent.shade100, Colors.blueAccent.shade400],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+
+      case 'keluar':
+        return LinearGradient(
+          colors: [Colors.orangeAccent.shade100, Colors.orangeAccent.shade400],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+
+      case 'kosong':
+        return LinearGradient(
+          colors: [Colors.redAccent.shade100, Colors.redAccent.shade400],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+
+      default:
+        return LinearGradient(
+          colors: [Colors.grey.shade300, Colors.grey.shade500],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final isMasuk = status.toLowerCase() == 'masuk';
+    String isMasuk = '';
+    if (status.toLowerCase() == 'masuk') {
+      isMasuk = 'masuk';
+    } else if (status.toLowerCase() == 'pulang') {
+      isMasuk = 'pulang';
+    } else {
+      isMasuk = 'kosong';
+    }
 
     return Container(
       width: screenWidth,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isMasuk
-              ? [Colors.blueAccent.shade100, Colors.blueAccent.shade400]
-              : [Colors.orangeAccent.shade100, Colors.orangeAccent.shade400],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        gradient: getStatusGradient(isMasuk),
+
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -56,13 +90,13 @@ class AbsensiCard extends StatelessWidget {
           Row(
             children: [
               Icon(
-                isMasuk ? Icons.check_circle : Icons.access_time,
+                isMasuk == 'masuk' ? Icons.check_circle : Icons.access_time,
                 color: Colors.white,
                 size: 22,
               ),
               const SizedBox(width: 8),
               Text(
-                status,
+                isMasuk == 'kosong' ? 'Belum Absen' : isMasuk,
                 style: GoogleFonts.poppins(
                   color: Colors.white,
                   fontSize: 16,

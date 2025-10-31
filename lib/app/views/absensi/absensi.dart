@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:qbsc_saas/app/utils/app_prefs.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // ignore: must_be_immutable
@@ -140,14 +142,43 @@ class _AbsensiState extends State<Absensi> {
 
     setState(() => _isVerifying = true);
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final String? userId = prefs.getString('userId');
+      final String? userId = AppPrefs.getUserId();
 
       if (userId != null && userId.isNotEmpty) {
+        // ignore: unnecessary_nullable_for_final_variable_declarations
         final XFile? image = await _cameraController.takePicture();
         if (image == null) return;
 
         final position = await _getCurrentLocation();
+        if (position == null) return;
+
+        final posLatStr = AppPrefs.getLatitude() ?? '0.0';
+        final posLngStr = AppPrefs.getLongitude() ?? '0.0';
+        final maxDistStr = AppPrefs.getMaxDistance() ?? '50';
+
+        final posLat = double.tryParse(posLatStr) ?? 0.0;
+        final posLng = double.tryParse(posLngStr) ?? 0.0;
+        final maxDistance = double.tryParse(maxDistStr) ?? 50.0;
+
+        final distanceInMeters = Geolocator.distanceBetween(
+          posLat,
+          posLng,
+          position.latitude,
+          position.longitude,
+        );
+
+        if (distanceInMeters > maxDistance) {
+          // ignore: use_build_context_synchronously
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                "Jarak terlalu jauh dari pos absen (${distanceInMeters.toStringAsFixed(2)} m)",
+              ),
+            ),
+          );
+          setState(() => _isVerifying = false);
+          return;
+        }
 
         var request = http.MultipartRequest(
           'POST',
@@ -177,9 +208,8 @@ class _AbsensiState extends State<Absensi> {
         if (data['success']) {
           // Ganti 'DashboardView()' dengan nama halaman dashboard kamu
           Future.delayed(const Duration(seconds: 1), () {
-            Get.offAllNamed('/absensi_list'); // jika pakai GetX route
-            // atau:
-            // Navigator.pushReplacementNamed(context, '/dashboard');
+            // Get.offNamed('/absensi_list');
+            Get.back(result: true);
           });
         }
       } else {
@@ -201,21 +231,19 @@ class _AbsensiState extends State<Absensi> {
     bool serviceEnabled;
     LocationPermission permission;
 
-    // Cek apakah layanan lokasi aktif
+    // 1️⃣ Cek apakah layanan lokasi aktif
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      // Kalau lokasi belum aktif, arahkan ke pengaturan lokasi
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Silakan aktifkan lokasi terlebih dahulu"),
         ),
       );
-
-      await Geolocator.openLocationSettings(); // buka pengaturan lokasi
+      await Geolocator.openLocationSettings();
       return null;
     }
 
-    // Cek izin lokasi
+    // 2️⃣ Cek izin lokasi
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
@@ -235,14 +263,33 @@ class _AbsensiState extends State<Absensi> {
           ),
         ),
       );
-      await Geolocator.openAppSettings(); // buka pengaturan aplikasi
+      await Geolocator.openAppSettings();
       return null;
     }
 
-    // Ambil posisi jika semua sudah oke
-    return await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
+    // 3️⃣ Mulai ambil posisi real-time satu kali dari stream
+    try {
+      // Dengarkan 1 posisi terbaru langsung dari sensor GPS (bukan cache)
+      final freshPosition =
+          await Geolocator.getPositionStream(
+            locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.best, // ambil paling akurat
+              distanceFilter: 0, // update sekecil apa pun
+            ),
+          ).first.timeout(
+            const Duration(seconds: 5), // batasi waktu tunggu 5 detik
+            onTimeout: () => throw TimeoutException("Timeout ambil posisi"),
+          );
+
+      return freshPosition;
+    } catch (e) {
+      // fallback kalau stream gagal, pakai getCurrentPosition dengan paksa
+      if (kDebugMode) print("Fallback ambil lokasi: $e");
+      return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        forceAndroidLocationManager: true,
+      );
+    }
   }
 
   @override
@@ -271,14 +318,32 @@ class _AbsensiState extends State<Absensi> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.face,
-                  color: _isFaceDetected
-                      ? (_livenessPassed ? Colors.green : Colors.orangeAccent)
-                      : Colors.redAccent,
-                  size: 80,
-                ),
+                // Gantikan bagian Icon(...) dan SizedBox(...) dengan ini:
+                if (_isFaceDetected)
+                  Container(
+                    width: 250, // ukuran frame bisa disesuaikan
+                    height: 300,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: _livenessPassed
+                            ? Colors.green
+                            : Colors.orangeAccent,
+                        width: 3,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  )
+                else
+                  Container(
+                    width: 250,
+                    height: 300,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.redAccent, width: 3),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                 const SizedBox(height: 16),
+
                 Text(
                   _isFaceDetected
                       ? (_livenessPassed
@@ -319,7 +384,7 @@ class _AbsensiState extends State<Absensi> {
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text("Verifikasi Wajah"),
+                      : const Text("Lakukan Absensi"),
                 ),
               ],
             ),

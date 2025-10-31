@@ -2,10 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:qbsc_saas/app/controllers/auth_controller.dart';
 import 'package:qbsc_saas/app/data/api_provider.dart';
+import 'package:qbsc_saas/app/utils/app_prefs.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class HomeView extends StatelessWidget {
-  HomeView({super.key});
+class HomeView extends StatefulWidget {
+  const HomeView({super.key});
 
+  @override
+  State<HomeView> createState() => _HomeViewState();
+}
+
+class _HomeViewState extends State<HomeView> {
   final AuthController controller = Get.put(AuthController());
 
   final List<Map<String, dynamic>> menuItems = [
@@ -16,6 +23,20 @@ class HomeView extends StatelessWidget {
     {'icon': Icons.notifications_active, 'label': 'Notifikasi'},
     {'icon': Icons.settings, 'label': 'Pengaturan'},
   ];
+
+  @override
+  void initState() {
+    setFoto();
+    super.initState();
+  }
+
+  void setFoto() async {
+    String? savedPhoto = AppPrefs.getUserPhoto();
+
+    if (savedPhoto != null && savedPhoto.isNotEmpty) {
+      controller.userPhoto.value = savedPhoto;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,107 +58,88 @@ class HomeView extends StatelessWidget {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            // Lebar layar
             final double width = constraints.maxWidth;
             final bool isTablet = width >= 600;
             final bool isDesktop = width >= 900;
 
-            // Jumlah kolom adaptif
             int crossAxisCount = 2;
             if (isTablet) crossAxisCount = 3;
             if (isDesktop) crossAxisCount = 4;
 
-            // Ukuran teks & ikon disesuaikan
             double iconSize = isTablet ? 42 : 34;
             double fontSize = isTablet ? 16 : 14;
             double avatarRadius = isTablet ? 55 : 45;
 
-            return Padding(
+            return SingleChildScrollView(
               padding: EdgeInsets.symmetric(
                 horizontal: isTablet ? 40 : 16,
                 vertical: isTablet ? 30 : 20,
               ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // 🔹 Foto profil dan sambutan
-                  Center(
-                    child: Column(
-                      children: [
-                        Obx(() {
-                          final photoUrl =
-                              "${ApiProvider.imageUrl}/${controller.userPhoto.value}";
-                          return CircleAvatar(
-                            radius: avatarRadius,
-                            backgroundColor: Colors.indigo.shade100,
-                            backgroundImage: photoUrl.isNotEmpty
-                                ? NetworkImage(photoUrl)
-                                : const AssetImage(
-                                        'assets/images/satpam_default.png',
-                                      )
-                                      as ImageProvider,
-                          );
-                        }),
-                        const SizedBox(height: 12),
-                        Obx(
-                          () => Text(
-                            'Selamat datang, ${controller.userName.value}',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: isTablet ? 22 : 20,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF1A237E),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Pilih menu di bawah untuk mulai bekerja:',
-                          style: TextStyle(
-                            fontSize: isTablet ? 16 : 14,
-                            color: Colors.black54,
-                          ),
-                        ),
-                      ],
+                  Obx(() {
+                    final photoUrl =
+                        "${ApiProvider.imageUrl}/${controller.userPhoto.value}";
+                    return CircleAvatar(
+                      radius: avatarRadius,
+                      backgroundColor: Colors.indigo.shade100,
+                      backgroundImage: photoUrl.isNotEmpty
+                          ? NetworkImage(photoUrl)
+                          : const AssetImage('assets/images/satpam_default.png')
+                                as ImageProvider,
+                    );
+                  }),
+                  const SizedBox(height: 12),
+                  Obx(
+                    () => Text(
+                      'Selamat datang, ${controller.userName.value}',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: isTablet ? 22 : 20,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF1A237E),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Pilih menu di bawah untuk mulai bekerja:',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: isTablet ? 16 : 14,
+                      color: Colors.black54,
                     ),
                   ),
 
                   const SizedBox(height: 24),
 
-                  // 🔹 Grid menu (responsif)
-                  Expanded(
-                    child: GridView.builder(
-                      itemCount: menuItems.length,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: crossAxisCount,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                        childAspectRatio: isTablet ? 1.1 : 1.0,
-                      ),
-                      itemBuilder: (context, index) {
-                        final item = menuItems[index];
-                        return _buildMenuCard(
-                          context,
-                          icon: item['icon'],
-                          label: item['label'],
-                          iconSize: iconSize,
-                          fontSize: fontSize,
-                          onTap: () {
-                            // Get.snackbar(
-                            //   'Menu',
-                            //   'Kamu menekan: ${item['label']}',
-                            //   snackPosition: SnackPosition.BOTTOM,
-                            //   backgroundColor: Colors.indigo.shade100,
-                            //   colorText: Colors.black87,
-                            // );
-                            var buttonName = item['label'];
-                            if (buttonName == 'Absensi') {
-                              Get.toNamed('/absensi_list');
-                            }
-                          },
-                        );
-                      },
+                  // 🔹 Grid menu bisa ikut scroll juga
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: menuItems.length,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: isTablet ? 1.1 : 1.0,
                     ),
+                    itemBuilder: (context, index) {
+                      final item = menuItems[index];
+                      return _buildMenuCard(
+                        icon: item['icon'],
+                        label: item['label'],
+                        iconSize: iconSize,
+                        fontSize: fontSize,
+                        onTap: () {
+                          if (item['label'] == 'Absensi') {
+                            Get.toNamed('/absensi_list');
+                          }
+                        },
+                      );
+                    },
                   ),
                 ],
               ),
@@ -148,8 +150,7 @@ class HomeView extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuCard(
-    BuildContext context, {
+  Widget _buildMenuCard({
     required IconData icon,
     required String label,
     required double iconSize,

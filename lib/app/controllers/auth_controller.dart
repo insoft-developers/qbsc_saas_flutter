@@ -2,7 +2,7 @@ import 'package:get/get.dart';
 import 'package:qbsc_saas/app/data/api_endpoint.dart';
 import 'package:qbsc_saas/app/data/api_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:qbsc_saas/app/utils/app_prefs.dart';
 
 class AuthController extends GetxController {
   var isLoading = false.obs;
@@ -28,11 +28,10 @@ class AuthController extends GetxController {
       userPhoto.value = response.data['data']['face_photo_path'];
       userId.value = response.data['data']['id'].toString();
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('token', token.value);
-      await prefs.setString('userName', userName.value);
-      await prefs.setString('userId', userId.value);
-      await prefs.setString('userPhoto', userPhoto.value);
+      await AppPrefs.setToken(token.value);
+      await AppPrefs.setUserName(userName.value);
+      await AppPrefs.setUserId(userId.value);
+      await AppPrefs.setUserPhoto(userPhoto.value);
 
       // Navigasi dengan sedikit delay agar UI halus
       Future.delayed(const Duration(milliseconds: 300), () {
@@ -48,22 +47,22 @@ class AuthController extends GetxController {
 
   /// LOGOUT
   Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('token');
-    await prefs.remove('userName');
+    await AppPrefs.clearAll();
+
     token.value = '';
     userName.value = '';
+    userId.value = '';
+    userPhoto.value = '';
     Get.offAllNamed('/login');
   }
 
   /// CEK STATUS LOGIN
   Future<void> checkLoginStatus() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedToken = prefs.getString('token');
+    final savedToken = AppPrefs.getToken();
 
     if (savedToken != null && savedToken.isNotEmpty) {
       token.value = savedToken;
-      userName.value = prefs.getString('userName') ?? '';
+      userName.value = AppPrefs.getUserName() ?? '';
       Get.offAllNamed('/home');
     } else {
       Get.offAllNamed('/login');

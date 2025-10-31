@@ -24,15 +24,7 @@ class _AbsensiListState extends State<AbsensiList> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    String absenStatus = '';
-    if (absenController.absenData['status'] == 1) {
-      absenStatus = 'masuk';
-    } else if (absenController.absenData['status'] == 2) {
-      absenStatus = 'pulang';
-    }
+    Theme.of(context);
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
@@ -57,7 +49,7 @@ class _AbsensiListState extends State<AbsensiList> {
               // Kartu informasi absensi
               Obx(
                 () => AbsensiCard(
-                  status: absenStatus.toLowerCase(),
+                  status: absenController.absenStatus.value,
                   jamMasuk: Fungsi.formatToTime(
                     absenController.absenData['jam_masuk'].toString(),
                   ),
@@ -77,7 +69,19 @@ class _AbsensiListState extends State<AbsensiList> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    Get.to(() => Absensi(absenModel: 'masuk'));
+                    if (absenController.absenStatus == 'masuk') {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Anda belum absen pulang'),
+                        ),
+                      );
+                    } else {
+                      Get.to(() => Absensi(absenModel: 'masuk'))?.then((
+                        result,
+                      ) {
+                        absenController.getDataAbsensi();
+                      });
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green[600],
@@ -105,7 +109,17 @@ class _AbsensiListState extends State<AbsensiList> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    Get.to(() => Absensi(absenModel: 'pulang'));
+                    if (absenController.absenStatus == 'pulang') {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Anda belum absen masuk')),
+                      );
+                    } else {
+                      Get.to(() => Absensi(absenModel: 'pulang'))?.then((
+                        result,
+                      ) {
+                        absenController.getDataAbsensi();
+                      });
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red[600],
