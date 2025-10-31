@@ -136,6 +136,8 @@ class _HomeViewState extends State<HomeView> {
                         onTap: () {
                           if (item['label'] == 'Absensi') {
                             Get.toNamed('/absensi_list');
+                          } else if (item['label'] == 'Patroli') {
+                            Get.toNamed('/patroli');
                           }
                         },
                       );
