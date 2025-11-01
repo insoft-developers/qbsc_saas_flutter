@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:qbsc_saas/app/controllers/auth_controller.dart';
+import 'package:qbsc_saas/app/controllers/home_controller.dart';
 import 'package:qbsc_saas/app/data/api_provider.dart';
 import 'package:qbsc_saas/app/utils/app_prefs.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -14,6 +14,7 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   final AuthController controller = Get.put(AuthController());
+  late final HomeController _homec;
 
   final List<Map<String, dynamic>> menuItems = [
     {'icon': Icons.supervised_user_circle, 'label': 'Data Satpam'},
@@ -26,6 +27,10 @@ class _HomeViewState extends State<HomeView> {
 
   @override
   void initState() {
+    Future.delayed(Duration.zero, () {
+      _homec = Get.put(HomeController());
+    });
+
     setFoto();
     super.initState();
   }
@@ -92,17 +97,17 @@ class _HomeViewState extends State<HomeView> {
                     );
                   }),
                   const SizedBox(height: 12),
-                  Obx(
-                    () => Text(
-                      'Selamat datang, ${controller.userName.value}',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: isTablet ? 22 : 20,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1A237E),
-                      ),
+
+                  Text(
+                    'Selamat datang, ${AppPrefs.getUserName()}',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: isTablet ? 22 : 20,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF1A237E),
                     ),
                   ),
+
                   const SizedBox(height: 8),
                   Text(
                     'Pilih menu di bawah untuk mulai bekerja:',

@@ -14,7 +14,7 @@ class AbsensiList extends StatefulWidget {
 }
 
 class _AbsensiListState extends State<AbsensiList> {
-  final AbsenController absenController = Get.find<AbsenController>();
+  final AbsenController absenController = Get.put(AbsenController());
 
   @override
   void initState() {

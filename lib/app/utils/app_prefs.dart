@@ -17,6 +17,7 @@ class AppPrefs {
   static const String _keyLatitude = 'latitude';
   static const String _keyLongitude = 'longitude';
   static const String _keyMaxDistance = 'maxDistance';
+  static const String _keyComId = 'comid';
 
   // ------------------ SETTERS ------------------
   static Future setToken(String value) async =>
@@ -43,6 +44,9 @@ class AppPrefs {
   static Future setMaxDistance(String value) async =>
       await _prefs.setString(_keyMaxDistance, value);
 
+  static Future setComId(String value) async =>
+      await _prefs.setString(_keyComId, value);
+
   // ------------------ GETTERS ------------------
   static String? getToken() => _prefs.getString(_keyToken);
 
@@ -59,6 +63,8 @@ class AppPrefs {
   static String? getLongitude() => _prefs.getString(_keyLongitude);
 
   static String? getMaxDistance() => _prefs.getString(_keyMaxDistance);
+
+  static String? getComId() => _prefs.getString(_keyComId);
 
   // ------------------ CLEAR DATA ------------------
   static Future clearAll() async => await _prefs.clear();

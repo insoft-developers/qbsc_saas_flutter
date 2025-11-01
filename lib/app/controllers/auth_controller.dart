@@ -10,6 +10,7 @@ class AuthController extends GetxController {
   var userName = ''.obs;
   var userPhoto = ''.obs;
   var userId = ''.obs;
+  var comId = ''.obs;
 
   final ApiProvider api = Get.find<ApiProvider>();
 
@@ -27,11 +28,13 @@ class AuthController extends GetxController {
       userName.value = response.data['data']['name'] ?? 'Unknown';
       userPhoto.value = response.data['data']['face_photo_path'];
       userId.value = response.data['data']['id'].toString();
+      comId.value = response.data['data']['comid'].toString();
 
       await AppPrefs.setToken(token.value);
       await AppPrefs.setUserName(userName.value);
       await AppPrefs.setUserId(userId.value);
       await AppPrefs.setUserPhoto(userPhoto.value);
+      await AppPrefs.setComId(comId.value);
 
       // Navigasi dengan sedikit delay agar UI halus
       Future.delayed(const Duration(milliseconds: 300), () {

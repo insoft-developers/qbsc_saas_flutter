@@ -6,7 +6,7 @@
 
 
     <application
-        android:label="qbsc_saas"
+        android:label="QBSC"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
