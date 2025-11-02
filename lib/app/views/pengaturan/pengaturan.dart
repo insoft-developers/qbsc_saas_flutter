@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:qbsc_saas/app/views/pengaturan/lokasi/lokasi_controller.dart';
 
 class Pengaturan extends StatelessWidget {
-  const Pengaturan({super.key});
+  Pengaturan({super.key});
+  final LokasiController _lokasiController = Get.put(LokasiController());
 
   final List<Map<String, dynamic>> menuItems = const [
     {'icon': Icons.location_on, 'label': 'Lokasi'},
@@ -43,7 +47,9 @@ class Pengaturan extends StatelessWidget {
           return InkWell(
             onTap: () {
               if (item['label'] == 'Lokasi') {
-                Get.toNamed('/pengaturan/lokasi');
+                Get.toNamed('/pengaturan/lokasi')?.then((_) {
+                  _lokasiController.fetchLokasi();
+                });
               }
             },
             borderRadius: BorderRadius.circular(20),

@@ -107,7 +107,12 @@ class _LokasiState extends State<Lokasi> {
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   child: InkWell(
                     onTap: () {
-                      Get.to(() => ScanLokasi(locationName: lokasi.namaLokasi));
+                      Get.to(
+                        () => ScanLokasi(
+                          locationName: lokasi.namaLokasi,
+                          qrcode: lokasi.qrcode,
+                        ),
+                      );
                     },
                     borderRadius: BorderRadius.circular(16),
                     child: Ink(

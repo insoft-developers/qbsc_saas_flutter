@@ -6,6 +6,8 @@ class ApiEndpoint {
   static const String absenActive = '/absen_active';
   static const String locationData = '/location_data';
   static const String getDataLocation = '/get_data_location';
+  static const String updateLocationCoordinates =
+      '/update_location_coordinates';
 
   // User
   static const String profile = "/user/profile";
