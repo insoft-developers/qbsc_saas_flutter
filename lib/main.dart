@@ -11,6 +11,8 @@ import 'package:qbsc_saas/app/views/absensi/absensi_list.dart';
 import 'package:qbsc_saas/app/views/home_view.dart';
 import 'package:qbsc_saas/app/views/login_view.dart';
 import 'package:qbsc_saas/app/views/patroli/patroli.dart';
+import 'package:qbsc_saas/app/views/pengaturan/lokasi/lokasi.dart';
+import 'package:qbsc_saas/app/views/pengaturan/pengaturan.dart';
 import 'package:qbsc_saas/app/views/splash_view.dart';
 
 Future<void> main() async {
@@ -40,6 +42,8 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/home', page: () => HomeView()),
         GetPage(name: '/patroli', page: () => Patroli()),
         GetPage(name: '/absensi_list', page: () => AbsensiList()),
+        GetPage(name: '/pengaturan', page: () => Pengaturan()),
+        GetPage(name: '/pengaturan/lokasi', page: () => Lokasi()),
       ],
     );
   }

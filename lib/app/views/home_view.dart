@@ -43,6 +43,75 @@ class _HomeViewState extends State<HomeView> {
     }
   }
 
+  void _showSyncConfirmation() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Konfirmasi Sync'),
+        content: const Text('Yakin mau sinkronisasi data sekarang?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // tutup dialog konfirmasi
+
+              // tampilkan loading dialog
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (dialogContext) {
+                  // jalankan sinkronisasi di sini
+                  _syncData(dialogContext);
+                  return AlertDialog(
+                    content: Row(
+                      children: const [
+                        CircularProgressIndicator(),
+                        SizedBox(width: 20),
+                        Expanded(child: Text('Sedang sinkronisasi...')),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+            child: const Text('Ya, Sync'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // fungsi async sinkronisasi
+  Future<void> _syncData(BuildContext dialogContext) async {
+    try {
+      await _homec.getDataLocation();
+
+      // tutup loading dialog
+      if (mounted) Navigator.of(dialogContext).pop();
+
+      // tampilkan snackbar sukses
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Sinkronisasi berhasil!')));
+      }
+    } catch (e) {
+      // tutup loading dialog
+      if (mounted) Navigator.of(dialogContext).pop();
+
+      // tampilkan snackbar error
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Sinkronisasi gagal: $e')));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,6 +123,14 @@ class _HomeViewState extends State<HomeView> {
           style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.sync, color: Colors.white),
+            tooltip: 'Sync Data',
+            onPressed: () {
+              _showSyncConfirmation();
+            },
+          ),
+
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white),
             onPressed: controller.logout,
@@ -143,6 +220,8 @@ class _HomeViewState extends State<HomeView> {
                             Get.toNamed('/absensi_list');
                           } else if (item['label'] == 'Patroli') {
                             Get.toNamed('/patroli');
+                          } else if (item['label'] == 'Pengaturan') {
+                            Get.toNamed('/pengaturan');
                           }
                         },
                       );
