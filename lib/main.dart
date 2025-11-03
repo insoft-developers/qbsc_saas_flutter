@@ -5,10 +5,13 @@ import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:qbsc_saas/app/data/api_provider.dart';
 import 'package:qbsc_saas/app/models/location_model.dart';
+import 'package:qbsc_saas/app/models/patroli_model.dart';
 import 'package:qbsc_saas/app/services/face_services.dart';
 import 'package:qbsc_saas/app/utils/app_prefs.dart';
 import 'package:qbsc_saas/app/views/absensi/absensi_list.dart';
 import 'package:qbsc_saas/app/views/home_view.dart';
+import 'package:qbsc_saas/app/views/laporan/laporan.dart';
+import 'package:qbsc_saas/app/views/laporan/patroli/patroli_report.dart';
 import 'package:qbsc_saas/app/views/login_view.dart';
 import 'package:qbsc_saas/app/views/patroli/patroli.dart';
 import 'package:qbsc_saas/app/views/pengaturan/lokasi/lokasi.dart';
@@ -19,7 +22,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
   Hive.registerAdapter(LocationModelAdapter());
+  Hive.registerAdapter(PatroliModelAdapter());
   await Hive.openBox<LocationModel>('locations');
+  await Hive.openBox<PatroliModel>('patroli');
 
   await Get.putAsync<ApiProvider>(() async => await ApiProvider().init());
   await AppPrefs.init();
@@ -44,6 +49,8 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/absensi_list', page: () => AbsensiList()),
         GetPage(name: '/pengaturan', page: () => Pengaturan()),
         GetPage(name: '/pengaturan/lokasi', page: () => Lokasi()),
+        GetPage(name: '/laporan', page: () => Laporan()),
+        GetPage(name: '/laporan/patroli', page: () => PatroliReport()),
       ],
     );
   }

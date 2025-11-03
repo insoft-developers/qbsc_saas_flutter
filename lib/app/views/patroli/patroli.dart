@@ -3,9 +3,11 @@ import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qbsc_saas/app/models/location_model.dart';
+// ignore: depend_on_referenced_packages
 import 'package:collection/collection.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:qbsc_saas/app/utils/app_prefs.dart'; // <-- pastikan AppPrefs punya getMaxDistance()
+import 'package:qbsc_saas/app/utils/app_prefs.dart';
+import 'package:qbsc_saas/app/views/patroli/patroli_controller.dart';
 
 class Patroli extends StatefulWidget {
   const Patroli({super.key});
@@ -15,10 +17,12 @@ class Patroli extends StatefulWidget {
 }
 
 class _PatroliState extends State<Patroli> {
+  final patroliController = Get.put(PatroliController());
   bool _isScanning = true;
   bool _torchOn = false;
   String? _lastScanned;
   late Box<LocationModel> _box;
+  double _maxDistance = 0.0;
 
   final MobileScannerController _controller = MobileScannerController(
     detectionSpeed: DetectionSpeed.noDuplicates,
@@ -28,6 +32,14 @@ class _PatroliState extends State<Patroli> {
   void initState() {
     super.initState();
     _openHiveBox();
+    _loadMaxDistance();
+  }
+
+  Future<void> _loadMaxDistance() async {
+    final maxDistanceString = AppPrefs.getMaxDistance();
+    setState(() {
+      _maxDistance = double.tryParse(maxDistanceString ?? '0') ?? 0.0;
+    });
   }
 
   Future<void> _openHiveBox() async {
@@ -106,10 +118,6 @@ class _PatroliState extends State<Patroli> {
             return;
           }
 
-          // Ambil maxDistance dari SharedPreferences (String → double)
-          final maxDistanceString = await AppPrefs.getMaxDistance();
-          final maxDistance = double.tryParse(maxDistanceString ?? '0') ?? 0.0;
-
           final distance = await _getDistance(
             pos.latitude,
             pos.longitude,
@@ -117,29 +125,20 @@ class _PatroliState extends State<Patroli> {
             match.longitude,
           );
 
-          if (distance > maxDistance) {
+          if (distance > _maxDistance) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
                   'Lokasi terlalu jauh dari titik patroli!\n'
                   'Jarak: ${distance.toStringAsFixed(1)} m '
-                  '(Maks: ${maxDistance.toStringAsFixed(1)} m)',
+                  '(Maks: ${_maxDistance.toStringAsFixed(1)} m)',
                 ),
                 backgroundColor: Colors.redAccent,
                 duration: const Duration(seconds: 4),
               ),
             );
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Lokasi valid:\n${match.namaLokasi}\n'
-                  'Jarak: ${distance.toStringAsFixed(1)} m',
-                ),
-                backgroundColor: Colors.green,
-                duration: const Duration(seconds: 3),
-              ),
-            );
+            _showKondisiDialog(match, pos);
           }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -153,6 +152,69 @@ class _PatroliState extends State<Patroli> {
         break;
       }
     }
+  }
+
+  void _showKondisiDialog(LocationModel lokasi, Position pos) {
+    final TextEditingController kondisiController = TextEditingController();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Isi Kondisi di ${lokasi.namaLokasi}'),
+          content: TextField(
+            controller: kondisiController,
+            decoration: const InputDecoration(
+              labelText: 'Kondisi lokasi',
+              hintText: 'Contoh: aman, lampu mati, rusak, dsb.',
+            ),
+            maxLines: 2,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                setState(() => _isScanning = true);
+              },
+              child: const Text('Batal'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final kondisi = kondisiController.text.trim();
+                String? userId = AppPrefs.getUserId();
+                if (kondisi.isEmpty) return;
+
+                // Simpan ke Hive lokal
+                // await _simpanHasilPatroli(lokasi, pos, kondisi);
+                await patroliController.savePatroliLocal(
+                  locationId: lokasi.id.toString(),
+                  locationCode: lokasi.qrcode,
+                  satpamId: userId!,
+                  latitude: pos.latitude,
+                  longitude: pos.longitude,
+                  note: kondisiController.text,
+                  comid: lokasi.comid.toString(),
+                );
+
+                // ignore: use_build_context_synchronously
+                Navigator.pop(context);
+                // ignore: use_build_context_synchronously
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Data patroli disimpan ke lokal'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+
+                setState(() => _isScanning = true);
+              },
+              child: const Text('Simpan'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _toggleTorch() async {

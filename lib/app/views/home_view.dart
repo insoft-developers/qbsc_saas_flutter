@@ -18,7 +18,7 @@ class _HomeViewState extends State<HomeView> {
 
   final List<Map<String, dynamic>> menuItems = [
     {'icon': Icons.supervised_user_circle, 'label': 'Data Satpam'},
-    {'icon': Icons.assignment, 'label': 'Laporan Harian'},
+    {'icon': Icons.assignment, 'label': 'Laporan'},
     {'icon': Icons.qr_code, 'label': 'Absensi'},
     {'icon': Icons.location_on, 'label': 'Patroli'},
     {'icon': Icons.notifications_active, 'label': 'Notifikasi'},
@@ -222,6 +222,8 @@ class _HomeViewState extends State<HomeView> {
                             Get.toNamed('/patroli');
                           } else if (item['label'] == 'Pengaturan') {
                             Get.toNamed('/pengaturan');
+                          } else if (item['label'] == 'Laporan') {
+                            Get.toNamed('/laporan');
                           }
                         },
                       );

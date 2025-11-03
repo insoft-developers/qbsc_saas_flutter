@@ -9,6 +9,8 @@ class ApiEndpoint {
   static const String updateLocationCoordinates =
       '/update_location_coordinates';
 
+  static const String sendPatroliToServer = '/send_patroli_to_server';
+
   // User
   static const String profile = "/user/profile";
   static const String updateProfile = "/user/update";

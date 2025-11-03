@@ -77,7 +77,9 @@ class HomeController extends GetxController {
     print('=== CEK DATA DI HIVE ===');
     print('Total data: ${box.length}');
     for (var item in box.values) {
-      print('ID: ${item.id}, Nama: ${item.namaLokasi}, QR: ${item.qrcode}');
+      print(
+        'ID: ${item.id}, Nama: ${item.namaLokasi}, QR: ${item.qrcode}, LAT: ${item.latitude.toString()}, LNG: ${item.longitude.toString()}',
+      );
     }
   }
 }
