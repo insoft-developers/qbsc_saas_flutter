@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qbsc_saas/app/models/location_model.dart';
 // ignore: depend_on_referenced_packages
@@ -156,62 +159,110 @@ class _PatroliState extends State<Patroli> {
 
   void _showKondisiDialog(LocationModel lokasi, Position pos) {
     final TextEditingController kondisiController = TextEditingController();
+    final ImagePicker picker = ImagePicker();
+    File? _fotoFile;
 
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) {
-        return AlertDialog(
-          title: Text('Isi Kondisi di ${lokasi.namaLokasi}'),
-          content: TextField(
-            controller: kondisiController,
-            decoration: const InputDecoration(
-              labelText: 'Kondisi lokasi',
-              hintText: 'Contoh: aman, lampu mati, rusak, dsb.',
-            ),
-            maxLines: 2,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                setState(() => _isScanning = true);
-              },
-              child: const Text('Batal'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final kondisi = kondisiController.text.trim();
-                String? userId = AppPrefs.getUserId();
-                if (kondisi.isEmpty) return;
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              title: Text('Isi Kondisi di ${lokasi.namaLokasi}'),
+              content: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: kondisiController,
+                      decoration: const InputDecoration(
+                        labelText: 'Kondisi lokasi',
+                        hintText: 'Contoh: aman, lampu mati, rusak, dsb.',
+                      ),
+                      maxLines: 2,
+                    ),
+                    const SizedBox(height: 16),
+                    // Preview foto kalau ada
+                    _fotoFile != null
+                        ? Column(
+                            children: [
+                              Image.file(_fotoFile!, height: 150),
+                              const SizedBox(height: 8),
+                              TextButton(
+                                onPressed: () {
+                                  setStateDialog(() => _fotoFile = null);
+                                },
+                                child: const Text('Hapus Foto'),
+                              ),
+                            ],
+                          )
+                        : ElevatedButton.icon(
+                            onPressed: () async {
+                              final XFile? foto = await picker.pickImage(
+                                source: ImageSource.camera,
+                                imageQuality: 70,
+                              );
+                              if (foto != null) {
+                                setStateDialog(() {
+                                  _fotoFile = File(foto.path);
+                                });
+                              }
+                            },
+                            icon: const Icon(Icons.camera_alt),
+                            label: const Text('Ambil Foto (Opsional)'),
+                          ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    setState(() => _isScanning = true);
+                  },
+                  child: const Text('Batal'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    final kondisi = kondisiController.text.trim();
+                    if (kondisi.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Isi kondisi dulu sebelum simpan'),
+                          backgroundColor: Colors.redAccent,
+                        ),
+                      );
+                      return;
+                    }
 
-                // Simpan ke Hive lokal
-                // await _simpanHasilPatroli(lokasi, pos, kondisi);
-                await patroliController.savePatroliLocal(
-                  locationId: lokasi.id.toString(),
-                  locationCode: lokasi.qrcode,
-                  satpamId: userId!,
-                  latitude: pos.latitude,
-                  longitude: pos.longitude,
-                  note: kondisiController.text,
-                  comid: lokasi.comid.toString(),
-                );
+                    String? userId = AppPrefs.getUserId();
 
-                // ignore: use_build_context_synchronously
-                Navigator.pop(context);
-                // ignore: use_build_context_synchronously
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Data patroli disimpan ke lokal'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
+                    await patroliController.savePatroliLocal(
+                      locationId: lokasi.id.toString(),
+                      locationCode: lokasi.qrcode,
+                      satpamId: userId!,
+                      latitude: pos.latitude,
+                      longitude: pos.longitude,
+                      note: kondisiController.text,
+                      comid: lokasi.comid.toString(),
+                      photoPath: _fotoFile?.path, // bisa null, opsional
+                    );
 
-                setState(() => _isScanning = true);
-              },
-              child: const Text('Simpan'),
-            ),
-          ],
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Data patroli disimpan ke lokal'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+
+                    setState(() => _isScanning = true);
+                  },
+                  child: const Text('Simpan'),
+                ),
+              ],
+            );
+          },
         );
       },
     );

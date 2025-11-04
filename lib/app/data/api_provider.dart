@@ -45,10 +45,11 @@ class ApiProvider extends GetxService {
 
   Future<dio.Response> post(
     String endpoint, {
-    Map<String, dynamic>? data,
+    dynamic data, // <- biarkan dynamic agar bisa FormData juga
+    dio.Options? options,
   }) async {
     try {
-      return await _dio.post(endpoint, data: data);
+      return await _dio.post(endpoint, data: data, options: options);
     } on dio.DioException catch (e) {
       throw _handleError(e);
     }

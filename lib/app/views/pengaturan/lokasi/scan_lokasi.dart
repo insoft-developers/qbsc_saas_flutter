@@ -6,7 +6,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:qbsc_saas/app/views/pengaturan/lokasi/lokasi.dart';
 import 'package:qbsc_saas/app/views/pengaturan/lokasi/lokasi_controller.dart';
 
 // ignore: must_be_immutable
@@ -37,6 +36,7 @@ class _ScanLokasiState extends State<ScanLokasi> {
       status = await Permission.location.request();
       if (!status.isGranted) {
         ScaffoldMessenger.of(
+          // ignore: use_build_context_synchronously
           context,
         ).showSnackBar(const SnackBar(content: Text('Izin lokasi ditolak!')));
         return null;
@@ -49,6 +49,7 @@ class _ScanLokasiState extends State<ScanLokasi> {
       // Tampilkan dialog untuk buka pengaturan lokasi
       bool openSettings =
           await showDialog(
+            // ignore: use_build_context_synchronously
             context: context,
             builder: (_) => AlertDialog(
               title: const Text('Aktifkan GPS'),

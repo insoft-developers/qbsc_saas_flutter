@@ -27,15 +27,16 @@ class PatroliModelAdapter extends TypeAdapter<PatroliModel> {
       longitude: fields[7] as double,
       note: fields[8] as String,
       comid: fields[9] as String,
-      isSynced: fields[10] as bool,
-      syncedAt: fields[11] as String?,
+      photoPath: fields[10] as String?,
+      isSynced: fields[11] as bool,
+      syncedAt: fields[12] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, PatroliModel obj) {
     writer
-      ..writeByte(12)
+      ..writeByte(13)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -57,8 +58,10 @@ class PatroliModelAdapter extends TypeAdapter<PatroliModel> {
       ..writeByte(9)
       ..write(obj.comid)
       ..writeByte(10)
-      ..write(obj.isSynced)
+      ..write(obj.photoPath)
       ..writeByte(11)
+      ..write(obj.isSynced)
+      ..writeByte(12)
       ..write(obj.syncedAt);
   }
 

@@ -1,6 +1,10 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart' as dio;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:path/path.dart';
 import 'package:qbsc_saas/app/models/patroli_model.dart';
 import 'package:qbsc_saas/app/models/location_model.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -56,29 +60,41 @@ class PatroliReportController extends GetxController {
     }
 
     try {
+      final formData = dio.FormData.fromMap({
+        'id': p.id,
+        'tanggal': p.tanggal,
+        'jam': p.jam,
+        'location_id': p.locationId,
+        'location_code': p.locationCode,
+        'satpam_id': p.satpamId,
+        'latitude': p.latitude,
+        'longitude': p.longitude,
+        'note': p.note,
+        'comid': p.comid,
+        if (p.photoPath != null && File(p.photoPath!).existsSync())
+          'photo': await dio.MultipartFile.fromFile(
+            p.photoPath!,
+            filename: basename(p.photoPath!),
+          ),
+      });
+
       final response = await api.post(
         ApiEndpoint.sendPatroliToServer,
-        data: {
-          'id': p.id,
-          'tanggal': p.tanggal,
-          'jam': p.jam,
-          'location_id': p.locationId,
-          'location_code': p.locationCode,
-          'satpam_id': p.satpamId,
-          'latitude': p.latitude,
-          'longitude': p.longitude,
-          'note': p.note,
-          'comid': p.comid,
-        },
+        data: formData,
+        options: dio.Options(headers: {'Content-Type': 'multipart/form-data'}),
       );
 
       final body = response.data;
+
       if (body['success'] == true) {
         p.isSynced = true;
         await p.save();
-        SnackbarHelper.success('Sukses', 'Data berhasil di sync');
+        SnackbarHelper.success('Sukses', 'Data berhasil di-sync');
       } else {
-        SnackbarHelper.error('Gagal', 'Sync gagal, coba lagi nanti');
+        SnackbarHelper.error(
+          'Gagal',
+          'Sync gagal: ${body['message'] ?? 'Coba lagi nanti'}',
+        );
       }
     } catch (e) {
       SnackbarHelper.error('Error', e.toString());

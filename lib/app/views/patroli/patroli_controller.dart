@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dio/dio.dart' as dio;
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
+import 'package:path/path.dart';
 import 'package:qbsc_saas/app/data/api_endpoint.dart';
 import 'package:qbsc_saas/app/data/api_provider.dart';
 import 'package:qbsc_saas/app/models/patroli_model.dart';
@@ -25,13 +28,14 @@ class PatroliController extends GetxController {
     _connectivitySubscription = Connectivity().onConnectivityChanged.listen((
       status,
     ) {
+      // ignore: unrelated_type_equality_checks
       if (status != ConnectivityResult.none) {
         syncPatroliToServer();
       }
     });
 
     // Jalankan sync otomatis setiap 5 menit (backup)
-    _periodicSyncTimer = Timer.periodic(const Duration(minutes: 5), (_) {
+    _periodicSyncTimer = Timer.periodic(const Duration(minutes: 2), (_) {
       syncPatroliToServer();
     });
   }
@@ -51,6 +55,7 @@ class PatroliController extends GetxController {
     required double longitude,
     String? note,
     required String comid,
+    String? photoPath,
   }) async {
     final box = Hive.box<PatroliModel>('patroli');
     final now = DateTime.now();
@@ -67,6 +72,7 @@ class PatroliController extends GetxController {
       longitude: longitude,
       note: note ?? '',
       comid: comid,
+      photoPath: photoPath ?? '',
       isSynced: false,
     );
 
@@ -78,20 +84,32 @@ class PatroliController extends GetxController {
     final box = Hive.box<PatroliModel>('patroli');
     final unsynced = box.values.where((p) => p.isSynced == false).toList();
 
-    if (unsynced.isEmpty) return;
+    if (unsynced.isEmpty) {
+      print("Tidak ada data yang perlu di-sync.");
+      return;
+    }
 
     final connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult == ConnectivityResult.none) {
-      print("Tidak ada koneksi, sync ditunda");
+      print("Tidak ada koneksi, sync ditunda.");
       return;
     }
 
     print("Mulai sync ${unsynced.length} data ke server...");
 
+    int sukses = 0;
+    int gagal = 0;
+
+    final ApiProvider api = Get.find<ApiProvider>();
+
     for (var p in unsynced) {
-      final response = await api.post(
-        ApiEndpoint.sendPatroliToServer,
-        data: {
+      try {
+        File? file = (p.photoPath != null && p.photoPath!.isNotEmpty)
+            ? File(p.photoPath!)
+            : null;
+
+        // Siapkan FormData
+        final formData = dio.FormData.fromMap({
           'id': p.id,
           'tanggal': p.tanggal,
           'jam': p.jam,
@@ -102,19 +120,43 @@ class PatroliController extends GetxController {
           'longitude': p.longitude,
           'note': p.note,
           'comid': p.comid,
-        },
-      );
+          if (file != null && await file.exists())
+            'photo': await dio.MultipartFile.fromFile(
+              file.path,
+              filename: basename(file.path),
+            ),
+        });
 
-      var body = response.data;
-      if (body['success'] == true) {
-        // ✅ update status di Hive
-        p.isSynced = true;
-        await p.save();
-        print('✅ Sync sukses untuk ID: ${p.id}');
-      } else {
-        print('❌ Sync gagal untuk ID: ${p.id}');
+        // Kirim ke server
+        final response = await api.client.post(
+          ApiEndpoint.sendPatroliToServer,
+          data: formData,
+          options: dio.Options(
+            headers: {'Content-Type': 'multipart/form-data'},
+          ),
+        );
+
+        final body = response.data;
+        if (body['success'] == true) {
+          p.isSynced = true;
+          await p.save();
+          sukses++;
+          print('✅ Sync sukses untuk ID: ${p.id}');
+        } else {
+          gagal++;
+          print('❌ Sync gagal untuk ID: ${p.id} - ${body['message']}');
+        }
+      } catch (e) {
+        gagal++;
+        print('⚠️ Gagal sync ID: ${p.id} - $e');
+        continue;
       }
     }
+
+    print('=== HASIL SYNC ===');
+    print('Sukses: $sukses');
+    print('Gagal: $gagal');
+    print('Total: ${unsynced.length}');
   }
 
   Future<void> cekHivePatroli() async {
@@ -125,7 +167,7 @@ class PatroliController extends GetxController {
     print('Total data: ${box.length}');
     for (var item in box.values) {
       print(
-        'ID: ${item.id}, Tanggal: ${item.tanggal}, jam: ${item.jam}, locid: ${item.locationId}, loccd: ${item.locationCode}, satpamid: ${item.satpamId}, lat: ${item.latitude.toString()},lng: ${item.longitude.toString()}, note: ${item.note}',
+        'ID: ${item.id}, Tanggal: ${item.tanggal}, jam: ${item.jam}, locid: ${item.locationId}, loccd: ${item.locationCode}, satpamid: ${item.satpamId}, lat: ${item.latitude.toString()},lng: ${item.longitude.toString()}, note: ${item.note},',
       );
     }
   }

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'patroli_report_controller.dart';
@@ -81,7 +82,23 @@ class PatroliReport extends StatelessWidget {
                       ],
                     ),
 
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 8),
+
+                    // FOTO PATROLI (jika ada)
+                    if (patroli.photoPath != null &&
+                        patroli.photoPath!.isNotEmpty &&
+                        File(patroli.photoPath!).existsSync()) ...[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.file(
+                          File(patroli.photoPath!),
+                          height: 180,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
 
                     // Note / keterangan
                     Text(

@@ -34,11 +34,13 @@ class PatroliModel extends HiveObject {
   @HiveField(9)
   String comid;
 
-  // Tambahan untuk sinkronisasi
   @HiveField(10)
-  bool isSynced;
+  String? photoPath;
 
   @HiveField(11)
+  bool isSynced;
+
+  @HiveField(12)
   String? syncedAt;
 
   PatroliModel({
@@ -52,6 +54,7 @@ class PatroliModel extends HiveObject {
     required this.longitude,
     required this.note,
     required this.comid,
+    this.photoPath,
     this.isSynced = false,
     this.syncedAt,
   });
@@ -85,6 +88,7 @@ class PatroliModel extends HiveObject {
       longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
       note: json['note'] ?? '',
       comid: json['comid'] ?? '',
+      photoPath: json['photo_path'] ?? '',
       isSynced: json['isSynced'] ?? true,
       syncedAt: json['syncedAt']?.toString(),
     );
@@ -103,6 +107,7 @@ class PatroliModel extends HiveObject {
       longitude: longitude,
       note: note,
       comid: comid,
+      photoPath: photoPath,
       isSynced: isSynced ?? this.isSynced,
       syncedAt: syncedAt ?? this.syncedAt,
     );
