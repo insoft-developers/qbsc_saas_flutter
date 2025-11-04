@@ -1,15 +1,12 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:qbsc_saas/app/views/pengaturan/lokasi/lokasi_controller.dart';
 
 class Laporan extends StatelessWidget {
   Laporan({super.key});
-  final LokasiController _lokasiController = Get.put(LokasiController());
 
   final List<Map<String, dynamic>> menuItems = const [
     {'icon': Icons.location_history, 'label': 'Laporan Patroli'},
+    {'icon': Icons.location_on, 'label': 'Laporan Data Lokasi'},
     {'icon': Icons.person, 'label': 'Profil'},
     {'icon': Icons.notifications, 'label': 'Notifikasi'},
   ];
@@ -46,6 +43,8 @@ class Laporan extends StatelessWidget {
             onTap: () {
               if (item['label'] == 'Laporan Patroli') {
                 Get.toNamed('/laporan/patroli');
+              } else if (item['label'] == 'Laporan Data Lokasi') {
+                Get.toNamed('/laporan/lokasi');
               }
             },
             borderRadius: BorderRadius.circular(20),

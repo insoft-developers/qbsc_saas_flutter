@@ -53,6 +53,7 @@ dependencies:
   connectivity_plus: ^7.0.0
   image_picker: ^1.2.0
   path: ^1.9.1
+  url_launcher: ^6.3.2
   
   
   

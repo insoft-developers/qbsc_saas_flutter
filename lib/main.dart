@@ -6,11 +6,11 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:qbsc_saas/app/data/api_provider.dart';
 import 'package:qbsc_saas/app/models/location_model.dart';
 import 'package:qbsc_saas/app/models/patroli_model.dart';
-import 'package:qbsc_saas/app/services/face_services.dart';
 import 'package:qbsc_saas/app/utils/app_prefs.dart';
 import 'package:qbsc_saas/app/views/absensi/absensi_list.dart';
 import 'package:qbsc_saas/app/views/home_view.dart';
 import 'package:qbsc_saas/app/views/laporan/laporan.dart';
+import 'package:qbsc_saas/app/views/laporan/lokasi/lokasi_report.dart';
 import 'package:qbsc_saas/app/views/laporan/patroli/patroli_report.dart';
 import 'package:qbsc_saas/app/views/login_view.dart';
 import 'package:qbsc_saas/app/views/patroli/patroli.dart';
@@ -28,7 +28,6 @@ Future<void> main() async {
 
   await Get.putAsync<ApiProvider>(() async => await ApiProvider().init());
   await AppPrefs.init();
-  Get.put(FaceService());
   runApp(MyApp());
 }
 
@@ -51,6 +50,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/pengaturan/lokasi', page: () => Lokasi()),
         GetPage(name: '/laporan', page: () => Laporan()),
         GetPage(name: '/laporan/patroli', page: () => PatroliReport()),
+        GetPage(name: '/laporan/lokasi', page: () => LokasiReport()),
       ],
     );
   }

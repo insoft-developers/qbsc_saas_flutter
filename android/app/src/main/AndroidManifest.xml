@@ -43,9 +43,23 @@
 
          In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
     <queries>
-        <intent>
-            <action android:name="android.intent.action.PROCESS_TEXT"/>
-            <data android:mimeType="text/plain"/>
-        </intent>
-    </queries>
+    <!-- Default: untuk text processing -->
+    <intent>
+        <action android:name="android.intent.action.PROCESS_TEXT" />
+        <data android:mimeType="text/plain" />
+    </intent>
+
+    <!-- Tambahan: untuk buka lokasi dengan geo intent -->
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="geo" />
+    </intent>
+
+    <!-- Tambahan: untuk buka Google Maps via https -->
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="https" android:host="maps.google.com" />
+    </intent>
+</queries>
+
 </manifest>

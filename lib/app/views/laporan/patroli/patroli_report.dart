@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'patroli_report_controller.dart';
-import 'package:qbsc_saas/app/models/patroli_model.dart';
 
 class PatroliReport extends StatelessWidget {
   PatroliReport({super.key});
@@ -50,7 +49,7 @@ class PatroliReport extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Bar atas: nama lokasi + kode + status sync
+                    // Nama lokasi + status sync
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -84,47 +83,65 @@ class PatroliReport extends StatelessWidget {
 
                     const SizedBox(height: 8),
 
-                    // FOTO PATROLI (jika ada)
-                    if (patroli.photoPath != null &&
-                        patroli.photoPath!.isNotEmpty &&
-                        File(patroli.photoPath!).existsSync()) ...[
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Image.file(
-                          File(patroli.photoPath!),
-                          height: 180,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
+                    // Teks dan foto di satu baris
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Kiri: teks
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                patroli.note.isNotEmpty ? patroli.note : '-',
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'Tanggal: ${patroli.tanggal}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[700],
+                                ),
+                              ),
+                              Text(
+                                'Jam: ${patroli.jam}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[700],
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Lat: ${patroli.latitude} | Lng: ${patroli.longitude}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[700],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                    ],
 
-                    // Note / keterangan
-                    Text(
-                      patroli.note.isNotEmpty ? patroli.note : '-',
-                      style: const TextStyle(fontSize: 14),
+                        // Kanan: foto kecil
+                        if (patroli.photoPath != null &&
+                            patroli.photoPath!.isNotEmpty &&
+                            File(patroli.photoPath!).existsSync())
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.file(
+                              File(patroli.photoPath!),
+                              height: 80,
+                              width: 80,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                      ],
                     ),
 
                     const SizedBox(height: 6),
 
-                    // Tanggal & jam
-                    Text(
-                      'Tanggal: ${patroli.tanggal} | Jam: ${patroli.jam}',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[700]),
-                    ),
-
-                    const SizedBox(height: 4),
-
-                    // Koordinat
-                    Text(
-                      'Lat: ${patroli.latitude}, Lng: ${patroli.longitude}',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[700]),
-                    ),
-
-                    const SizedBox(height: 6),
-
-                    // Tombol sync manual jika belum sync
+                    // Tombol sync manual
                     if (!patroli.isSynced)
                       Align(
                         alignment: Alignment.centerRight,

@@ -17,10 +17,10 @@ class _HomeViewState extends State<HomeView> {
   late final HomeController _homec;
 
   final List<Map<String, dynamic>> menuItems = [
-    {'icon': Icons.supervised_user_circle, 'label': 'Data Satpam'},
-    {'icon': Icons.assignment, 'label': 'Laporan'},
     {'icon': Icons.qr_code, 'label': 'Absensi'},
     {'icon': Icons.location_on, 'label': 'Patroli'},
+    {'icon': Icons.bungalow_rounded, 'label': 'Kontrol Kandang'},
+    {'icon': Icons.assignment, 'label': 'Laporan'},
     {'icon': Icons.notifications_active, 'label': 'Notifikasi'},
     {'icon': Icons.settings, 'label': 'Pengaturan'},
   ];
