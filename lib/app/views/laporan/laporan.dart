@@ -7,7 +7,7 @@ class Laporan extends StatelessWidget {
   final List<Map<String, dynamic>> menuItems = const [
     {'icon': Icons.location_history, 'label': 'Laporan Patroli'},
     {'icon': Icons.location_on, 'label': 'Laporan Data Lokasi'},
-    {'icon': Icons.person, 'label': 'Profil'},
+    {'icon': Icons.bungalow_rounded, 'label': 'Laporan Kandang'},
     {'icon': Icons.notifications, 'label': 'Notifikasi'},
   ];
 
@@ -45,6 +45,8 @@ class Laporan extends StatelessWidget {
                 Get.toNamed('/laporan/patroli');
               } else if (item['label'] == 'Laporan Data Lokasi') {
                 Get.toNamed('/laporan/lokasi');
+              } else if (item['label'] == 'Laporan Kandang') {
+                Get.toNamed('/laporan/kandang');
               }
             },
             borderRadius: BorderRadius.circular(20),

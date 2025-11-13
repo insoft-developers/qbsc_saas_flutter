@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:qbsc_saas/app/controllers/absen_controller.dart';
 import 'package:qbsc_saas/app/controllers/auth_controller.dart';
 import 'package:qbsc_saas/app/controllers/home_controller.dart';
 import 'package:qbsc_saas/app/data/api_provider.dart';
@@ -15,11 +16,14 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> {
   final AuthController controller = Get.put(AuthController());
   late final HomeController _homec;
+  final AbsenController absenc = Get.put(AbsenController());
 
   final List<Map<String, dynamic>> menuItems = [
     {'icon': Icons.qr_code, 'label': 'Absensi'},
     {'icon': Icons.location_on, 'label': 'Patroli'},
-    {'icon': Icons.bungalow_rounded, 'label': 'Kontrol Kandang'},
+    {'icon': Icons.house, 'label': 'Kontrol Kandang'},
+    {'icon': Icons.display_settings_sharp, 'label': 'Kontrol Mesin'},
+    {'icon': Icons.fire_truck, 'label': 'Catat DOC'},
     {'icon': Icons.assignment, 'label': 'Laporan'},
     {'icon': Icons.notifications_active, 'label': 'Notifikasi'},
     {'icon': Icons.settings, 'label': 'Pengaturan'},
@@ -32,6 +36,7 @@ class _HomeViewState extends State<HomeView> {
     });
 
     setFoto();
+    absenc.getLocationData();
     super.initState();
   }
 
@@ -89,6 +94,7 @@ class _HomeViewState extends State<HomeView> {
   Future<void> _syncData(BuildContext dialogContext) async {
     try {
       await _homec.getDataLocation();
+      await _homec.getDataKandang();
 
       // tutup loading dialog
       if (mounted) Navigator.of(dialogContext).pop();
@@ -224,6 +230,8 @@ class _HomeViewState extends State<HomeView> {
                             Get.toNamed('/pengaturan');
                           } else if (item['label'] == 'Laporan') {
                             Get.toNamed('/laporan');
+                          } else if (item['label'] == 'Kontrol Kandang') {
+                            Get.toNamed('/patroli/kandang');
                           }
                         },
                       );
