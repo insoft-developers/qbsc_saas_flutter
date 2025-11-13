@@ -95,6 +95,7 @@ class _HomeViewState extends State<HomeView> {
     try {
       await _homec.getDataLocation();
       await _homec.getDataKandang();
+      await absenc.getLocationData();
 
       // tutup loading dialog
       if (mounted) Navigator.of(dialogContext).pop();

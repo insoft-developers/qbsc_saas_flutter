@@ -4,21 +4,21 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
-import 'package:qbsc_saas/app/models/kandang_alarm_model.dart';
+import 'package:qbsc_saas/app/models/kandang_lampu_model.dart';
 import 'package:uuid/uuid.dart';
 
-class AlarmController extends GetxController {
+class LampuController extends GetxController {
   final RxBool isLoading = false.obs;
-  late Box<KandangAlarmModel> box;
+  late Box<KandangLampuModel> box;
 
   void init() {
-    box = Hive.box<KandangAlarmModel>('kandang_alarm');
+    box = Hive.box<KandangLampuModel>('kandang_lampu');
   }
 
-  Future<void> insertAlarm({
+  Future<void> insertLampu({
     required int kandangId,
     required int satpamId,
-    required bool isAlarmOn,
+    required bool isLampuOn,
     String? note,
     File? foto,
     required int comId,
@@ -36,14 +36,14 @@ class AlarmController extends GetxController {
         : (box.values.map((e) => e.id ?? 0).reduce((a, b) => a > b ? a : b) +
               1);
 
-    final model = KandangAlarmModel(
+    final model = KandangLampuModel(
       id: nextId, // Hive auto assign key
       uuid: uuid,
       tanggal: DateFormat('yyyy-MM-dd').format(now),
       jam: DateFormat('HH:mm:ss').format(now),
       kandangId: kandangId,
       satpamId: satpamId,
-      isAlarmOn: isAlarmOn,
+      isLampOn: isLampuOn,
       note: note ?? '',
       foto: foto?.path ?? '',
       comid: comId,
@@ -59,14 +59,14 @@ class AlarmController extends GetxController {
   }
 
   Future<void> cekHive() async {
-    final box = Hive.box<KandangAlarmModel>(
-      'kandang_alarm',
+    final box = Hive.box<KandangLampuModel>(
+      'kandang_lampu',
     ); // ✅ pakai box yang sudah dibuka
-    print('=== CEK ALARM DI HIVE ===');
+    print('=== CEK LAMPU DI HIVE ===');
     print('Total data: ${box.length}');
     for (var item in box.values) {
       print(
-        'ID: ${item.id}, UUID: ${item.uuid}, Alarm: ${item.isAlarmOn.toString()}, Tanggal: ${item.tanggal}, jam: ${item.jam}, kandang: ${item.kandangId.toString()}, satpamid: ${item.satpamId}, lat: ${item.latitude.toString()},lng: ${item.longitude.toString()}, note: ${item.note}, foto: ${item.foto},',
+        'ID: ${item.id}, UUID: ${item.uuid}, Lampu: ${item.isLampOn.toString()}, Tanggal: ${item.tanggal}, jam: ${item.jam}, kandang: ${item.kandangId.toString()}, satpamid: ${item.satpamId}, lat: ${item.latitude.toString()},lng: ${item.longitude.toString()}, note: ${item.note}, foto: ${item.foto},',
       );
     }
   }

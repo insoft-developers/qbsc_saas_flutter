@@ -128,15 +128,16 @@ class KandangLaporan extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final data = list[index];
                   final kandangName = controller.getKandangName(data.kandangId);
+                  final fotoFile = controller.getFotoFile(data.foto);
                   return _buildCard(
                     size: size,
                     title: kandangName ?? '-',
                     tanggal: data.tanggal,
                     jam: data.jam,
-                    subtitle: 'Alarm: ${data.isAlarmOn}',
+                    subtitle: data.isAlarmOn ? 'Alarm: Hidup' : 'Alarm: Mati',
                     location:
                         '${data.latitude.toString()} - ${data.longitude.toString()}',
-                    fotoFile: null,
+                    fotoFile: fotoFile,
                     isSynced: data.isSynced,
                     catatan: 'Catatan: ${data.note!}',
                     onSync: () => controller.syncAlarmData(data),
@@ -161,16 +162,17 @@ class KandangLaporan extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final data = list[index];
                   final kandangName = controller.getKandangName(data.kandangId);
+                  final fotoFile = controller.getFotoFile(data.foto);
                   return _buildCard(
                     size: size,
                     title: kandangName ?? '-',
                     tanggal: data.tanggal,
                     jam: data.jam,
-                    subtitle: 'Lampu: ${data.isLampOn}',
+                    subtitle: data.isLampOn ? 'Lampu: Hidup' : 'Lampu: Mati',
                     location:
                         '${data.latitude.toString()} - ${data.longitude.toString()}',
                     catatan: 'Catatan: ${data.note!}',
-                    fotoFile: null,
+                    fotoFile: fotoFile,
                     isSynced: data.isSynced,
                     onSync: () => controller.syncLampuData(data),
                     onDelete: () => controller.deleteLaporanLampu(index),
