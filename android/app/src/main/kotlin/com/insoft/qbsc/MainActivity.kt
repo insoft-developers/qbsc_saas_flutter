@@ -1,4 +1,4 @@
-package com.example.qbsc_saas
+package com.insoft.qbsc
 
 import io.flutter.embedding.android.FlutterActivity
 

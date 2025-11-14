@@ -9,6 +9,7 @@ import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:qbsc_saas/app/data/api_provider.dart';
 import 'package:qbsc_saas/app/utils/app_prefs.dart';
 
 // ignore: must_be_immutable
@@ -181,7 +182,7 @@ class _AbsensiState extends State<Absensi> {
 
         var request = http.MultipartRequest(
           'POST',
-          Uri.parse("http://192.168.100.3:8000/api/verify_face"),
+          Uri.parse("${ApiProvider.baseUrl}/verify_face"),
         );
         request.fields['user_id'] = userId;
         request.fields['absen_model'] = widget.absenModel;
