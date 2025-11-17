@@ -37,7 +37,6 @@ class _SplashViewState extends State<SplashView>
   Future<void> _init() async {
     await Future.delayed(const Duration(seconds: 1)); // minimal delay
     await auth.checkLoginStatus();
-    await absenController.getLocationData();
 
     // Pindah ke halaman utama
     // Get.offAllNamed('/home');

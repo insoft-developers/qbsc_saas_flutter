@@ -37,6 +37,7 @@ class _HomeViewState extends State<HomeView> {
 
     setFoto();
     absenc.getLocationData();
+
     super.initState();
   }
 
@@ -96,6 +97,7 @@ class _HomeViewState extends State<HomeView> {
       await _homec.getDataLocation();
       await _homec.getDataKandang();
       await absenc.getLocationData();
+      await _homec.getDataEkspedisi();
 
       // tutup loading dialog
       if (mounted) Navigator.of(dialogContext).pop();

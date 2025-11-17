@@ -35,7 +35,7 @@ class PatroliController extends GetxController {
     });
 
     // Jalankan sync otomatis setiap 5 menit (backup)
-    _periodicSyncTimer = Timer.periodic(const Duration(minutes: 2), (_) {
+    _periodicSyncTimer = Timer.periodic(const Duration(minutes: 1), (_) {
       syncPatroliToServer();
     });
   }

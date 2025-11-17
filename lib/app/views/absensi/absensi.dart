@@ -30,11 +30,6 @@ class _AbsensiState extends State<Absensi> {
   bool _isProcessing = false;
   bool _isVerifying = false;
 
-  // Liveness state
-  bool _leftEyeClosedBefore = false;
-  bool _rightEyeClosedBefore = false;
-  bool _livenessPassed = false;
-
   @override
   void initState() {
     super.initState();
@@ -90,26 +85,12 @@ class _AbsensiState extends State<Absensi> {
           final faces = await _faceDetector.processImage(inputImage);
 
           if (faces.isNotEmpty) {
-            final face = faces.first;
             _isFaceDetected = true;
-
-            // Liveness check: blink detection
-            final leftOpen = face.leftEyeOpenProbability ?? 1.0;
-            final rightOpen = face.rightEyeOpenProbability ?? 1.0;
-
-            if ((_leftEyeClosedBefore && leftOpen > 0.6) &&
-                (_rightEyeClosedBefore && rightOpen > 0.6)) {
-              _livenessPassed = true;
-            }
-
-            _leftEyeClosedBefore = leftOpen < 0.3;
-            _rightEyeClosedBefore = rightOpen < 0.3;
           } else {
             _isFaceDetected = false;
           }
 
           setState(() {});
-
           await file.delete();
         }
       } catch (e) {
@@ -138,14 +119,13 @@ class _AbsensiState extends State<Absensi> {
   }
 
   Future<void> _verifyFace() async {
-    if (!_isFaceDetected || !_livenessPassed || _isVerifying) return;
+    if (!_isFaceDetected || _isVerifying) return;
 
     setState(() => _isVerifying = true);
     try {
       final String? userId = AppPrefs.getUserId();
 
       if (userId != null && userId.isNotEmpty) {
-        // ignore: unnecessary_nullable_for_final_variable_declarations
         final XFile? image = await _cameraController.takePicture();
         if (image == null) return;
 
@@ -168,7 +148,6 @@ class _AbsensiState extends State<Absensi> {
         );
 
         if (distanceInMeters > maxDistance) {
-          // ignore: use_build_context_synchronously
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
@@ -186,10 +165,8 @@ class _AbsensiState extends State<Absensi> {
         );
         request.fields['user_id'] = userId;
         request.fields['absen_model'] = widget.absenModel;
-        if (position != null) {
-          request.fields['latitude'] = position.latitude.toString();
-          request.fields['longitude'] = position.longitude.toString();
-        }
+        request.fields['latitude'] = position.latitude.toString();
+        request.fields['longitude'] = position.longitude.toString();
 
         request.files.add(
           await http.MultipartFile.fromPath("image", image.path),
@@ -206,16 +183,14 @@ class _AbsensiState extends State<Absensi> {
         );
 
         if (data['success']) {
-          // Ganti 'DashboardView()' dengan nama halaman dashboard kamu
           Future.delayed(const Duration(seconds: 1), () {
-            // Get.offNamed('/absensi_list');
             Get.back(result: true);
           });
         }
       } else {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('User id tidak ada')));
+        ).showSnackBar(const SnackBar(content: Text('User ID tidak ada')));
       }
     } catch (e) {
       if (kDebugMode) print("Verifikasi error: $e");
@@ -231,7 +206,6 @@ class _AbsensiState extends State<Absensi> {
     bool serviceEnabled;
     LocationPermission permission;
 
-    // 1️⃣ Cek apakah layanan lokasi aktif
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -243,7 +217,6 @@ class _AbsensiState extends State<Absensi> {
       return null;
     }
 
-    // 2️⃣ Cek izin lokasi
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
@@ -259,7 +232,7 @@ class _AbsensiState extends State<Absensi> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            "Izin lokasi ditolak permanen. Aktifkan izin melalui pengaturan aplikasi.",
+            "Izin lokasi ditolak permanen. Aktifkan melalui pengaturan aplikasi.",
           ),
         ),
       );
@@ -267,23 +240,20 @@ class _AbsensiState extends State<Absensi> {
       return null;
     }
 
-    // 3️⃣ Mulai ambil posisi real-time satu kali dari stream
     try {
-      // Dengarkan 1 posisi terbaru langsung dari sensor GPS (bukan cache)
       final freshPosition =
           await Geolocator.getPositionStream(
             locationSettings: const LocationSettings(
-              accuracy: LocationAccuracy.best, // ambil paling akurat
-              distanceFilter: 0, // update sekecil apa pun
+              accuracy: LocationAccuracy.best,
+              distanceFilter: 0,
             ),
           ).first.timeout(
-            const Duration(seconds: 5), // batasi waktu tunggu 5 detik
+            const Duration(seconds: 5),
             onTimeout: () => throw TimeoutException("Timeout ambil posisi"),
           );
 
       return freshPosition;
     } catch (e) {
-      // fallback kalau stream gagal, pakai getCurrentPosition dengan paksa
       if (kDebugMode) print("Fallback ambil lokasi: $e");
       return await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
@@ -318,53 +288,37 @@ class _AbsensiState extends State<Absensi> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Gantikan bagian Icon(...) dan SizedBox(...) dengan ini:
-                if (_isFaceDetected)
-                  Container(
-                    width: 250, // ukuran frame bisa disesuaikan
-                    height: 300,
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: _livenessPassed
-                            ? Colors.green
-                            : Colors.orangeAccent,
-                        width: 3,
-                      ),
-                      borderRadius: BorderRadius.circular(12),
+                // Frame tanpa liveness
+                Container(
+                  width: 250,
+                  height: 300,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: _isFaceDetected ? Colors.green : Colors.redAccent,
+                      width: 3,
                     ),
-                  )
-                else
-                  Container(
-                    width: 250,
-                    height: 300,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.redAccent, width: 3),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    borderRadius: BorderRadius.circular(12),
                   ),
+                ),
                 const SizedBox(height: 16),
 
                 Text(
                   _isFaceDetected
-                      ? (_livenessPassed
-                            ? "Wajah terdeteksi ✅"
-                            : "Lakukan kedipan mata 👁️")
+                      ? "Wajah terdeteksi ✅"
                       : "Arahkan wajah ke kamera",
                   style: TextStyle(
-                    color: _isFaceDetected
-                        ? (_livenessPassed ? Colors.green : Colors.orangeAccent)
-                        : Colors.white,
+                    color: _isFaceDetected ? Colors.green : Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
                   ),
                 ),
+
                 const SizedBox(height: 32),
+
                 ElevatedButton(
-                  onPressed: (_isFaceDetected && _livenessPassed)
-                      ? _verifyFace
-                      : null,
+                  onPressed: _isFaceDetected ? _verifyFace : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: (_isFaceDetected && _livenessPassed)
+                    backgroundColor: _isFaceDetected
                         ? Colors.blue
                         : Colors.grey,
                     padding: const EdgeInsets.symmetric(

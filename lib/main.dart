@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:qbsc_saas/app/data/api_provider.dart';
+import 'package:qbsc_saas/app/models/ekspedisi_model.dart';
 import 'package:qbsc_saas/app/models/kandang_alarm_model.dart';
 import 'package:qbsc_saas/app/models/kandang_kipas_model.dart';
 import 'package:qbsc_saas/app/models/kandang_lampu_model.dart';
@@ -15,6 +16,7 @@ import 'package:qbsc_saas/app/utils/app_prefs.dart';
 import 'package:qbsc_saas/app/views/absensi/absensi_list.dart';
 import 'package:qbsc_saas/app/views/home_view.dart';
 import 'package:qbsc_saas/app/views/kandang/kandang.dart';
+import 'package:qbsc_saas/app/views/laporan/ekspedisi/ekspedisi_report.dart';
 import 'package:qbsc_saas/app/views/laporan/kandang/kandang_laporan.dart';
 import 'package:qbsc_saas/app/views/laporan/laporan.dart';
 import 'package:qbsc_saas/app/views/laporan/lokasi/lokasi_report.dart';
@@ -35,6 +37,7 @@ Future<void> main() async {
   Hive.registerAdapter(KandangKipasModelAdapter());
   Hive.registerAdapter(KandangAlarmModelAdapter());
   Hive.registerAdapter(KandangLampuModelAdapter());
+  Hive.registerAdapter(EkspedisiModelAdapter());
   await Hive.openBox<LocationModel>('locations');
   await Hive.openBox<PatroliModel>('patroli');
   await Hive.openBox<KandangModel>('kandang');
@@ -42,6 +45,7 @@ Future<void> main() async {
   await Hive.openBox<KandangKipasModel>('kandang_kipas');
   await Hive.openBox<KandangAlarmModel>('kandang_alarm');
   await Hive.openBox<KandangLampuModel>('kandang_lampu');
+  await Hive.openBox<EkspedisiModel>('ekspedisi');
 
   await Get.putAsync<ApiProvider>(() async => await ApiProvider().init());
   await AppPrefs.init();
@@ -70,6 +74,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/laporan/lokasi', page: () => LokasiReport()),
         GetPage(name: '/patroli/kandang', page: () => Kandang()),
         GetPage(name: '/laporan/kandang', page: () => KandangLaporan()),
+        GetPage(name: '/laporan/ekspedisi', page: () => EkspedisiReport()),
       ],
     );
   }

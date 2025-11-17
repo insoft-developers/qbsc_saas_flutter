@@ -11,6 +11,7 @@ class ApiEndpoint {
 
   static const String sendPatroliToServer = '/send_patroli_to_server';
   static const String getDataKandang = '/get_data_kandang';
+  static const String getDataEkspedisi = '/get_data_ekspedisi';
   static const String syncSuhuKandang = '/sync_suhu_kandang';
   static const String syncKipasKandang = '/sync_kipas_kandang';
   static const String syncAlarmKandang = '/sync_alarm_kandang';
