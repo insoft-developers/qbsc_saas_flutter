@@ -29,14 +29,15 @@ class DocModelAdapter extends TypeAdapter<DocModel> {
       note: fields[9] as String?,
       foto: fields[10] as String?,
       comid: fields[11] as int,
-      isSynced: fields[12] as bool,
+      createdAt: fields[12] as String,
+      isSynced: fields[13] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, DocModel obj) {
     writer
-      ..writeByte(13)
+      ..writeByte(14)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -62,6 +63,8 @@ class DocModelAdapter extends TypeAdapter<DocModel> {
       ..writeByte(11)
       ..write(obj.comid)
       ..writeByte(12)
+      ..write(obj.createdAt)
+      ..writeByte(13)
       ..write(obj.isSynced);
   }
 

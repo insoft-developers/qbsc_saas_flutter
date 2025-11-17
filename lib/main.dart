@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:qbsc_saas/app/data/api_provider.dart';
+import 'package:qbsc_saas/app/models/doc_model.dart';
 import 'package:qbsc_saas/app/models/ekspedisi_model.dart';
 import 'package:qbsc_saas/app/models/kandang_alarm_model.dart';
 import 'package:qbsc_saas/app/models/kandang_kipas_model.dart';
@@ -14,8 +15,10 @@ import 'package:qbsc_saas/app/models/location_model.dart';
 import 'package:qbsc_saas/app/models/patroli_model.dart';
 import 'package:qbsc_saas/app/utils/app_prefs.dart';
 import 'package:qbsc_saas/app/views/absensi/absensi_list.dart';
+import 'package:qbsc_saas/app/views/doc/doc.dart';
 import 'package:qbsc_saas/app/views/home_view.dart';
 import 'package:qbsc_saas/app/views/kandang/kandang.dart';
+import 'package:qbsc_saas/app/views/laporan/doc/doc_report.dart';
 import 'package:qbsc_saas/app/views/laporan/ekspedisi/ekspedisi_report.dart';
 import 'package:qbsc_saas/app/views/laporan/kandang/kandang_laporan.dart';
 import 'package:qbsc_saas/app/views/laporan/laporan.dart';
@@ -38,6 +41,7 @@ Future<void> main() async {
   Hive.registerAdapter(KandangAlarmModelAdapter());
   Hive.registerAdapter(KandangLampuModelAdapter());
   Hive.registerAdapter(EkspedisiModelAdapter());
+  Hive.registerAdapter(DocModelAdapter());
   await Hive.openBox<LocationModel>('locations');
   await Hive.openBox<PatroliModel>('patroli');
   await Hive.openBox<KandangModel>('kandang');
@@ -46,6 +50,7 @@ Future<void> main() async {
   await Hive.openBox<KandangAlarmModel>('kandang_alarm');
   await Hive.openBox<KandangLampuModel>('kandang_lampu');
   await Hive.openBox<EkspedisiModel>('ekspedisi');
+  await Hive.openBox<DocModel>('doc');
 
   await Get.putAsync<ApiProvider>(() async => await ApiProvider().init());
   await AppPrefs.init();
@@ -75,6 +80,8 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/patroli/kandang', page: () => Kandang()),
         GetPage(name: '/laporan/kandang', page: () => KandangLaporan()),
         GetPage(name: '/laporan/ekspedisi', page: () => EkspedisiReport()),
+        GetPage(name: '/doc', page: () => Doc()),
+        GetPage(name: '/laporan/doc', page: () => DocReport()),
       ],
     );
   }

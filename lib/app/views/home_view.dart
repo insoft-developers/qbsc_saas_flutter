@@ -22,7 +22,7 @@ class _HomeViewState extends State<HomeView> {
     {'icon': Icons.qr_code, 'label': 'Absensi'},
     {'icon': Icons.location_on, 'label': 'Patroli'},
     {'icon': Icons.house, 'label': 'Kontrol Kandang'},
-    {'icon': Icons.display_settings_sharp, 'label': 'Kontrol Mesin'},
+
     {'icon': Icons.fire_truck, 'label': 'Catat DOC'},
     {'icon': Icons.assignment, 'label': 'Laporan'},
     {'icon': Icons.notifications_active, 'label': 'Notifikasi'},
@@ -235,6 +235,8 @@ class _HomeViewState extends State<HomeView> {
                             Get.toNamed('/laporan');
                           } else if (item['label'] == 'Kontrol Kandang') {
                             Get.toNamed('/patroli/kandang');
+                          } else if (item['label'] == 'Catat DOC') {
+                            Get.toNamed('/doc');
                           }
                         },
                       );

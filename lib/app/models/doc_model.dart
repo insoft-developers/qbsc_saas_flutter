@@ -41,6 +41,9 @@ class DocModel extends HiveObject {
   int comid;
 
   @HiveField(12)
+  String createdAt;
+
+  @HiveField(13)
   bool isSynced;
 
   DocModel({
@@ -56,6 +59,7 @@ class DocModel extends HiveObject {
     this.note,
     this.foto,
     required this.comid,
+    required this.createdAt,
     this.isSynced = false,
   });
 
@@ -92,6 +96,7 @@ class DocModel extends HiveObject {
       note: json['note'] ?? '',
       foto: json['foto'],
       comid: json['comid'],
+      createdAt: json['created_at'],
     );
   }
 }

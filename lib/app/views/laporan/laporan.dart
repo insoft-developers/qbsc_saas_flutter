@@ -8,7 +8,8 @@ class Laporan extends StatelessWidget {
     {'icon': Icons.location_history, 'label': 'Laporan Patroli'},
     {'icon': Icons.location_on, 'label': 'Laporan Data Lokasi'},
     {'icon': Icons.bungalow_rounded, 'label': 'Laporan Kandang'},
-    {'icon': Icons.fire_truck, 'label': 'Laporan Data Ekspedisi'},
+    {'icon': Icons.car_rental, 'label': 'Laporan Data Ekspedisi'},
+    {'icon': Icons.fire_truck, 'label': 'Laporan DOC Keluar'},
   ];
 
   @override
@@ -49,6 +50,8 @@ class Laporan extends StatelessWidget {
                 Get.toNamed('/laporan/kandang');
               } else if (item['label'] == 'Laporan Data Ekspedisi') {
                 Get.toNamed('/laporan/ekspedisi');
+              } else if (item['label'] == 'Laporan DOC Keluar') {
+                Get.toNamed('/laporan/doc');
               }
             },
             borderRadius: BorderRadius.circular(20),
