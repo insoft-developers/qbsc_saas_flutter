@@ -3,8 +3,11 @@ import 'package:get/get.dart';
 import 'package:flutter/foundation.dart';
 
 class ApiProvider extends GetxService {
-  // static const String rootUrl = "http://192.168.100.3:8000";
-  static const String rootUrl = "https://app.qbsc.cloud";
+  static const bool isDev = true;
+  static const String devUrl = "http://192.168.100.3:8000";
+  static const String proUrl = "https://app.qbsc.cloud";
+
+  static const String rootUrl = isDev ? devUrl : proUrl;
   static const String imageUrl = "$rootUrl/storage";
   static const String baseUrl = "$rootUrl/api";
   late dio.Dio _dio;

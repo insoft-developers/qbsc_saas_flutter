@@ -285,6 +285,10 @@ class _KipasState extends State<Kipas> {
 
                   noteController.clear();
                   setState(() => imageFile = null);
+
+                  Future.delayed(const Duration(milliseconds: 800), () {
+                    Navigator.of(context).pop();
+                  });
                 },
                 icon: const Icon(Icons.save_rounded, color: Colors.white),
                 label: const Text(

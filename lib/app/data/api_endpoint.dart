@@ -16,6 +16,8 @@ class ApiEndpoint {
   static const String syncKipasKandang = '/sync_kipas_kandang';
   static const String syncAlarmKandang = '/sync_alarm_kandang';
   static const String syncLampuKandang = '/sync_lampu_kandang';
+  static const String syncDocReport = '/sync_doc_report';
+  static const String getDataShift = '/get_data_shift';
 
   // User
   static const String profile = "/user/profile";

@@ -226,7 +226,7 @@ class _HomeViewState extends State<HomeView> {
                         fontSize: fontSize,
                         onTap: () {
                           if (item['label'] == 'Absensi') {
-                            Get.toNamed('/absensi_list');
+                            Get.toNamed('/shift');
                           } else if (item['label'] == 'Patroli') {
                             Get.toNamed('/patroli');
                           } else if (item['label'] == 'Pengaturan') {

@@ -15,7 +15,8 @@ import 'package:qbsc_saas/app/utils/app_prefs.dart';
 // ignore: must_be_immutable
 class Absensi extends StatefulWidget {
   String absenModel;
-  Absensi({super.key, required this.absenModel});
+  int shiftId;
+  Absensi({super.key, required this.absenModel, required this.shiftId});
 
   @override
   State<Absensi> createState() => _AbsensiState();
@@ -167,6 +168,7 @@ class _AbsensiState extends State<Absensi> {
         request.fields['absen_model'] = widget.absenModel;
         request.fields['latitude'] = position.latitude.toString();
         request.fields['longitude'] = position.longitude.toString();
+        request.fields['shift_id'] = widget.shiftId.toString();
 
         request.files.add(
           await http.MultipartFile.fromPath("image", image.path),

@@ -18,6 +18,14 @@ class Doc extends StatelessWidget {
         ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: const Color(0xFF3C3535),
+        icon: const Icon(Icons.receipt_long, color: Colors.white),
+        label: const Text('Laporan', style: TextStyle(color: Colors.white)),
+        onPressed: () {
+          Get.toNamed('/laporan/doc');
+        },
+      ),
       body: Form(
         key: c.formKey,
         child: SingleChildScrollView(

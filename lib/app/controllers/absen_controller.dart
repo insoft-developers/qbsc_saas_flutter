@@ -91,21 +91,4 @@ class AbsenController extends GetxController {
       Get.snackbar('Error', 'User id tidak ditemukan');
     }
   }
-
-  /// SNACKBAR HELPER
-  void _showSnackbar(String title, String message) {
-    if (Get.context == null) return;
-    Get.snackbar(
-      title,
-      message,
-      backgroundColor: title == 'Error'
-          ? Colors.red.shade600
-          : Colors.green.shade600,
-      colorText: Colors.white,
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
-      borderRadius: 8,
-      duration: const Duration(seconds: 2),
-    );
-  }
 }

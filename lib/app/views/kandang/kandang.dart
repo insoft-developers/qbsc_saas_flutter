@@ -5,6 +5,7 @@ import 'package:qbsc_saas/app/views/kandang/kandang_controller.dart';
 import 'package:qbsc_saas/app/views/kandang/kipas/kipas.dart';
 import 'package:qbsc_saas/app/views/kandang/lampu/lampu.dart';
 import 'package:qbsc_saas/app/views/kandang/suhu/suhu.dart';
+import 'package:qbsc_saas/app/views/kandang/suhu/suhu_controller.dart';
 
 class Kandang extends StatelessWidget {
   const Kandang({super.key});

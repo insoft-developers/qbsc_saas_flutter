@@ -15,6 +15,7 @@ import 'package:qbsc_saas/app/models/location_model.dart';
 import 'package:qbsc_saas/app/models/patroli_model.dart';
 import 'package:qbsc_saas/app/utils/app_prefs.dart';
 import 'package:qbsc_saas/app/views/absensi/absensi_list.dart';
+import 'package:qbsc_saas/app/views/absensi/absensi_shift.dart';
 import 'package:qbsc_saas/app/views/doc/doc.dart';
 import 'package:qbsc_saas/app/views/home_view.dart';
 import 'package:qbsc_saas/app/views/kandang/kandang.dart';
@@ -71,7 +72,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/login', page: () => const LoginView()),
         GetPage(name: '/home', page: () => HomeView()),
         GetPage(name: '/patroli', page: () => Patroli()),
-        GetPage(name: '/absensi_list', page: () => AbsensiList()),
+
         GetPage(name: '/pengaturan', page: () => Pengaturan()),
         GetPage(name: '/pengaturan/lokasi', page: () => Lokasi()),
         GetPage(name: '/laporan', page: () => Laporan()),
@@ -82,6 +83,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/laporan/ekspedisi', page: () => EkspedisiReport()),
         GetPage(name: '/doc', page: () => Doc()),
         GetPage(name: '/laporan/doc', page: () => DocReport()),
+        GetPage(name: '/shift', page: () => AbsensiShift()),
       ],
     );
   }

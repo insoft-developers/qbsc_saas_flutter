@@ -6,8 +6,11 @@ import 'package:qbsc_saas/app/utils/fungsi.dart';
 import 'package:qbsc_saas/app/views/absensi/absensi.dart';
 import 'package:qbsc_saas/app/views/absensi/absensi_card.dart';
 
+// ignore: must_be_immutable
 class AbsensiList extends StatefulWidget {
-  const AbsensiList({super.key});
+  int shiftId;
+  String shiftName;
+  AbsensiList({super.key, required this.shiftId, required this.shiftName});
 
   @override
   State<AbsensiList> createState() => _AbsensiListState();
@@ -32,7 +35,7 @@ class _AbsensiListState extends State<AbsensiList> {
         backgroundColor: Colors.white,
         elevation: 0,
         title: Text(
-          'Absensi Hari Ini',
+          'Absensi ${widget.shiftName}',
           style: GoogleFonts.poppins(
             color: Colors.black87,
             fontWeight: FontWeight.w600,
@@ -76,9 +79,12 @@ class _AbsensiListState extends State<AbsensiList> {
                         ),
                       );
                     } else {
-                      Get.to(() => Absensi(absenModel: 'masuk'))?.then((
-                        result,
-                      ) {
+                      Get.to(
+                        () => Absensi(
+                          absenModel: 'masuk',
+                          shiftId: widget.shiftId,
+                        ),
+                      )?.then((result) {
                         absenController.getDataAbsensi();
                       });
                     }
@@ -114,9 +120,12 @@ class _AbsensiListState extends State<AbsensiList> {
                         const SnackBar(content: Text('Anda belum absen masuk')),
                       );
                     } else {
-                      Get.to(() => Absensi(absenModel: 'pulang'))?.then((
-                        result,
-                      ) {
+                      Get.to(
+                        () => Absensi(
+                          absenModel: 'pulang',
+                          shiftId: widget.shiftId,
+                        ),
+                      )?.then((result) {
                         absenController.getDataAbsensi();
                       });
                     }

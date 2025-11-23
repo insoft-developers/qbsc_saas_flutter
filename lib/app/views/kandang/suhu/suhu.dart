@@ -16,10 +16,11 @@ class Suhu extends StatefulWidget {
 }
 
 class _SuhuState extends State<Suhu> {
+  final SuhuController controller = Get.put(SuhuController());
+
   final TextEditingController suhuController = TextEditingController();
   final TextEditingController noteController = TextEditingController();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  final SuhuController controller = Get.put(SuhuController());
 
   File? imageFile;
   final ImagePicker picker = ImagePicker();
@@ -266,6 +267,13 @@ class _SuhuState extends State<Suhu> {
                                   suhuController.clear();
                                   noteController.clear();
                                   setState(() => imageFile = null);
+
+                                  Future.delayed(
+                                    const Duration(milliseconds: 800),
+                                    () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  );
                                 },
                               ),
                             ),

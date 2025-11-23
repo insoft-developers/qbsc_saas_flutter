@@ -1,15 +1,25 @@
+import 'dart:async';
 import 'dart:io';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dio/dio.dart' as dio;
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
+import 'package:path/path.dart';
+import 'package:qbsc_saas/app/data/api_endpoint.dart';
+import 'package:qbsc_saas/app/data/api_provider.dart';
 import 'package:qbsc_saas/app/models/doc_model.dart';
 import 'package:qbsc_saas/app/models/ekspedisi_model.dart';
 import 'package:qbsc_saas/app/utils/app_prefs.dart';
 import 'package:uuid/uuid.dart';
 
 class DocController extends GetxController {
+  late StreamSubscription _connectivitySubscription;
+  Timer? _periodicSyncTimer;
+  final ApiProvider api = Get.find<ApiProvider>();
+
   RxBool isLoading = false.obs;
   late Box<DocModel> boxDoc;
 
@@ -41,6 +51,105 @@ class DocController extends GetxController {
     super.onInit();
     loadEkspedisi();
     boxDoc = Hive.box<DocModel>('doc');
+
+    syncDocToServer();
+
+    // Dengarkan perubahan koneksi
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((
+      status,
+    ) {
+      // ignore: unrelated_type_equality_checks
+      if (status != ConnectivityResult.none) {
+        syncDocToServer();
+      }
+    });
+
+    // Jalankan sync otomatis setiap 5 menit (backup)
+    _periodicSyncTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      syncDocToServer();
+    });
+  }
+
+  @override
+  void onClose() {
+    _connectivitySubscription.cancel();
+    _periodicSyncTimer?.cancel();
+    super.onClose();
+  }
+
+  Future<void> syncDocToServer() async {
+    final box = Hive.box<DocModel>('doc');
+    final unsynced = box.values.where((p) => p.isSynced == false).toList();
+
+    if (unsynced.isEmpty) {
+      print("Tidak ada data doc yang perlu di-sync.");
+      return;
+    }
+
+    final connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      print("Tidak ada koneksi, sync ditunda.");
+      return;
+    }
+
+    print("Mulai sync ${unsynced.length} data ke server...");
+
+    int sukses = 0;
+    int gagal = 0;
+
+    for (var p in unsynced) {
+      try {
+        // Siapkan FormData
+        final formData = dio.FormData.fromMap({
+          'uuid': p.id,
+          'tanggal': p.tanggal,
+          'input_date': p.createdAt,
+          'jam': p.jam,
+          'satpam_id': p.satpamId,
+          'jumlah': p.jumlah,
+          'ekspedisi_id': p.ekspedisiId,
+          'tujuan': p.tujuan,
+          'no_polisi': p.noPolisi,
+          'jenis': p.jenis,
+          'note': p.note,
+          'comid': p.comid,
+          if (p.foto != null && File(p.foto!).existsSync())
+            'foto': await dio.MultipartFile.fromFile(
+              p.foto!,
+              filename: basename(p.foto!),
+            ),
+        });
+
+        // Kirim ke server
+        final response = await api.client.post(
+          ApiEndpoint.syncDocReport,
+          data: formData,
+          options: dio.Options(
+            headers: {'Content-Type': 'multipart/form-data'},
+          ),
+        );
+
+        final body = response.data;
+        if (body['success'] == true) {
+          p.isSynced = true;
+          await p.save();
+          sukses++;
+          print('✅ Sync sukses untuk ID: ${p.id}');
+        } else {
+          gagal++;
+          print('❌ Sync gagal untuk ID: ${p.id} - ${body['message']}');
+        }
+      } catch (e) {
+        gagal++;
+        print('⚠️ Gagal sync ID: ${p.id} - $e');
+        continue;
+      }
+    }
+
+    print('=== HASIL SYNC ===');
+    print('Sukses: $sukses');
+    print('Gagal: $gagal');
+    print('Total: ${unsynced.length}');
   }
 
   // Date
@@ -59,9 +168,15 @@ class DocController extends GetxController {
 
   // Text input
   void setJumlahBox(String v) => jumlahBox.value = v;
-  void setTujuan(String v) => tujuan.value = v;
+  void setTujuan(String v) {
+    tujuan.value = toTitleCase(v);
+  }
+
+  void setNote(String v) {
+    note.value = toTitleCase(v);
+  }
+
   void setNoPolisi(String v) => noPolisi.value = v;
-  void setNote(String v) => note.value = v;
 
   // Jenis
   void setJenis(int v) => jenis.value = v;
@@ -104,7 +219,7 @@ class DocController extends GetxController {
       jumlah: int.parse(jumlahBox.value),
       ekspedisiId: ekspedisiTerpilih.value.id,
       tujuan: tujuan.value,
-      noPolisi: noPolisi.value,
+      noPolisi: noPolisi.value.toUpperCase(),
       jenis: jenis.value,
       note: note.value,
       foto: foto.value?.path ?? '',
@@ -166,5 +281,16 @@ class DocController extends GetxController {
 
     // penting: reset form textfields
     formKey.currentState?.reset();
+  }
+
+  String toTitleCase(String text) {
+    if (text.isEmpty) return text;
+    return text
+        .split(' ')
+        .map((word) {
+          if (word.isEmpty) return word;
+          return word[0].toUpperCase() + word.substring(1).toLowerCase();
+        })
+        .join(' ');
   }
 }
