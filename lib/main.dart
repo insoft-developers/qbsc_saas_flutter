@@ -13,15 +13,17 @@ import 'package:qbsc_saas/app/models/kandang_model.dart';
 import 'package:qbsc_saas/app/models/kandang_suhu_model.dart';
 import 'package:qbsc_saas/app/models/location_model.dart';
 import 'package:qbsc_saas/app/models/patroli_model.dart';
+import 'package:qbsc_saas/app/models/situasi_model.dart';
 import 'package:qbsc_saas/app/utils/app_prefs.dart';
-import 'package:qbsc_saas/app/views/absensi/absensi_list.dart';
 import 'package:qbsc_saas/app/views/absensi/absensi_shift.dart';
 import 'package:qbsc_saas/app/views/doc/doc.dart';
 import 'package:qbsc_saas/app/views/home_view.dart';
 import 'package:qbsc_saas/app/views/kandang/kandang.dart';
+import 'package:qbsc_saas/app/views/kejadian/kejadian.dart';
 import 'package:qbsc_saas/app/views/laporan/doc/doc_report.dart';
 import 'package:qbsc_saas/app/views/laporan/ekspedisi/ekspedisi_report.dart';
 import 'package:qbsc_saas/app/views/laporan/kandang/kandang_laporan.dart';
+import 'package:qbsc_saas/app/views/laporan/kejadian/kejadian_report.dart';
 import 'package:qbsc_saas/app/views/laporan/laporan.dart';
 import 'package:qbsc_saas/app/views/laporan/lokasi/lokasi_report.dart';
 import 'package:qbsc_saas/app/views/laporan/patroli/patroli_report.dart';
@@ -43,6 +45,7 @@ Future<void> main() async {
   Hive.registerAdapter(KandangLampuModelAdapter());
   Hive.registerAdapter(EkspedisiModelAdapter());
   Hive.registerAdapter(DocModelAdapter());
+  Hive.registerAdapter(SituasiModelAdapter());
   await Hive.openBox<LocationModel>('locations');
   await Hive.openBox<PatroliModel>('patroli');
   await Hive.openBox<KandangModel>('kandang');
@@ -52,6 +55,7 @@ Future<void> main() async {
   await Hive.openBox<KandangLampuModel>('kandang_lampu');
   await Hive.openBox<EkspedisiModel>('ekspedisi');
   await Hive.openBox<DocModel>('doc');
+  await Hive.openBox<SituasiModel>('situasi');
 
   await Get.putAsync<ApiProvider>(() async => await ApiProvider().init());
   await AppPrefs.init();
@@ -65,7 +69,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'QBSC SaaS',
+      title: 'QBSC',
       initialRoute: '/splash', // 🔹 mulai dari splash screen
       getPages: [
         GetPage(name: '/splash', page: () => const SplashView()),
@@ -84,6 +88,8 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/doc', page: () => Doc()),
         GetPage(name: '/laporan/doc', page: () => DocReport()),
         GetPage(name: '/shift', page: () => AbsensiShift()),
+        GetPage(name: '/kejadian', page: () => Kejadian()),
+        GetPage(name: '/laporan/kejadian', page: () => KejadianReport()),
       ],
     );
   }

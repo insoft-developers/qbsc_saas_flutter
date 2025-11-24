@@ -10,6 +10,7 @@ class Doc extends StatelessWidget {
     final c = Get.put(DocController());
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 60, 53, 53),
         title: const Text(
