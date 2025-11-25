@@ -55,6 +55,7 @@ dependencies:
   path: ^1.9.1
   url_launcher: ^6.3.2
   change_app_package_name: ^1.5.0
+  iconsax: ^0.0.8
   
   
   

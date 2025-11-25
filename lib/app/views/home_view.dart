@@ -27,6 +27,7 @@ class _HomeViewState extends State<HomeView> {
     {'icon': Icons.assignment, 'label': 'Laporan'},
     {'icon': Icons.info, 'label': 'Kejadian'},
     {'icon': Icons.settings, 'label': 'Pengaturan'},
+    {'icon': Icons.person_pin_circle, 'label': 'Tamu'},
   ];
 
   @override
@@ -239,6 +240,8 @@ class _HomeViewState extends State<HomeView> {
                             Get.toNamed('/doc');
                           } else if (item['label'] == 'Kejadian') {
                             Get.toNamed('/kejadian');
+                          } else if (item['label'] == 'Tamu') {
+                            Get.toNamed('/tamu');
                           }
                         },
                       );
