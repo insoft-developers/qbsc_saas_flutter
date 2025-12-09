@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart' as dio;
 import 'package:get/get.dart';
 import 'package:flutter/foundation.dart';
+import 'package:qbsc_saas/app/utils/app_prefs.dart';
 
 class ApiProvider extends GetxService {
   static const bool isDev = true;
@@ -10,6 +11,7 @@ class ApiProvider extends GetxService {
   static const String rootUrl = isDev ? devUrl : proUrl;
   static const String imageUrl = "$rootUrl/storage";
   static const String baseUrl = "$rootUrl/api";
+
   late dio.Dio _dio;
 
   Future<ApiProvider> init() async {
@@ -25,6 +27,30 @@ class ApiProvider extends GetxService {
 
     _dio = dio.Dio(options);
 
+    // ================
+    // 🔐 Interceptor Token Sanctum
+    // ================
+    _dio.interceptors.add(
+      dio.InterceptorsWrapper(
+        onRequest: (options, handler) {
+          final token = AppPrefs.getToken();
+
+          // Endpoint yang tidak memakai Authorization
+          const noAuthEndpoints = ["/login", "/register", "/forgot-password"];
+
+          // Selama request bukan endpoint login -> kirim Authorization
+          if (!noAuthEndpoints.contains(options.path)) {
+            if (token != null && token.isNotEmpty) {
+              options.headers["Authorization"] = "Bearer $token";
+            }
+          }
+
+          return handler.next(options);
+        },
+      ),
+    );
+
+    // Logger saat debug
     if (kDebugMode) {
       _dio.interceptors.add(
         dio.LogInterceptor(requestBody: true, responseBody: true),
@@ -36,6 +62,9 @@ class ApiProvider extends GetxService {
 
   dio.Dio get client => _dio;
 
+  // =====================
+  // GET
+  // =====================
   Future<dio.Response> get(
     String endpoint, {
     Map<String, dynamic>? query,
@@ -47,9 +76,12 @@ class ApiProvider extends GetxService {
     }
   }
 
+  // =====================
+  // POST
+  // =====================
   Future<dio.Response> post(
     String endpoint, {
-    dynamic data, // <- biarkan dynamic agar bisa FormData juga
+    dynamic data, // bisa JSON atau FormData
     dio.Options? options,
   }) async {
     try {
@@ -59,6 +91,9 @@ class ApiProvider extends GetxService {
     }
   }
 
+  // =====================
+  // ERROR HANDLER
+  // =====================
   Exception _handleError(dio.DioException e) {
     if (e.response != null) {
       return Exception("Error ${e.response?.statusCode}: ${e.response?.data}");

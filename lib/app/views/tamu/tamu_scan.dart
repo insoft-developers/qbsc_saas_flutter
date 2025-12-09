@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:qbsc_saas/app/data/api_provider.dart';
 import 'package:qbsc_saas/app/views/tamu/tamu_controller.dart';
 
 class TamuScan extends StatefulWidget {
@@ -96,113 +97,154 @@ class _TamuScanState extends State<TamuScan> {
 
             /// Tampilkan hasil scan
             if (_tamu.isExist.value && scanResult != null)
-              Center(
-                child: Container(
-                  margin: const EdgeInsets.all(25),
-                  padding: const EdgeInsets.all(22),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.qr_code_2,
-                        size: 60,
-                        color: Colors.indigo,
-                      ),
-
-                      const SizedBox(height: 12),
-                      const Text(
-                        "Data Tamu",
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.indigo,
+              SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Center(
+                  child: Container(
+                    width: MediaQuery.of(context).size.width * 0.9,
+                    padding: const EdgeInsets.all(22),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
                         ),
-                      ),
-
-                      const SizedBox(height: 15),
-
-                      Text(
-                        _tamu.scanList['nama_tamu'].toString(),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.black87,
-                          fontWeight: FontWeight.bold,
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Image.network(
+                          "${ApiProvider.imageUrl}/${_tamu.scanList['foto']}",
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(Icons.broken_image, size: 40),
+                          loadingBuilder: (context, child, loading) {
+                            if (loading == null) return child;
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          },
                         ),
-                      ),
 
-                      const SizedBox(height: 3),
-
-                      SelectableText(
-                        "(${_tamu.scanList['jumlah_tamu'].toString()} Orang)",
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.black87,
-                        ),
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      SelectableText(
-                        "Bertujuan untuk ${_tamu.scanList['tujuan'].toString()}",
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.black87,
-                        ),
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      SelectableText(
-                        "Whatsapp: ${_tamu.scanList['whatsapp'].toString()}",
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.black87,
-                        ),
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      SelectableText(
-                        "Catatan: ${_tamu.scanList['catatan'].toString()}",
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 16, color: Colors.red),
-                      ),
-
-                      const SizedBox(height: 22),
-
-                      ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.indigo,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 30,
-                            vertical: 14,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                        const SizedBox(height: 12),
+                        const Text(
+                          "Data Tamu",
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.indigo,
                           ),
                         ),
-                        child: const Text(
-                          "Simpan Data",
-                          style: TextStyle(fontSize: 16, color: Colors.white),
+
+                        const SizedBox(height: 15),
+
+                        Text(
+                          _tamu.scanList['nama_tamu'] ?? '',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            color: Colors.black87,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                    ],
+
+                        const SizedBox(height: 3),
+
+                        SelectableText(
+                          "(${_tamu.scanList['jumlah_tamu']} Orang)",
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.black87,
+                          ),
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        SelectableText(
+                          "Bertujuan untuk ${_tamu.scanList['tujuan']}",
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.black87,
+                          ),
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        SelectableText(
+                          "Whatsapp: ${_tamu.scanList['whatsapp']}",
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.black87,
+                          ),
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        SelectableText(
+                          "Catatan: ${_tamu.scanList['catatan']}",
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.red,
+                          ),
+                        ),
+
+                        const SizedBox(height: 22),
+
+                        Obx(() {
+                          return ElevatedButton(
+                            onPressed: _tamu.isLoading.value
+                                ? null
+                                : () {
+                                    String isMasuk =
+                                        _tamu.scanList['is_status'] == 1
+                                        ? 'masuk'
+                                        : 'pulang';
+
+                                    _tamu.saveDataTamu(
+                                      _tamu.scanList['id'],
+                                      isMasuk,
+                                    );
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.indigo,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 30,
+                                vertical: 14,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: _tamu.isLoading.value
+                                ? const SizedBox(
+                                    width: 22,
+                                    height: 22,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : Text(
+                                    _tamu.scanList['is_status'] == 1
+                                        ? 'Masuk'
+                                        : 'Pulang',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                          );
+                        }),
+                      ],
+                    ),
                   ),
                 ),
               ),

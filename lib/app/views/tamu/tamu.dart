@@ -67,7 +67,7 @@ class Tamu extends StatelessWidget {
             // ==================== TOMBOL TAMBAH DATA TAMU ====================
             GestureDetector(
               onTap: () {
-                // TODO: Arahkan ke halaman tambah data
+                Get.toNamed('/tambah/tamu');
               },
               child: Container(
                 width: double.infinity,

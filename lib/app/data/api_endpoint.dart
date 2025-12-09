@@ -20,6 +20,8 @@ class ApiEndpoint {
   static const String getDataShift = '/get_data_shift';
   static const String laporanSituasi = '/laporan_situasi';
   static const String checkQrTamu = '/check_qr_tamu';
+  static const String saveDataTamu = '/save_data_tamu';
+  static const String tambahDataTamu = '/tambah_data_tamu';
 
   // User
   static const String profile = "/user/profile";

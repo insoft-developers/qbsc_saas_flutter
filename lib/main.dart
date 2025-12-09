@@ -32,6 +32,7 @@ import 'package:qbsc_saas/app/views/patroli/patroli.dart';
 import 'package:qbsc_saas/app/views/pengaturan/lokasi/lokasi.dart';
 import 'package:qbsc_saas/app/views/pengaturan/pengaturan.dart';
 import 'package:qbsc_saas/app/views/splash_view.dart';
+import 'package:qbsc_saas/app/views/tamu/tambah_tamu.dart';
 import 'package:qbsc_saas/app/views/tamu/tamu.dart';
 
 Future<void> main() async {
@@ -92,6 +93,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/kejadian', page: () => Kejadian()),
         GetPage(name: '/laporan/kejadian', page: () => KejadianReport()),
         GetPage(name: '/tamu', page: () => Tamu()),
+        GetPage(name: '/tambah/tamu', page: () => TambahTamu()),
       ],
     );
   }
