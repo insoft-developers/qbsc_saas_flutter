@@ -24,7 +24,7 @@ class TambahTamu extends StatelessWidget {
         icon: const Icon(Icons.receipt_long, color: Colors.white),
         label: const Text('Laporan', style: TextStyle(color: Colors.white)),
         onPressed: () {
-          Get.toNamed('/laporan/doc');
+          Get.toNamed('/laporan/tamu');
         },
       ),
       body: Form(
@@ -40,7 +40,7 @@ class TambahTamu extends StatelessWidget {
                   labelText: 'Nama Tamu',
                   border: OutlineInputBorder(),
                 ),
-                keyboardType: TextInputType.number,
+                keyboardType: TextInputType.text,
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'Nama tamu wajib diisi';
                   return null;
@@ -83,6 +83,8 @@ class TambahTamu extends StatelessWidget {
                   labelText: 'No Whatsapp',
                   border: OutlineInputBorder(),
                 ),
+                keyboardType: TextInputType.number,
+
                 validator: (v) =>
                     v == null || v.isEmpty ? 'No whatsapp wajib diisi' : null,
                 onChanged: c.setWhatsapp,

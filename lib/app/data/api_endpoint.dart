@@ -23,6 +23,11 @@ class ApiEndpoint {
   static const String saveDataTamu = '/save_data_tamu';
   static const String tambahDataTamu = '/tambah_data_tamu';
 
+  static const String getListTamu = '/get_list_tamu';
+  static const String updateStatusTamu = '/update_status_tamu';
+  static const String checkPaket = '/check_paket';
+  static const String emergency = '/darurat';
+
   // User
   static const String profile = "/user/profile";
   static const String updateProfile = "/user/update";

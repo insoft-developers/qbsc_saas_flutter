@@ -6,6 +6,7 @@ import 'package:qbsc_saas/app/models/ekspedisi_model.dart';
 import 'package:qbsc_saas/app/models/kandang_model.dart';
 import 'package:qbsc_saas/app/models/location_model.dart';
 import 'package:qbsc_saas/app/utils/app_prefs.dart';
+import 'package:qbsc_saas/app/views/paket.dart';
 
 class HomeController extends GetxController {
   final RxBool isLoading = false.obs;
@@ -29,6 +30,7 @@ class HomeController extends GetxController {
   }
 
   Future<void> _initAndLoad() async {
+    await checkPaket();
     _box = Hive.box<LocationModel>(
       'locations',
     ); // ✅ box yang sudah dibuka di main.dart
@@ -37,7 +39,9 @@ class HomeController extends GetxController {
     await getDataLocation();
     await getDataKandang();
     await getDataEkspedisi();
-    await cekDataHive(); // panggil setelah ambil data
+    await cekDataHive();
+
+    // panggil setelah ambil data
   }
 
   // Fetch dari server
@@ -172,5 +176,29 @@ class HomeController extends GetxController {
         'ID: ${item.id}, Code: ${item.code}, Name: ${item.name}, COM: ${item.comid.toString()}',
       );
     }
+  }
+
+  Future<void> checkPaket() async {
+    String comid = AppPrefs.getComId().toString();
+
+    if (comid.isEmpty) {
+      Get.snackbar('Error', 'Com id tidak ditemukan');
+      return;
+    }
+
+    try {
+      final response = await api.post(
+        ApiEndpoint.checkPaket,
+        data: {'comid': comid},
+      );
+
+      var body = response.data;
+      if (body['success']) {
+      } else {
+        Get.to(() => Paket());
+      }
+    } catch (e) {
+      Get.snackbar('Error', e.toString());
+    } finally {}
   }
 }

@@ -10,10 +10,8 @@ class Pengaturan extends StatelessWidget {
 
   final List<Map<String, dynamic>> menuItems = const [
     {'icon': Icons.location_on, 'label': 'Lokasi'},
-    {'icon': Icons.sync, 'label': 'Sync'},
     {'icon': Icons.person, 'label': 'Profil'},
-    {'icon': Icons.notifications, 'label': 'Notifikasi'},
-    {'icon': Icons.assignment, 'label': 'Laporan'},
+    {'icon': Icons.lock_reset, 'label': 'Ubah Password'},
   ];
 
   @override

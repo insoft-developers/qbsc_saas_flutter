@@ -17,6 +17,7 @@ import 'package:qbsc_saas/app/models/situasi_model.dart';
 import 'package:qbsc_saas/app/utils/app_prefs.dart';
 import 'package:qbsc_saas/app/views/absensi/absensi_shift.dart';
 import 'package:qbsc_saas/app/views/doc/doc.dart';
+import 'package:qbsc_saas/app/views/emergency/emgergency.dart';
 import 'package:qbsc_saas/app/views/home_view.dart';
 import 'package:qbsc_saas/app/views/kandang/kandang.dart';
 import 'package:qbsc_saas/app/views/kejadian/kejadian.dart';
@@ -32,6 +33,7 @@ import 'package:qbsc_saas/app/views/patroli/patroli.dart';
 import 'package:qbsc_saas/app/views/pengaturan/lokasi/lokasi.dart';
 import 'package:qbsc_saas/app/views/pengaturan/pengaturan.dart';
 import 'package:qbsc_saas/app/views/splash_view.dart';
+import 'package:qbsc_saas/app/views/tamu/daftar_tamu.dart';
 import 'package:qbsc_saas/app/views/tamu/tambah_tamu.dart';
 import 'package:qbsc_saas/app/views/tamu/tamu.dart';
 
@@ -94,6 +96,8 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/laporan/kejadian', page: () => KejadianReport()),
         GetPage(name: '/tamu', page: () => Tamu()),
         GetPage(name: '/tambah/tamu', page: () => TambahTamu()),
+        GetPage(name: '/laporan/tamu', page: () => DaftarTamu()),
+        GetPage(name: '/darurat', page: () => Emgergency()),
       ],
     );
   }

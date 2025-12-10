@@ -22,7 +22,6 @@ class _HomeViewState extends State<HomeView> {
     {'icon': Icons.qr_code, 'label': 'Absensi'},
     {'icon': Icons.location_on, 'label': 'Patroli'},
     {'icon': Icons.house, 'label': 'Kontrol Kandang'},
-
     {'icon': Icons.fire_truck, 'label': 'Catat DOC'},
     {'icon': Icons.assignment, 'label': 'Laporan'},
     {'icon': Icons.info, 'label': 'Kejadian'},
@@ -38,18 +37,19 @@ class _HomeViewState extends State<HomeView> {
 
     setFoto();
     absenc.getLocationData();
-
     super.initState();
   }
 
   void setFoto() async {
     String? savedPhoto = AppPrefs.getUserPhoto();
-
     if (savedPhoto != null && savedPhoto.isNotEmpty) {
       controller.userPhoto.value = savedPhoto;
     }
   }
 
+  // =====================================================
+  //                   SYNC DIALOG
+  // =====================================================
   void _showSyncConfirmation() {
     showDialog(
       context: context,
@@ -64,14 +64,11 @@ class _HomeViewState extends State<HomeView> {
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.of(context).pop(); // tutup dialog konfirmasi
-
-              // tampilkan loading dialog
+              Navigator.of(context).pop();
               showDialog(
                 context: context,
                 barrierDismissible: false,
                 builder: (dialogContext) {
-                  // jalankan sinkronisasi di sini
                   _syncData(dialogContext);
                   return AlertDialog(
                     content: Row(
@@ -92,28 +89,21 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  // fungsi async sinkronisasi
-  Future<void> _syncData(BuildContext dialogContext) async {
+  Future<void> _syncData(BuildContext ctx) async {
     try {
       await _homec.getDataLocation();
       await _homec.getDataKandang();
       await absenc.getLocationData();
       await _homec.getDataEkspedisi();
 
-      // tutup loading dialog
-      if (mounted) Navigator.of(dialogContext).pop();
-
-      // tampilkan snackbar sukses
+      if (mounted) Navigator.of(ctx).pop();
       if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('Sinkronisasi berhasil!')));
       }
     } catch (e) {
-      // tutup loading dialog
-      if (mounted) Navigator.of(dialogContext).pop();
-
-      // tampilkan snackbar error
+      if (mounted) Navigator.of(ctx).pop();
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -122,159 +112,58 @@ class _HomeViewState extends State<HomeView> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FB),
-      appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 60, 53, 53),
-        title: const Text(
-          'Dashboard',
-          style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.sync, color: Colors.white),
-            tooltip: 'Sync Data',
-            onPressed: () {
-              _showSyncConfirmation();
-            },
-          ),
-
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white),
-            onPressed: controller.logout,
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final double width = constraints.maxWidth;
-            final bool isTablet = width >= 600;
-            final bool isDesktop = width >= 900;
-
-            int crossAxisCount = 2;
-            if (isTablet) crossAxisCount = 3;
-            if (isDesktop) crossAxisCount = 4;
-
-            double iconSize = isTablet ? 42 : 34;
-            double fontSize = isTablet ? 16 : 14;
-            double avatarRadius = isTablet ? 55 : 45;
-
-            return SingleChildScrollView(
-              padding: EdgeInsets.symmetric(
-                horizontal: isTablet ? 40 : 16,
-                vertical: isTablet ? 30 : 20,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // 🔹 Foto profil dan sambutan
-                  Obx(() {
-                    final photoUrl =
-                        "${ApiProvider.imageUrl}/${controller.userPhoto.value}";
-                    return CircleAvatar(
-                      radius: avatarRadius,
-                      backgroundColor: Colors.indigo.shade100,
-                      backgroundImage: photoUrl.isNotEmpty
-                          ? NetworkImage(photoUrl)
-                          : const AssetImage('assets/images/satpam_default.png')
-                                as ImageProvider,
-                    );
-                  }),
-                  const SizedBox(height: 12),
-
-                  Text(
-                    'Selamat datang, ${AppPrefs.getUserName()}',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: isTablet ? 22 : 20,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF1A237E),
-                    ),
-                  ),
-
-                  const SizedBox(height: 8),
-                  Text(
-                    'Pilih menu di bawah untuk mulai bekerja:',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: isTablet ? 16 : 14,
-                      color: Colors.black54,
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // 🔹 Grid menu bisa ikut scroll juga
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: menuItems.length,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: crossAxisCount,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                      childAspectRatio: isTablet ? 1.1 : 1.0,
-                    ),
-                    itemBuilder: (context, index) {
-                      final item = menuItems[index];
-                      return _buildMenuCard(
-                        icon: item['icon'],
-                        label: item['label'],
-                        iconSize: iconSize,
-                        fontSize: fontSize,
-                        onTap: () {
-                          if (item['label'] == 'Absensi') {
-                            Get.toNamed('/shift');
-                          } else if (item['label'] == 'Patroli') {
-                            Get.toNamed('/patroli');
-                          } else if (item['label'] == 'Pengaturan') {
-                            Get.toNamed('/pengaturan');
-                          } else if (item['label'] == 'Laporan') {
-                            Get.toNamed('/laporan');
-                          } else if (item['label'] == 'Kontrol Kandang') {
-                            Get.toNamed('/patroli/kandang');
-                          } else if (item['label'] == 'Catat DOC') {
-                            Get.toNamed('/doc');
-                          } else if (item['label'] == 'Kejadian') {
-                            Get.toNamed('/kejadian');
-                          } else if (item['label'] == 'Tamu') {
-                            Get.toNamed('/tamu');
-                          }
-                        },
-                      );
-                    },
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-      ),
-    );
+  // =====================================================
+  //                   MENU HANDLER
+  // =====================================================
+  void _onMenuTap(String label) {
+    switch (label) {
+      case 'Absensi':
+        Get.toNamed('/shift');
+        break;
+      case 'Patroli':
+        Get.toNamed('/patroli');
+        break;
+      case 'Pengaturan':
+        Get.toNamed('/pengaturan');
+        break;
+      case 'Laporan':
+        Get.toNamed('/laporan');
+        break;
+      case 'Kontrol Kandang':
+        Get.toNamed('/patroli/kandang');
+        break;
+      case 'Catat DOC':
+        Get.toNamed('/doc');
+        break;
+      case 'Kejadian':
+        Get.toNamed('/kejadian');
+        break;
+      case 'Tamu':
+        Get.toNamed('/tamu');
+        break;
+    }
   }
 
-  Widget _buildMenuCard({
+  // =====================================================
+  //                 BUILD MODERN MENU CARD
+  // =====================================================
+  Widget _buildModernMenu({
     required IconData icon,
     required String label,
-    required double iconSize,
-    required double fontSize,
     required VoidCallback onTap,
   }) {
     return InkWell(
+      borderRadius: BorderRadius.circular(22),
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Ink(
+      child: Container(
         decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(22),
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.indigo.shade100.withOpacity(0.5),
-              blurRadius: 8,
-              offset: const Offset(2, 4),
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -282,24 +171,177 @@ class _HomeViewState extends State<HomeView> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              decoration: BoxDecoration(
-                color: Colors.indigo.shade50,
-                shape: BoxShape.circle,
-              ),
               padding: const EdgeInsets.all(18),
-              child: Icon(icon, color: Colors.indigo.shade600, size: iconSize),
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Color(0xFFE8EAF6),
+              ),
+              child: Icon(icon, color: Color(0xFF3F51B5), size: 34),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
             Text(
               label,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: fontSize,
+              style: const TextStyle(
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF1A237E),
+                color: Color(0xFF1A237E),
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  // =====================================================
+  //                        UI
+  // =====================================================
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF4F6FA),
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: const Color(0xFF3C3535),
+        title: const Text(
+          'Dashboard',
+          style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.sync, color: Colors.white),
+            onPressed: _showSyncConfirmation,
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.white),
+            onPressed: controller.logout,
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: const Color.fromARGB(255, 223, 12, 12),
+        icon: const Icon(Icons.contact_emergency, color: Colors.white),
+        label: const Text(
+          'Kontak Darurat',
+          style: TextStyle(color: Colors.white),
+        ),
+        onPressed: () {
+          Get.toNamed('/darurat');
+        },
+      ),
+
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.maxWidth;
+            final isTablet = width >= 600;
+            final crossAxisCount = isTablet ? 3 : 2;
+
+            return SingleChildScrollView(
+              padding: EdgeInsets.symmetric(
+                horizontal: isTablet ? 32 : 16,
+                vertical: isTablet ? 28 : 20,
+              ),
+              child: Column(
+                children: [
+                  // =====================================================
+                  //                    TOP CARD (PROFILE)
+                  // =====================================================
+                  Obx(() {
+                    final photoUrl =
+                        "${ApiProvider.imageUrl}/${controller.userPhoto.value}";
+
+                    return Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(14),
+                            child: Image(
+                              width: isTablet ? 90 : 70,
+                              height: isTablet ? 90 : 70,
+                              fit: BoxFit.cover,
+                              image: photoUrl.isNotEmpty
+                                  ? NetworkImage(photoUrl)
+                                  : const AssetImage(
+                                          'assets/images/satpam_default.png',
+                                        )
+                                        as ImageProvider,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Selamat datang 👋",
+                                  style: TextStyle(
+                                    fontSize: isTablet ? 18 : 16,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  AppPrefs.getUserName() ?? '-',
+                                  style: TextStyle(
+                                    fontSize: isTablet ? 22 : 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFF1A237E),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+
+                  const SizedBox(height: 28),
+
+                  // =====================================================
+                  //                    MODERN GRID MENU
+                  // =====================================================
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: menuItems.length,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      crossAxisSpacing: 18,
+                      mainAxisSpacing: 18,
+                      childAspectRatio: 1.0,
+                    ),
+                    itemBuilder: (context, index) {
+                      final item = menuItems[index];
+                      return _buildModernMenu(
+                        icon: item['icon'],
+                        label: item['label'],
+                        onTap: () => _onMenuTap(item['label']),
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 30),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );

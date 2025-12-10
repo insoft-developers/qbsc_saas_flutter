@@ -62,7 +62,7 @@ class Tamu extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 25),
+            const SizedBox(height: 20),
 
             // ==================== TOMBOL TAMBAH DATA TAMU ====================
             GestureDetector(
@@ -91,6 +91,43 @@ class Tamu extends StatelessWidget {
                     const SizedBox(width: 12),
                     Text(
                       "Tambah Data Tamu",
+                      style: TextStyle(
+                        color: primary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            GestureDetector(
+              onTap: () {
+                Get.toNamed('/laporan/tamu');
+              },
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 22),
+                decoration: BoxDecoration(
+                  color: Colors.lightBlueAccent,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: primary, width: 1.8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 10,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Iconsax.people, color: primary, size: 28),
+                    const SizedBox(width: 12),
+                    Text(
+                      "Daftar Tamu Datang",
                       style: TextStyle(
                         color: primary,
                         fontSize: 18,

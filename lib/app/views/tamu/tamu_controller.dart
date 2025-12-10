@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dio/dio.dart' as dio;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -13,6 +14,7 @@ class TamuController extends GetxController {
   final ApiProvider api = Get.find<ApiProvider>();
   final RxBool isExist = false.obs;
   var scanList = <String, dynamic>{}.obs;
+  final tamuList = List.empty().obs;
 
   RxString namaTamu = ''.obs;
   RxString jumlahTamu = ''.obs;
@@ -88,29 +90,94 @@ class TamuController extends GetxController {
     isLoading.value = true;
     int satpamId = int.parse(AppPrefs.getUserId() ?? '0');
     int comid = int.parse(AppPrefs.getComId() ?? '0');
+
     try {
+      // ====== Convert ke FormData ======
+      final formData = dio.FormData.fromMap({
+        'satpam_id': satpamId,
+        'nama_tamu': namaTamu.value,
+        'jumlah_tamu': jumlahTamu.value,
+        'tujuan': tujuan.value,
+        'whatsapp': whatsapp.value,
+        'catatan': catatan.value,
+        'comid': comid,
+        if (foto.value != null)
+          'foto': await dio.MultipartFile.fromFile(
+            foto.value!.path,
+            filename: foto.value!.path.split('/').last,
+          ),
+      });
+
       final response = await api.post(
         ApiEndpoint.tambahDataTamu,
-        data: {
-          'satpam_id': satpamId,
-          'nama_tamu': namaTamu.value,
-          'jumlah_tamu': jumlahTamu.value,
-          'tujuan': tujuan.value,
-          'whatsapp': whatsapp.value,
-          'catatan': catatan.value,
-          'comid': comid,
-          'foto': foto.value,
-        },
+        data: formData,
+        options: dio.Options(contentType: 'multipart/form-data'),
       );
+
       var body = response.data;
+
       if (body['success']) {
         SnackbarHelper.success('sukses', 'Sukses Tambah Data Tamu');
-        Get.back();
       } else {
         SnackbarHelper.error('Warning', 'Data tidak ditemukan');
       }
     } catch (e) {
       SnackbarHelper.error('Warning', e.toString());
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> updateStatusTamu(int id) async {
+    isLoading.value = true;
+    int satpamId = int.parse(AppPrefs.getUserId() ?? '0');
+
+    try {
+      final response = await api.post(
+        ApiEndpoint.updateStatusTamu,
+        data: {'id': id, 'satpam_id': satpamId},
+      );
+      var body = response.data;
+      if (body['success']) {
+        SnackbarHelper.success('sukses', 'Sukses Simpan Data');
+        // Get.back();
+        getListTamu();
+      } else {
+        SnackbarHelper.error('Warning', 'Data tidak ditemukan');
+      }
+    } catch (e) {
+      SnackbarHelper.error('Warning', e.toString());
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> getListTamu() async {
+    isLoading.value = true;
+    String comid = AppPrefs.getComId().toString();
+
+    if (comid.isEmpty) {
+      Get.snackbar('Error', 'Com id tidak ditemukan');
+      isLoading.value = false;
+      return;
+    }
+
+    try {
+      final response = await api.post(
+        ApiEndpoint.getListTamu,
+        data: {'comid': comid},
+      );
+
+      var body = response.data;
+      if (body['success']) {
+        tamuList.value = body['data'];
+        print(tamuList);
+      } else {
+        SnackbarHelper.error('Warning', 'Data tidak ditemukan');
+      }
+    } catch (e) {
+      isExist(false);
+      SnackbarHelper.error('Error', e.toString());
     } finally {
       isLoading.value = false;
     }

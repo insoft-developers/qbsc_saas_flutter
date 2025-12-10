@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "202126552190",
+    "project_id": "qbsc-satpam",
+    "storage_bucket": "qbsc-satpam.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:202126552190:android:2fba7203b848c51f96fc2f",
+        "android_client_info": {
+          "package_name": "com.qbsc.satpam"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBok0EYfqPI5u42GdUIL331_m_MbHoBgMw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
