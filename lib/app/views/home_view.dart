@@ -15,7 +15,7 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   final AuthController controller = Get.put(AuthController());
-  late final HomeController _homec;
+  final HomeController _homec = Get.put(HomeController());
   final AbsenController absenc = Get.put(AbsenController());
 
   final List<Map<String, dynamic>> menuItems = [
@@ -31,13 +31,9 @@ class _HomeViewState extends State<HomeView> {
 
   @override
   void initState() {
-    Future.delayed(Duration.zero, () {
-      _homec = Get.put(HomeController());
-    });
-
+    super.initState();
     setFoto();
     absenc.getLocationData();
-    super.initState();
   }
 
   void setFoto() async {
@@ -113,7 +109,7 @@ class _HomeViewState extends State<HomeView> {
   }
 
   // =====================================================
-  //                   MENU HANDLER
+  //                  MENU HANDLER
   // =====================================================
   void _onMenuTap(String label) {
     switch (label) {
@@ -145,7 +141,7 @@ class _HomeViewState extends State<HomeView> {
   }
 
   // =====================================================
-  //                 BUILD MODERN MENU CARD
+  //                 MODERN MENU BUILDER
   // =====================================================
   Widget _buildModernMenu({
     required IconData icon,
@@ -209,16 +205,53 @@ class _HomeViewState extends State<HomeView> {
           style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
         ),
         actions: [
+          Obx(() {
+            return Stack(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.notifications, color: Colors.white),
+                  onPressed: () {
+                    _homec.clear();
+                    Get.toNamed('/notifikasi');
+                  },
+                ),
+
+                if (_homec.unreadCount.value > 0)
+                  Positioned(
+                    right: 8,
+                    top: 8,
+                    child: Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        _homec.unreadCount.value.toString(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          }),
+
           IconButton(
             icon: const Icon(Icons.sync, color: Colors.white),
             onPressed: _showSyncConfirmation,
           ),
+
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white),
             onPressed: controller.logout,
           ),
         ],
       ),
+
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: const Color.fromARGB(255, 223, 12, 12),
         icon: const Icon(Icons.contact_emergency, color: Colors.white),
@@ -226,9 +259,7 @@ class _HomeViewState extends State<HomeView> {
           'Kontak Darurat',
           style: TextStyle(color: Colors.white),
         ),
-        onPressed: () {
-          Get.toNamed('/darurat');
-        },
+        onPressed: () => Get.toNamed('/darurat'),
       ),
 
       body: SafeArea(
@@ -245,9 +276,7 @@ class _HomeViewState extends State<HomeView> {
               ),
               child: Column(
                 children: [
-                  // =====================================================
-                  //                    TOP CARD (PROFILE)
-                  // =====================================================
+                  // ================= TOP CARD =================
                   Obx(() {
                     final photoUrl =
                         "${ApiProvider.imageUrl}/${controller.userPhoto.value}";
@@ -314,9 +343,7 @@ class _HomeViewState extends State<HomeView> {
 
                   const SizedBox(height: 28),
 
-                  // =====================================================
-                  //                    MODERN GRID MENU
-                  // =====================================================
+                  // ================= GRID MENU =================
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),

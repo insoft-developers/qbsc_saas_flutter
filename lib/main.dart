@@ -3,10 +3,12 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
-// ignore: unnecessary_import
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+
 import 'package:qbsc_saas/app/data/api_provider.dart';
+import 'package:qbsc_saas/app/controllers/home_controller.dart'; // 🔥 DITAMBAHKAN
+import 'package:qbsc_saas/app/controllers/auth_controller.dart'; // 🔥 DITAMBAHKAN
+
 import 'package:qbsc_saas/app/models/doc_model.dart';
 import 'package:qbsc_saas/app/models/ekspedisi_model.dart';
 import 'package:qbsc_saas/app/models/kandang_alarm_model.dart';
@@ -17,9 +19,11 @@ import 'package:qbsc_saas/app/models/kandang_suhu_model.dart';
 import 'package:qbsc_saas/app/models/location_model.dart';
 import 'package:qbsc_saas/app/models/patroli_model.dart';
 import 'package:qbsc_saas/app/models/situasi_model.dart';
+
 import 'package:qbsc_saas/app/utils/app_prefs.dart';
 import 'package:qbsc_saas/app/utils/firebase_background_handler.dart';
 import 'package:qbsc_saas/app/utils/topic_service.dart';
+
 import 'package:qbsc_saas/app/views/absensi/absensi_shift.dart';
 import 'package:qbsc_saas/app/views/doc/doc.dart';
 import 'package:qbsc_saas/app/views/emergency/emgergency.dart';
@@ -49,14 +53,18 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp();
-
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
+  // ===========================
+  //  ANDROID NOTIFICATION SETUP
+  // ===========================
   const AndroidNotificationChannel channel = AndroidNotificationChannel(
     'high_importance_channel',
     'High Importance Notifications',
     description: 'This channel is used for important notifications',
     importance: Importance.high,
+    playSound: true,
+    sound: RawResourceAndroidNotificationSound('notif'),
   );
 
   await flutterLocalNotificationsPlugin
@@ -65,14 +73,13 @@ Future<void> main() async {
       >()
       ?.createNotificationChannel(channel);
 
-  const AndroidInitializationSettings initSettingAndroid =
-      AndroidInitializationSettings("@mipmap/ic_launcher");
-  const InitializationSettings initSettings = InitializationSettings(
-    android: initSettingAndroid,
-  );
-
+  const initAndroid = AndroidInitializationSettings("@mipmap/ic_launcher");
+  const initSettings = InitializationSettings(android: initAndroid);
   await flutterLocalNotificationsPlugin.initialize(initSettings);
 
+  // ===========================
+  //  HIVE DATABASE
+  // ===========================
   await Hive.initFlutter();
   Hive.registerAdapter(LocationModelAdapter());
   Hive.registerAdapter(PatroliModelAdapter());
@@ -84,6 +91,7 @@ Future<void> main() async {
   Hive.registerAdapter(EkspedisiModelAdapter());
   Hive.registerAdapter(DocModelAdapter());
   Hive.registerAdapter(SituasiModelAdapter());
+
   await Hive.openBox<LocationModel>('locations');
   await Hive.openBox<PatroliModel>('patroli');
   await Hive.openBox<KandangModel>('kandang');
@@ -97,6 +105,13 @@ Future<void> main() async {
 
   await Get.putAsync<ApiProvider>(() async => await ApiProvider().init());
   await AppPrefs.init();
+
+  // ====================================
+  //  PUT CONTROLLERS GLOBAL (🔥 WAJIB)
+  // ====================================
+  Get.put(HomeController(), permanent: true); // 🔥 NOTIF BADGE
+  Get.put(AuthController(), permanent: true); // 🔥 untuk foto dll
+
   runApp(MyApp());
 }
 
@@ -108,6 +123,8 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  final homeC = Get.find<HomeController>(); // 🔥 akses badge notif
+
   @override
   void initState() {
     super.initState();
@@ -117,6 +134,11 @@ class _MyAppState extends State<MyApp> {
 
   void setupForegroundMessageHandler() {
     FirebaseMessaging.onMessage.listen((message) {
+      // ==============================
+      //   INCREMENT BADGE (🔥)
+      // ==============================
+      homeC.increment();
+
       final notif = message.notification;
       final android = notif?.android;
 
@@ -131,6 +153,8 @@ class _MyAppState extends State<MyApp> {
               'High Importance Notifications',
               importance: Importance.high,
               priority: Priority.high,
+              playSound: true,
+              sound: RawResourceAndroidNotificationSound('notif'),
             ),
           ),
         );
@@ -143,13 +167,12 @@ class _MyAppState extends State<MyApp> {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'QBSC',
-      initialRoute: '/splash', // 🔹 mulai dari splash screen
+      initialRoute: '/splash',
       getPages: [
         GetPage(name: '/splash', page: () => const SplashView()),
         GetPage(name: '/login', page: () => const LoginView()),
         GetPage(name: '/home', page: () => HomeView()),
         GetPage(name: '/patroli', page: () => Patroli()),
-
         GetPage(name: '/pengaturan', page: () => Pengaturan()),
         GetPage(name: '/pengaturan/lokasi', page: () => Lokasi()),
         GetPage(name: '/laporan', page: () => Laporan()),
@@ -171,5 +194,3 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
-
-/// 🔹 SplashScreen — untuk memastikan Get sudah siap sebelum navigasi

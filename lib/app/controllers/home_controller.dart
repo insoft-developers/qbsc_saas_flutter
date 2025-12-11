@@ -12,6 +12,7 @@ class HomeController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxList<LocationModel> locations = <LocationModel>[].obs;
   late Box<LocationModel> _box;
+  RxInt unreadCount = 0.obs;
 
   final RxBool kandangLoading = false.obs;
   final RxList<KandangModel> kandangs = <KandangModel>[].obs;
@@ -27,6 +28,18 @@ class HomeController extends GetxController {
   void onInit() {
     super.onInit();
     _initAndLoad();
+  }
+
+  void setCount(int count) {
+    unreadCount.value = count;
+  }
+
+  void increment() {
+    unreadCount.value++;
+  }
+
+  void clear() {
+    unreadCount.value = 0;
   }
 
   Future<void> _initAndLoad() async {
