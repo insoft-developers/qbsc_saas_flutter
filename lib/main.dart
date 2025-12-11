@@ -1,4 +1,7 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 // ignore: unnecessary_import
 import 'package:hive/hive.dart';
@@ -15,6 +18,8 @@ import 'package:qbsc_saas/app/models/location_model.dart';
 import 'package:qbsc_saas/app/models/patroli_model.dart';
 import 'package:qbsc_saas/app/models/situasi_model.dart';
 import 'package:qbsc_saas/app/utils/app_prefs.dart';
+import 'package:qbsc_saas/app/utils/firebase_background_handler.dart';
+import 'package:qbsc_saas/app/utils/topic_service.dart';
 import 'package:qbsc_saas/app/views/absensi/absensi_shift.dart';
 import 'package:qbsc_saas/app/views/doc/doc.dart';
 import 'package:qbsc_saas/app/views/emergency/emgergency.dart';
@@ -37,8 +42,37 @@ import 'package:qbsc_saas/app/views/tamu/daftar_tamu.dart';
 import 'package:qbsc_saas/app/views/tamu/tambah_tamu.dart';
 import 'package:qbsc_saas/app/views/tamu/tamu.dart';
 
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp();
+
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
+  const AndroidNotificationChannel channel = AndroidNotificationChannel(
+    'high_importance_channel',
+    'High Importance Notifications',
+    description: 'This channel is used for important notifications',
+    importance: Importance.high,
+  );
+
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin
+      >()
+      ?.createNotificationChannel(channel);
+
+  const AndroidInitializationSettings initSettingAndroid =
+      AndroidInitializationSettings("@mipmap/ic_launcher");
+  const InitializationSettings initSettings = InitializationSettings(
+    android: initSettingAndroid,
+  );
+
+  await flutterLocalNotificationsPlugin.initialize(initSettings);
+
   await Hive.initFlutter();
   Hive.registerAdapter(LocationModelAdapter());
   Hive.registerAdapter(PatroliModelAdapter());
@@ -66,8 +100,43 @@ Future<void> main() async {
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    TopicService.initializeTopicOnStartup();
+    setupForegroundMessageHandler();
+  }
+
+  void setupForegroundMessageHandler() {
+    FirebaseMessaging.onMessage.listen((message) {
+      final notif = message.notification;
+      final android = notif?.android;
+
+      if (notif != null && android != null) {
+        flutterLocalNotificationsPlugin.show(
+          notif.hashCode,
+          notif.title,
+          notif.body,
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+              'high_importance_channel',
+              'High Importance Notifications',
+              importance: Importance.high,
+              priority: Priority.high,
+            ),
+          ),
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

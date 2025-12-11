@@ -3,6 +3,7 @@ import 'package:qbsc_saas/app/data/api_endpoint.dart';
 import 'package:qbsc_saas/app/data/api_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:qbsc_saas/app/utils/app_prefs.dart';
+import 'package:qbsc_saas/app/utils/topic_service.dart';
 
 class AuthController extends GetxController {
   var isLoading = false.obs;
@@ -35,6 +36,14 @@ class AuthController extends GetxController {
       await AppPrefs.setUserId(userId.value);
       await AppPrefs.setUserPhoto(userPhoto.value);
       await AppPrefs.setComId(comId.value);
+
+      String topic = 'qbsc_satpam_${comId.value}';
+
+      print("topik ${topic}");
+
+      await TopicService.unsubscribeOldTopic();
+
+      await TopicService.subscribeNewTopic(topic);
 
       // Navigasi dengan sedikit delay agar UI halus
       Future.delayed(const Duration(milliseconds: 300), () {

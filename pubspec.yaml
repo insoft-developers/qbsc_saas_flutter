@@ -58,6 +58,7 @@ dependencies:
   iconsax: ^0.0.8
   firebase_core: ^4.2.1
   firebase_messaging: ^16.0.4
+  flutter_local_notifications: ^19.5.0
   
   
   
