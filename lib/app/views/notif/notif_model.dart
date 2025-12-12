@@ -21,8 +21,8 @@ class NotifModel {
       judul: json['judul'],
       pesan: json['pesan'],
       image: json['image'] ?? '',
-      pengirim: json['pengirim'],
-      waktu: json['waktu'],
+      pengirim: json['pengirim'].toString(),
+      waktu: json['waktu'].toString(),
     );
   }
 }

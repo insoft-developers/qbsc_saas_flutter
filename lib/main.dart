@@ -38,9 +38,11 @@ import 'package:qbsc_saas/app/views/laporan/laporan.dart';
 import 'package:qbsc_saas/app/views/laporan/lokasi/lokasi_report.dart';
 import 'package:qbsc_saas/app/views/laporan/patroli/patroli_report.dart';
 import 'package:qbsc_saas/app/views/login_view.dart';
+import 'package:qbsc_saas/app/views/notif/notif.dart';
 import 'package:qbsc_saas/app/views/patroli/patroli.dart';
 import 'package:qbsc_saas/app/views/pengaturan/lokasi/lokasi.dart';
 import 'package:qbsc_saas/app/views/pengaturan/pengaturan.dart';
+import 'package:qbsc_saas/app/views/pengaturan/profil/profil.dart';
 import 'package:qbsc_saas/app/views/splash_view.dart';
 import 'package:qbsc_saas/app/views/tamu/daftar_tamu.dart';
 import 'package:qbsc_saas/app/views/tamu/tambah_tamu.dart';
@@ -190,6 +192,8 @@ class _MyAppState extends State<MyApp> {
         GetPage(name: '/tambah/tamu', page: () => TambahTamu()),
         GetPage(name: '/laporan/tamu', page: () => DaftarTamu()),
         GetPage(name: '/darurat', page: () => Emgergency()),
+        GetPage(name: '/notifikasi', page: () => Notif()),
+        GetPage(name: '/pengaturan/profile', page: () => ProfilePage()),
       ],
     );
   }

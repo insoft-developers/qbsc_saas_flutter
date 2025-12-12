@@ -48,6 +48,8 @@ class Pengaturan extends StatelessWidget {
                 Get.toNamed('/pengaturan/lokasi')?.then((_) {
                   _lokasiController.fetchLokasi();
                 });
+              } else if (item['label'] == 'Profil') {
+                Get.toNamed('/pengaturan/profile');
               }
             },
             borderRadius: BorderRadius.circular(20),

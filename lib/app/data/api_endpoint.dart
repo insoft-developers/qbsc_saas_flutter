@@ -27,6 +27,9 @@ class ApiEndpoint {
   static const String updateStatusTamu = '/update_status_tamu';
   static const String checkPaket = '/check_paket';
   static const String emergency = '/darurat';
+  static const String getNotifList = '/get_notif_list';
+  static const String getProfileData = '/get_profile_data';
+  static const String updateSatpamProfile = '/update_satpam_profile';
 
   // User
   static const String profile = "/user/profile";
