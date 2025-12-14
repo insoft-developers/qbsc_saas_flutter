@@ -92,7 +92,7 @@ class HomeController extends GetxController {
     } catch (e) {
       final local = _box.values.toList();
       locations.assignAll(local);
-      Get.snackbar('Error', e.toString());
+      Get.snackbar('Error', 'Offline');
     } finally {
       isLoading.value = false;
     }
@@ -132,7 +132,7 @@ class HomeController extends GetxController {
     } catch (e) {
       final local = _boxEkspedisi.values.toList();
       ekspedisi.assignAll(local);
-      Get.snackbar('Error', e.toString());
+      Get.snackbar('Error', 'Offline');
     } finally {
       isLoading.value = false;
     }
@@ -172,7 +172,7 @@ class HomeController extends GetxController {
     } catch (e) {
       final local = _boxKandang.values.toList();
       kandangs.assignAll(local);
-      Get.snackbar('Error', e.toString());
+      Get.snackbar('Error', 'Offline');
     } finally {
       kandangLoading.value = false;
     }
@@ -211,7 +211,7 @@ class HomeController extends GetxController {
         Get.to(() => Paket());
       }
     } catch (e) {
-      Get.snackbar('Error', e.toString());
+      Get.snackbar('Error', 'Offline');
     } finally {}
   }
 }

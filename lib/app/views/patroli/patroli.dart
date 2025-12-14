@@ -286,9 +286,12 @@ class _PatroliState extends State<Patroli> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text('Patroli - Scan QR Code'),
-        centerTitle: true,
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: const Color.fromARGB(255, 60, 53, 53),
+        title: const Text(
+          'Patroli - Scan QR Code',
+          style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Stack(
         alignment: Alignment.center,

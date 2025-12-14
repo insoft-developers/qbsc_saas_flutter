@@ -14,7 +14,7 @@ class KandangLaporan extends StatelessWidget {
     return DefaultTabController(
       length: 4,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF4F4F4),
+        backgroundColor: Colors.white,
         appBar: AppBar(
           backgroundColor: const Color(0xFF3C3535),
           title: const Text(
@@ -46,10 +46,7 @@ class KandangLaporan extends StatelessWidget {
               final list = controller.suhuList;
               if (list.isEmpty) {
                 return const Center(
-                  child: Text(
-                    'Belum ada data laporan suhu.',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                  ),
+                  child: Text('Belum ada data laporan suhu.'),
                 );
               }
 

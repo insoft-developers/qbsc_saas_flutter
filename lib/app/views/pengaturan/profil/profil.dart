@@ -15,11 +15,12 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.black,
         title: const Text(
           "Pengaturan Profil",
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
@@ -39,7 +40,16 @@ class ProfilePage extends StatelessWidget {
             children: [
               // ==================== FOTO PROFIL ====================
               GestureDetector(
-                onTap: c.pickImage,
+                onTap: () {
+                  Get.snackbar(
+                    'Warning',
+                    'Foto tidak bisa diganti melalui aplikasi ini, Kontak Administrator Anda untuk mengganti foto profil',
+                    backgroundColor: Colors.red,
+                    colorText: Colors.white,
+                    snackPosition: SnackPosition.BOTTOM,
+                    duration: const Duration(seconds: 2),
+                  );
+                },
                 child: Obx(() {
                   final faceUrl = c.profileData['face_photo_path'];
 

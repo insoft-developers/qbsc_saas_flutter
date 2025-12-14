@@ -3,19 +3,47 @@ import 'package:qbsc_saas/app/data/api_endpoint.dart';
 import 'package:qbsc_saas/app/data/api_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:qbsc_saas/app/utils/app_prefs.dart';
+import 'package:qbsc_saas/app/utils/device_security_service.dart';
 import 'package:qbsc_saas/app/utils/topic_service.dart';
 
-class AuthController extends GetxController {
+class AuthController extends GetxController with WidgetsBindingObserver {
   var isLoading = false.obs;
   var token = ''.obs;
   var userName = ''.obs;
   var userPhoto = ''.obs;
   var userId = ''.obs;
   var comId = ''.obs;
+  var companyName = ''.obs;
+  var isPeternakan = ''.obs;
 
   final ApiProvider api = Get.find<ApiProvider>();
 
-  /// LOGIN
+  @override
+  void onInit() {
+    super.onInit();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void onClose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.onClose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    if (state == AppLifecycleState.resumed) {
+      // 🔐 CEK SETIAP APP KEMBALI AKTIF
+      final isDevMode = await DeviceSecurityService.isDeveloperMode();
+      if (isDevMode) {
+        await _forceLogout();
+      }
+    }
+  }
+
+  // =========================
+  // LOGIN
+  // =========================
   Future<void> login(String email, String password) async {
     try {
       isLoading(true);
@@ -25,42 +53,76 @@ class AuthController extends GetxController {
         data: {'username': email, 'password': password},
       );
 
+      final isDevMode = await DeviceSecurityService.isDeveloperMode();
+      debugPrint('🔥 DEV MODE STATUS: $isDevMode');
+
+      if (isDevMode) {
+        await _forceLogout();
+        return;
+      }
+
       token.value = response.data['token'] ?? '';
       userName.value = response.data['data']['name'] ?? 'Unknown';
       userPhoto.value = response.data['data']['face_photo_path'];
       userId.value = response.data['data']['id'].toString();
       comId.value = response.data['data']['comid'].toString();
+      companyName.value = response.data['data']['company']['company_name']
+          .toString();
+      isPeternakan.value = response.data['data']['company']['is_peternakan']
+          .toString();
 
       await AppPrefs.setToken(token.value);
       await AppPrefs.setUserName(userName.value);
       await AppPrefs.setUserId(userId.value);
       await AppPrefs.setUserPhoto(userPhoto.value);
       await AppPrefs.setComId(comId.value);
+      await AppPrefs.setCompanyName(companyName.value);
+      await AppPrefs.setIsPeternakan(isPeternakan.value);
 
-      String topic = 'qbsc_satpam_${comId.value}';
-
-      print("topik ${topic}");
-
+      final topic = 'qbsc_satpam_${comId.value}';
       await TopicService.unsubscribeOldTopic();
-
       await TopicService.subscribeNewTopic(topic);
 
-      // Navigasi dengan sedikit delay agar UI halus
       Future.delayed(const Duration(milliseconds: 300), () {
         Get.offAllNamed('/home');
         _showSnackbar('Berhasil', 'Login sukses!');
       });
     } catch (e) {
-      _showSnackbar('Error', 'Login gagal: $e');
+      _showSnackbar('Error', 'Login gagal');
     } finally {
       isLoading(false);
     }
   }
 
-  /// LOGOUT
-  Future<void> logout() async {
+  // =========================
+  // FORCE LOGOUT (SECURITY)
+  // =========================
+  Future<void> _forceLogout() async {
     await AppPrefs.clearAll();
 
+    token.value = '';
+    userName.value = '';
+    userId.value = '';
+    userPhoto.value = '';
+
+    Get.offAllNamed('/login');
+
+    Get.snackbar(
+      'Akses Ditolak',
+      'Nonaktifkan Developer Mode untuk menggunakan aplikasi',
+      backgroundColor: Colors.red.shade700,
+      colorText: Colors.white,
+      duration: const Duration(seconds: 4),
+      snackPosition: SnackPosition.BOTTOM,
+      margin: const EdgeInsets.all(16),
+    );
+  }
+
+  // =========================
+  // LOGOUT MANUAL
+  // =========================
+  Future<void> logout() async {
+    await AppPrefs.clearAll();
     token.value = '';
     userName.value = '';
     userId.value = '';
@@ -68,8 +130,18 @@ class AuthController extends GetxController {
     Get.offAllNamed('/login');
   }
 
-  /// CEK STATUS LOGIN
+  // =========================
+  // CEK LOGIN
+  // =========================
   Future<void> checkLoginStatus() async {
+    final isDevMode = await DeviceSecurityService.isDeveloperMode();
+    debugPrint('🔥 DEV MODE STATUS: $isDevMode');
+
+    if (isDevMode) {
+      await _forceLogout();
+      return;
+    }
+
     final savedToken = AppPrefs.getToken();
 
     if (savedToken != null && savedToken.isNotEmpty) {
@@ -81,7 +153,9 @@ class AuthController extends GetxController {
     }
   }
 
-  /// SNACKBAR HELPER
+  // =========================
+  // SNACKBAR
+  // =========================
   void _showSnackbar(String title, String message) {
     if (Get.context == null) return;
     Get.snackbar(

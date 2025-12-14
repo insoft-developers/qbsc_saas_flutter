@@ -1,17 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:qbsc_saas/app/utils/app_prefs.dart';
 
 class Laporan extends StatelessWidget {
   Laporan({super.key});
 
-  final List<Map<String, dynamic>> menuItems = const [
-    {'icon': Icons.location_history, 'label': 'Laporan Patroli'},
-    {'icon': Icons.location_on, 'label': 'Laporan Data Lokasi'},
-    {'icon': Icons.bungalow_rounded, 'label': 'Laporan Kandang'},
-    {'icon': Icons.car_rental, 'label': 'Laporan Data Ekspedisi'},
-    {'icon': Icons.fire_truck, 'label': 'Laporan DOC Keluar'},
-    {'icon': Icons.info, 'label': 'Laporan Kejadian'},
-  ];
+  final String? isPeternakan = AppPrefs.getIsPeternakan();
+
+  late final List<Map<String, dynamic>> menuItems = _buildMenu();
+
+  List<Map<String, dynamic>> _buildMenu() {
+    final baseMenu = [
+      {
+        'icon': Icons.location_history,
+        'label': 'Laporan Patroli',
+        'route': '/laporan/patroli',
+      },
+      {
+        'icon': Icons.location_on,
+        'label': 'Laporan Data Lokasi',
+        'route': '/laporan/lokasi',
+      },
+      {
+        'icon': Icons.info,
+        'label': 'Laporan Kejadian',
+        'route': '/laporan/kejadian',
+      },
+    ];
+
+    if (isPeternakan == '1') {
+      baseMenu.insertAll(2, [
+        {
+          'icon': Icons.bungalow_rounded,
+          'label': 'Laporan Kandang',
+          'route': '/laporan/kandang',
+        },
+        {
+          'icon': Icons.car_rental,
+          'label': 'Laporan Data Ekspedisi',
+          'route': '/laporan/ekspedisi',
+        },
+        {
+          'icon': Icons.fire_truck,
+          'label': 'Laporan DOC Keluar',
+          'route': '/laporan/doc',
+        },
+      ]);
+    }
+
+    return baseMenu;
+  }
 
   @override
   Widget build(BuildContext context) {

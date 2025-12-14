@@ -11,6 +11,7 @@ class PatroliReport extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 60, 53, 53),
         title: const Text(

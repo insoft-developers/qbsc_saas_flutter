@@ -117,7 +117,14 @@ flutter:
     - assets/images/qbsc_splash.png
     - assets/images/qbsc_icon.png
     - assets/images/wa_icon.png
-    
+    - assets/images/absensi.png
+    - assets/images/patroli.png
+    - assets/images/kandang.png
+    - assets/images/doc.png
+    - assets/images/laporan.png
+    - assets/images/kejadian.png
+    - assets/images/setting.png
+    - assets/images/tamu.png    
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

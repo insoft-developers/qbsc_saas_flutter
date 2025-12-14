@@ -41,6 +41,7 @@ import 'package:qbsc_saas/app/views/login_view.dart';
 import 'package:qbsc_saas/app/views/notif/notif.dart';
 import 'package:qbsc_saas/app/views/patroli/patroli.dart';
 import 'package:qbsc_saas/app/views/pengaturan/lokasi/lokasi.dart';
+import 'package:qbsc_saas/app/views/pengaturan/password/change_password.dart';
 import 'package:qbsc_saas/app/views/pengaturan/pengaturan.dart';
 import 'package:qbsc_saas/app/views/pengaturan/profil/profil.dart';
 import 'package:qbsc_saas/app/views/splash_view.dart';
@@ -194,6 +195,7 @@ class _MyAppState extends State<MyApp> {
         GetPage(name: '/darurat', page: () => Emgergency()),
         GetPage(name: '/notifikasi', page: () => Notif()),
         GetPage(name: '/pengaturan/profile', page: () => ProfilePage()),
+        GetPage(name: '/pengaturan/password', page: () => ChangePassword()),
       ],
     );
   }

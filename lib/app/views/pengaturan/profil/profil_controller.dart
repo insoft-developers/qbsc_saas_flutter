@@ -1,5 +1,4 @@
 import 'package:get/get.dart' hide FormData, MultipartFile;
-import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
 import 'package:qbsc_saas/app/data/api_provider.dart';
 import 'package:qbsc_saas/app/data/api_endpoint.dart';
@@ -11,7 +10,6 @@ class ProfileController extends GetxController {
   var profileData = <String, dynamic>{}.obs;
 
   final imagePath = "".obs; // foto lokal kamera
-  final picker = ImagePicker();
   final api = Get.find<ApiProvider>();
 
   @override
@@ -42,14 +40,6 @@ class ProfileController extends GetxController {
     }
   }
 
-  Future<void> pickImage() async {
-    final picked = await picker.pickImage(source: ImageSource.camera);
-
-    if (picked != null) {
-      imagePath.value = picked.path;
-    }
-  }
-
   Future<void> saveProfile(String name, String whatsapp) async {
     isLoading.value = true;
 
@@ -58,11 +48,6 @@ class ProfileController extends GetxController {
         "satpam_id": profileData['id'],
         "name": name,
         "whatsapp": whatsapp,
-        if (imagePath.value.isNotEmpty)
-          "foto": await MultipartFile.fromFile(
-            imagePath.value,
-            filename: "profil_${DateTime.now().millisecondsSinceEpoch}.jpg",
-          ),
       });
 
       final response = await api.post(

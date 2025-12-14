@@ -28,12 +28,7 @@ class KejadianReport extends StatelessWidget {
 
       body: Obx(() {
         if (controller.situasiList.isEmpty) {
-          return Center(
-            child: Text(
-              'Belum ada data kejadian',
-              style: TextStyle(color: Colors.grey[700], fontSize: 16),
-            ),
-          );
+          return Center(child: Text('Belum ada data kejadian'));
         }
 
         return ListView.builder(

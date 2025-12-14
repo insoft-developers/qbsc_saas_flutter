@@ -50,6 +50,8 @@ class Pengaturan extends StatelessWidget {
                 });
               } else if (item['label'] == 'Profil') {
                 Get.toNamed('/pengaturan/profile');
+              } else if (item['label'] == 'Ubah Password') {
+                Get.toNamed('/pengaturan/password');
               }
             },
             borderRadius: BorderRadius.circular(20),

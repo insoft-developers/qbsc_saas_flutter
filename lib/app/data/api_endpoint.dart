@@ -30,6 +30,7 @@ class ApiEndpoint {
   static const String getNotifList = '/get_notif_list';
   static const String getProfileData = '/get_profile_data';
   static const String updateSatpamProfile = '/update_satpam_profile';
+  static const String changePassword = '/ubah_password_satpam';
 
   // User
   static const String profile = "/user/profile";

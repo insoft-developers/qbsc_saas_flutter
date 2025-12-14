@@ -16,7 +16,7 @@ class Kandang extends StatelessWidget {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F4F4),
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 60, 53, 53),
         title: const Text(
@@ -45,8 +45,8 @@ class Kandang extends StatelessWidget {
         if (list.isEmpty) {
           return const Center(
             child: Text(
-              'Belum ada data kandang di Hive.',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+              'Belum ada data kandang.',
+              style: TextStyle(fontWeight: FontWeight.w500),
             ),
           );
         }

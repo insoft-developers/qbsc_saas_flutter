@@ -38,6 +38,7 @@ class LokasiReport extends StatelessWidget {
     final controller = Get.put(LokasiReportController());
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 60, 53, 53),
         title: const Text(
