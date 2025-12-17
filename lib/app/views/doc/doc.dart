@@ -27,32 +27,24 @@ class Doc extends StatelessWidget {
           Get.toNamed('/laporan/doc');
         },
       ),
+
       body: Form(
         key: c.formKey,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ===================== TANGGAL =====================
-              const Text(
-                'Tanggal',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
+              _section("Waktu & Tanggal"),
+
               Obx(
-                () => TextFormField(
-                  readOnly: true,
-                  controller: TextEditingController(
-                    text: c.tanggal.value == null
-                        ? ''
-                        : '${c.tanggal.value!.year}-${c.tanggal.value!.month.toString().padLeft(2, '0')}-${c.tanggal.value!.day.toString().padLeft(2, '0')}',
-                  ),
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.date_range),
-                  ),
-                  validator: (v) =>
+                () => _readOnlyField(
+                  label: "Tanggal",
+                  icon: Icons.date_range,
+                  value: c.tanggal.value == null
+                      ? ''
+                      : '${c.tanggal.value!.year}-${c.tanggal.value!.month.toString().padLeft(2, '0')}-${c.tanggal.value!.day.toString().padLeft(2, '0')}',
+                  validator: (_) =>
                       c.tanggal.value == null ? 'Tanggal harus diisi' : null,
                   onTap: () async {
                     final hasil = await showDatePicker(
@@ -65,24 +57,15 @@ class Doc extends StatelessWidget {
                   },
                 ),
               ),
-              const SizedBox(height: 20),
 
-              // ===================== JAM =====================
-              const Text('Jam', style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
               Obx(
-                () => TextFormField(
-                  readOnly: true,
-                  controller: TextEditingController(
-                    text: c.jam.value == null
-                        ? ''
-                        : c.jam.value!.format(context),
-                  ),
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.access_time),
-                  ),
-                  validator: (v) =>
+                () => _readOnlyField(
+                  label: "Jam",
+                  icon: Icons.access_time,
+                  value: c.jam.value == null
+                      ? ''
+                      : c.jam.value!.format(context),
+                  validator: (_) =>
                       c.jam.value == null ? 'Jam harus diisi' : null,
                   onTap: () async {
                     final hasil = await showTimePicker(
@@ -93,34 +76,22 @@ class Doc extends StatelessWidget {
                   },
                 ),
               ),
-              const SizedBox(height: 20),
 
-              // ===================== JUMLAH BOX =====================
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'Jumlah Box',
-                  border: OutlineInputBorder(),
-                ),
+              _section("Informasi Pengiriman"),
+
+              _input(
+                label: "Jumlah Box",
+                icon: Icons.inventory_2_outlined,
                 keyboardType: TextInputType.number,
-                validator: (v) {
-                  if (v == null || v.isEmpty) return 'Jumlah box wajib diisi';
-                  return null;
-                },
+                validator: (v) =>
+                    v == null || v.isEmpty ? 'Jumlah box wajib diisi' : null,
                 onChanged: c.setJumlahBox,
               ),
-              const SizedBox(height: 20),
 
-              // ===================== EKSPEDISI =====================
-              const Text(
-                'Ekspedisi',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
               Obx(
-                () => DropdownButtonFormField(
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                  ),
+                () => _dropdown(
+                  hint: "Pilih Ekspedisi",
+                  icon: Icons.local_shipping_outlined,
                   value: c.ekspedisiTerpilih.value,
                   items: c.ekspedisiList
                       .map(
@@ -128,117 +99,99 @@ class Doc extends StatelessWidget {
                       )
                       .toList(),
                   validator: (v) => v == null ? 'Pilih ekspedisi' : null,
-                  onChanged: (v) => c.setEkspedisi(v),
+                  onChanged: c.setEkspedisi,
                 ),
               ),
-              const SizedBox(height: 20),
 
-              // ===================== TUJUAN =====================
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'Tujuan',
-                  border: OutlineInputBorder(),
-                ),
+              _input(
+                label: "Tujuan",
+                icon: Icons.flag_outlined,
                 validator: (v) =>
                     v == null || v.isEmpty ? 'Tujuan wajib diisi' : null,
                 onChanged: c.setTujuan,
               ),
-              const SizedBox(height: 20),
 
-              // ===================== NO POLISI =====================
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'No Polisi',
-                  border: OutlineInputBorder(),
-                ),
+              _input(
+                label: "No Polisi",
+                icon: Icons.confirmation_number_outlined,
                 validator: (v) =>
                     v == null || v.isEmpty ? 'No polisi wajib diisi' : null,
                 onChanged: c.setNoPolisi,
               ),
-              const SizedBox(height: 20),
 
-              // ===================== JENIS =====================
-              const Text(
-                'Jenis',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
               Obx(
-                () => DropdownButtonFormField(
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                  ),
+                () => _dropdown(
+                  hint: "Jenis DOC",
+                  icon: Icons.pets_outlined,
                   value: c.jenis.value,
-                  validator: (v) => v == null ? 'Pilih jenis' : null,
                   items: const [
                     DropdownMenuItem(value: 1, child: Text('Male')),
                     DropdownMenuItem(value: 2, child: Text('Female')),
                   ],
+                  validator: (v) => v == null ? 'Pilih jenis' : null,
                   onChanged: (v) => c.setJenis(v!),
                 ),
               ),
-              const SizedBox(height: 20),
 
-              // ===================== NOTE =====================
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'Note',
-                  border: OutlineInputBorder(),
-                ),
+              _input(
+                label: "Catatan",
+                icon: Icons.note_outlined,
                 maxLines: 3,
                 validator: (v) =>
                     v == null || v.isEmpty ? 'Note wajib diisi' : null,
                 onChanged: c.setNote,
               ),
-              const SizedBox(height: 20),
 
-              // ===================== FOTO =====================
-              const Text('Foto', style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
+              _section("Dokumentasi"),
+
+              Obx(() => _photoPicker(image: c.foto.value, onPick: c.pickFoto)),
+
+              const SizedBox(height: 36),
+
               Obx(
-                () => Column(
-                  children: [
-                    c.foto.value == null
-                        ? Container(
-                            height: 150,
-                            width: double.infinity,
-                            color: Colors.grey.shade300,
-                            alignment: Alignment.center,
-                            child: const Text('Belum ada foto'),
-                          )
-                        : Image.file(c.foto.value!, height: 150),
-                    const SizedBox(height: 8),
-                    ElevatedButton.icon(
-                      onPressed: c.pickFoto,
-                      icon: const Icon(Icons.camera_alt),
-                      label: const Text('Ambil Foto'),
+                () => SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton(
+                    onPressed: c.isLoading.value
+                        ? null
+                        : () {
+                            if (c.validateForm()) {
+                              c.saveDoc();
+                            } else {
+                              Get.snackbar(
+                                'Gagal',
+                                'Masih ada data yang kosong',
+                                backgroundColor: Colors.red,
+                                colorText: Colors.white,
+                              );
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black87,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                     ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 30),
-
-              // ===================== BUTTON SIMPAN =====================
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (c.validateForm()) {
-                      c.saveDoc();
-                    } else {
-                      Get.snackbar(
-                        'Gagal',
-                        'Masih ada data yang kosong',
-                        backgroundColor: Colors.red,
-                        colorText: Colors.white,
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black87,
-                    foregroundColor: Colors.white,
+                    child: c.isLoading.value
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 3,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            'SIMPAN DATA',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
+                              color: Colors.white,
+                            ),
+                          ),
                   ),
-                  child: const Text('Simpan Data'),
                 ),
               ),
             ],
@@ -248,3 +201,121 @@ class Doc extends StatelessWidget {
     );
   }
 }
+
+Widget _section(String title) => Padding(
+  padding: const EdgeInsets.only(bottom: 14, top: 10),
+  child: Text(
+    title,
+    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+  ),
+);
+
+Widget _input({
+  required String label,
+  required IconData icon,
+  int maxLines = 1,
+  TextInputType keyboardType = TextInputType.text,
+  FormFieldValidator<String>? validator,
+  ValueChanged<String>? onChanged,
+}) => Padding(
+  padding: const EdgeInsets.only(bottom: 18),
+  child: TextFormField(
+    keyboardType: keyboardType,
+    maxLines: maxLines,
+    validator: validator,
+    onChanged: onChanged,
+    decoration: InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon),
+      filled: true,
+      fillColor: Colors.grey.shade50,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+    ),
+  ),
+);
+
+Widget _readOnlyField({
+  required String label,
+  required IconData icon,
+  required String value,
+  FormFieldValidator<String>? validator,
+  required VoidCallback onTap,
+}) => Padding(
+  padding: const EdgeInsets.only(bottom: 18),
+  child: TextFormField(
+    readOnly: true,
+    controller: TextEditingController(text: value),
+    validator: validator,
+    onTap: onTap,
+    decoration: InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon),
+      filled: true,
+      fillColor: Colors.grey.shade50,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+    ),
+  ),
+);
+
+Widget _dropdown<T>({
+  required String hint,
+  required IconData icon,
+  required T value,
+  required List<DropdownMenuItem<T>> items,
+  FormFieldValidator<T>? validator,
+  ValueChanged<T?>? onChanged,
+}) => Padding(
+  padding: const EdgeInsets.only(bottom: 18),
+  child: DropdownButtonFormField<T>(
+    value: value,
+    items: items,
+    validator: validator,
+    onChanged: onChanged,
+    decoration: InputDecoration(
+      labelText: hint,
+      prefixIcon: Icon(icon),
+      filled: true,
+      fillColor: Colors.grey.shade50,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+    ),
+  ),
+);
+
+Widget _photoPicker({required dynamic image, required VoidCallback onPick}) =>
+    Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade300),
+        color: Colors.grey.shade50,
+      ),
+      child: Column(
+        children: [
+          image == null
+              ? Container(
+                  height: 160,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Text('Belum ada foto'),
+                )
+              : ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.file(
+                    image,
+                    height: 160,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: onPick,
+            icon: const Icon(Icons.camera_alt_outlined),
+            label: const Text("Ambil Foto"),
+          ),
+        ],
+      ),
+    );

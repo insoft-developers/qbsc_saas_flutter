@@ -228,26 +228,16 @@ class DocController extends GetxController {
     );
 
     await boxDoc.add(model);
-    cekHive();
-    isLoading(false);
+
     clearForm();
+    await Future.delayed(const Duration(milliseconds: 600));
+    isLoading(false);
     Get.snackbar(
       'Berhasil',
       'Data berhasil disimpan!',
       backgroundColor: Colors.green,
       colorText: Colors.white,
     );
-  }
-
-  Future<void> cekHive() async {
-    final box = Hive.box<DocModel>('doc'); // ✅ pakai box yang sudah dibuka
-    print('=== CEK  DOC HIVE ===');
-    print('Total data: ${box.length}');
-    for (var item in box.values) {
-      print(
-        'ID: ${item.id}, tanggal: ${item.tanggal}, jam: ${item.jam}, satpam: ${item.satpamId}, jumlah: ${item.jumlah.toString()}, eks: ${item.ekspedisiId.toString()}, tujuan: ${item.tujuan}, nopol: ${item.noPolisi}, jenis: ${item.jenis.toString()}, note: ${item.note}, foto: ${item.foto}, comid: ${item.comid.toDouble()}, created_at: ${item.createdAt}',
-      );
-    }
   }
 
   String formatJam(TimeOfDay tod) {

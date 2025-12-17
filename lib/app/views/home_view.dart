@@ -224,53 +224,76 @@ class _HomeViewState extends State<HomeView> {
     return Obx(() {
       final photo = "${ApiProvider.imageUrl}/${authC.userPhoto.value}";
 
-      return Card(
-        color: Colors.white,
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        child: Padding(
-          padding: const EdgeInsets.all(18),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: isTablet ? 40 : 32,
-                backgroundImage: authC.userPhoto.value.isNotEmpty
-                    ? NetworkImage(photo)
-                    : const AssetImage('assets/images/satpam_default.png')
-                          as ImageProvider,
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Selamat Datang',
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      AppPrefs.getUserName() ?? '-',
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1A237E),
-                      ),
-                    ),
+      return Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(22),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04), // shadow halus ala iOS
+              blurRadius: 18,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        child: Row(
+          children: [
+            // FOTO PROFIL
+            CircleAvatar(
+              radius: isTablet ? 38 : 32,
+              backgroundColor: const Color(0xFFE5E5EA), // iOS system gray
+              backgroundImage: authC.userPhoto.value.isNotEmpty
+                  ? NetworkImage(photo)
+                  : const AssetImage('assets/images/satpam_default.png')
+                        as ImageProvider,
+            ),
 
-                    Text(
-                      AppPrefs.getCompanyName() ?? '-',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red,
-                      ),
+            const SizedBox(width: 16),
+
+            // TEKS
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Selamat Bertugas',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w400,
                     ),
-                  ],
-                ),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  Text(
+                    AppPrefs.getUserName() ?? '-',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600, // iOS preferred weight
+                      color: Color(0xFF1C1C1E),
+                    ),
+                  ),
+
+                  const SizedBox(height: 2),
+
+                  Text(
+                    AppPrefs.getCompanyName() ?? '-',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF34C759), // iOS green
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     });
@@ -299,6 +322,7 @@ class _HomeViewState extends State<HomeView> {
 }
 
 // ================= MENU CARD =================
+
 class _MenuCard extends StatelessWidget {
   final String icon;
   final String label;
@@ -312,30 +336,41 @@ class _MenuCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(20),
+    return GestureDetector(
       onTap: onTap,
-      child: Card(
-        elevation: 4,
-        color: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset(icon, width: 70),
-              const SizedBox(height: 12),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF1A237E),
-                ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(22),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04), // shadow tipis ala iOS
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 22),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // ICON BESAR TANPA KOTAK
+            Image.asset(icon, width: 64, height: 64, fit: BoxFit.contain),
+
+            const SizedBox(height: 18),
+
+            // LABEL
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500, // iOS style
+                color: Color(0xFF1C1C1E),
+                letterSpacing: 0.2,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

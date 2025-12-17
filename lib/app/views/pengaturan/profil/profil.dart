@@ -15,7 +15,7 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF8F9FB),
       appBar: AppBar(
         backgroundColor: Colors.black,
         title: const Text(
@@ -29,7 +29,7 @@ class ProfilePage extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
 
-        /// Set input value setelah data profile berhasil load
+        /// Set input setelah data load
         nameC.text = c.profileData['name']?.toString() ?? "";
         badgeC.text = c.profileData['badge_id']?.toString() ?? "";
         waC.text = c.profileData['whatsapp']?.toString() ?? "";
@@ -38,21 +38,19 @@ class ProfilePage extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              // ==================== FOTO PROFIL ====================
+              // ==================== HEADER FOTO ====================
               GestureDetector(
                 onTap: () {
                   Get.snackbar(
-                    'Warning',
-                    'Foto tidak bisa diganti melalui aplikasi ini, Kontak Administrator Anda untuk mengganti foto profil',
+                    'Info',
+                    'Foto profil hanya dapat diubah oleh Administrator',
                     backgroundColor: Colors.red,
                     colorText: Colors.white,
                     snackPosition: SnackPosition.BOTTOM,
-                    duration: const Duration(seconds: 2),
                   );
                 },
                 child: Obx(() {
                   final faceUrl = c.profileData['face_photo_path'];
-
                   ImageProvider? imgProvider;
 
                   if (c.imagePath.value.isNotEmpty) {
@@ -63,68 +61,131 @@ class ProfilePage extends StatelessWidget {
                     );
                   }
 
-                  return CircleAvatar(
-                    radius: 55,
-                    backgroundColor: Colors.grey.shade300,
-                    backgroundImage: imgProvider,
-                    child: imgProvider == null
-                        ? const Icon(Icons.camera_alt, size: 32)
-                        : null,
+                  return Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.15),
+                          blurRadius: 10,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: CircleAvatar(
+                      radius: 58,
+                      backgroundColor: Colors.grey.shade300,
+                      backgroundImage: imgProvider,
+                      child: imgProvider == null
+                          ? const Icon(Icons.person, size: 36)
+                          : null,
+                    ),
                   );
                 }),
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(height: 12),
 
-              // Nama
-              TextField(
-                controller: nameC,
-                decoration: const InputDecoration(
-                  labelText: "Nama",
-                  border: OutlineInputBorder(),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // Badge ID
-              TextField(
-                controller: badgeC,
-                readOnly: true,
-                decoration: const InputDecoration(
-                  labelText: "Badge ID",
-                  border: OutlineInputBorder(),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // WhatsApp
-              TextField(
-                controller: waC,
-                decoration: const InputDecoration(
-                  labelText: "WhatsApp",
-                  border: OutlineInputBorder(),
+              Text(
+                "Informasi Profil",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade800,
                 ),
               ),
 
               const SizedBox(height: 30),
 
+              // ==================== FORM CARD ====================
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.06),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    // Nama
+                    TextField(
+                      controller: nameC,
+                      decoration: const InputDecoration(
+                        labelText: "Nama Lengkap",
+                        prefixIcon: Icon(Icons.person_outline),
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Badge ID
+                    TextField(
+                      controller: badgeC,
+                      readOnly: true,
+                      decoration: const InputDecoration(
+                        labelText: "Badge ID",
+                        prefixIcon: Icon(Icons.badge_outlined),
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // WhatsApp
+                    TextField(
+                      controller: waC,
+                      keyboardType: TextInputType.phone,
+                      decoration: const InputDecoration(
+                        labelText: "WhatsApp",
+                        prefixIcon: Icon(Icons.phone_outlined),
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              // ==================== BUTTON ====================
               SizedBox(
                 width: double.infinity,
+                height: 52,
                 child: ElevatedButton.icon(
                   onPressed: () {
                     c.saveProfile(nameC.text.trim(), waC.text.trim());
                   },
                   icon: const Icon(Icons.save, color: Colors.white),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
                   label: const Text(
                     "Simpan Perubahan",
-                    style: TextStyle(color: Colors.white, fontSize: 16),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                "QBSC Versi ${ApiProvider.appVersion}",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
                 ),
               ),
             ],

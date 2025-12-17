@@ -25,122 +25,117 @@ class Tamu extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // ==================== TOMBOL SCAN QR ====================
-            GestureDetector(
-              onTap: () {
-                Get.to(() => TamuScan());
-              },
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 22),
-                decoration: BoxDecoration(
-                  color: primary,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: primary.withOpacity(0.25),
-                      blurRadius: 12,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Iconsax.scan, color: Colors.white, size: 28),
-                    SizedBox(width: 12),
-                    Text(
-                      "Scan QR Tamu",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            _menuCard(
+              title: "Scan QR Tamu",
+              subtitle: "Scan QR untuk mencatat kedatangan tamu",
+              icon: Iconsax.scan,
+              color: const Color(0xFF2D3E50),
+              textColor: Colors.white,
+              onTap: () => Get.to(() => TamuScan()),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 18),
 
-            // ==================== TOMBOL TAMBAH DATA TAMU ====================
-            GestureDetector(
-              onTap: () {
-                Get.toNamed('/tambah/tamu');
-              },
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 22),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: primary, width: 1.8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Iconsax.add, color: primary, size: 28),
-                    const SizedBox(width: 12),
-                    Text(
-                      "Tambah Data Tamu",
-                      style: TextStyle(
-                        color: primary,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            _menuCard(
+              title: "Tambah Data Tamu",
+              subtitle: "Input data tamu secara manual",
+              icon: Iconsax.add,
+              color: Colors.white,
+              borderColor: const Color(0xFF2D3E50),
+              iconColor: const Color(0xFF2D3E50),
+              textColor: const Color(0xFF2D3E50),
+              onTap: () => Get.toNamed('/tambah/tamu'),
             ),
-            const SizedBox(height: 20),
-            GestureDetector(
-              onTap: () {
-                Get.toNamed('/laporan/tamu');
-              },
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 22),
-                decoration: BoxDecoration(
-                  color: Colors.lightBlueAccent,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: primary, width: 1.8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Iconsax.people, color: primary, size: 28),
-                    const SizedBox(width: 12),
-                    Text(
-                      "Daftar Tamu Datang",
-                      style: TextStyle(
-                        color: primary,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+
+            const SizedBox(height: 18),
+
+            _menuCard(
+              title: "Daftar Tamu Datang",
+              subtitle: "Lihat histori kunjungan tamu",
+              icon: Iconsax.people,
+              color: Colors.lightBlueAccent.shade100,
+              borderColor: const Color(0xFF2D3E50),
+              iconColor: const Color(0xFF2D3E50),
+              textColor: const Color(0xFF2D3E50),
+              onTap: () => Get.toNamed('/laporan/tamu'),
             ),
           ],
         ),
       ),
     );
   }
+}
+
+Widget _menuCard({
+  required String title,
+  required String subtitle,
+  required IconData icon,
+  required Color color,
+  required VoidCallback onTap,
+  Color? borderColor,
+  Color? iconColor,
+  Color? textColor,
+}) {
+  return InkWell(
+    borderRadius: BorderRadius.circular(20),
+    onTap: onTap,
+    child: Ink(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 20),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(20),
+        border: borderColor != null
+            ? Border.all(color: borderColor, width: 1.6)
+            : null,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: (iconColor ?? Colors.white).withOpacity(0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 28, color: iconColor ?? Colors.white),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: textColor ?? Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: (textColor ?? Colors.white).withOpacity(0.75),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            Iconsax.arrow_right_3,
+            color: (textColor ?? Colors.white).withOpacity(0.6),
+          ),
+        ],
+      ),
+    ),
+  );
 }

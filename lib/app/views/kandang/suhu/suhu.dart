@@ -202,7 +202,11 @@ class _SuhuState extends State<Suhu> {
                     // Tombol simpan
                     Obx(
                       () => controller.isLoading.value
-                          ? const SizedBox()
+                          ? const Center(
+                              child: CircularProgressIndicator(
+                                color: Colors.amber,
+                              ),
+                            )
                           : SizedBox(
                               width: double.infinity,
                               height: size.height * 0.065,
@@ -269,7 +273,7 @@ class _SuhuState extends State<Suhu> {
                                   setState(() => imageFile = null);
 
                                   Future.delayed(
-                                    const Duration(milliseconds: 800),
+                                    const Duration(milliseconds: 200),
                                     () {
                                       Navigator.of(context).pop();
                                     },

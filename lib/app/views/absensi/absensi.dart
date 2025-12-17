@@ -197,7 +197,11 @@ class _AbsensiState extends State<Absensi> {
     } catch (e) {
       if (kDebugMode) print("Verifikasi error: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Gagal memverifikasi wajah")),
+        const SnackBar(
+          content: Text(
+            "Gagal memverifikasi Wajah atau Tekan Tombol Lakukan Absensi agak lama",
+          ),
+        ),
       );
     } finally {
       setState(() => _isVerifying = false);

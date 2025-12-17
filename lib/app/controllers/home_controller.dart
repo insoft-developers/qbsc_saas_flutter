@@ -6,6 +6,7 @@ import 'package:qbsc_saas/app/models/ekspedisi_model.dart';
 import 'package:qbsc_saas/app/models/kandang_model.dart';
 import 'package:qbsc_saas/app/models/location_model.dart';
 import 'package:qbsc_saas/app/utils/app_prefs.dart';
+import 'package:qbsc_saas/app/utils/snackbar_helper.dart';
 import 'package:qbsc_saas/app/views/paket.dart';
 
 class HomeController extends GetxController {
@@ -87,12 +88,12 @@ class HomeController extends GetxController {
 
         locations.assignAll(locationList);
       } else {
-        Get.snackbar('Gagal', 'Data tidak ada');
+        SnackbarHelper.error('Gagal', 'Data tidak ada');
       }
     } catch (e) {
       final local = _box.values.toList();
       locations.assignAll(local);
-      Get.snackbar('Error', 'Offline');
+      // SnackbarHelper.error('Error', 'Offline');
     } finally {
       isLoading.value = false;
     }
@@ -127,12 +128,12 @@ class HomeController extends GetxController {
 
         ekspedisi.assignAll(ekspedisiList);
       } else {
-        Get.snackbar('Gagal', 'Data tidak ada');
+        SnackbarHelper.error('Gagal', 'Data tidak ada');
       }
     } catch (e) {
       final local = _boxEkspedisi.values.toList();
       ekspedisi.assignAll(local);
-      Get.snackbar('Error', 'Offline');
+      // SnackbarHelper.error('Error', 'Offline');
     } finally {
       isLoading.value = false;
     }
@@ -167,12 +168,12 @@ class HomeController extends GetxController {
 
         kandangs.assignAll(kandangList);
       } else {
-        Get.snackbar('Gagal', 'Data tidak ada');
+        SnackbarHelper.error('Gagal', 'Data tidak ada');
       }
     } catch (e) {
       final local = _boxKandang.values.toList();
       kandangs.assignAll(local);
-      Get.snackbar('Error', 'Offline');
+      // SnackbarHelper.error('Error', 'Offline');
     } finally {
       kandangLoading.value = false;
     }
@@ -195,7 +196,7 @@ class HomeController extends GetxController {
     String comid = AppPrefs.getComId().toString();
 
     if (comid.isEmpty) {
-      Get.snackbar('Error', 'Com id tidak ditemukan');
+      SnackbarHelper.error('Error', 'Com id tidak ditemukan');
       return;
     }
 
@@ -211,7 +212,7 @@ class HomeController extends GetxController {
         Get.to(() => Paket());
       }
     } catch (e) {
-      Get.snackbar('Error', 'Offline');
+      // SnackbarHelper.error('Error', 'Offline');
     } finally {}
   }
 }

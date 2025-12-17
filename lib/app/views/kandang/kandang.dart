@@ -5,7 +5,6 @@ import 'package:qbsc_saas/app/views/kandang/kandang_controller.dart';
 import 'package:qbsc_saas/app/views/kandang/kipas/kipas.dart';
 import 'package:qbsc_saas/app/views/kandang/lampu/lampu.dart';
 import 'package:qbsc_saas/app/views/kandang/suhu/suhu.dart';
-import 'package:qbsc_saas/app/views/kandang/suhu/suhu_controller.dart';
 
 class Kandang extends StatelessWidget {
   const Kandang({super.key});
@@ -16,16 +15,12 @@ class Kandang extends StatelessWidget {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF8F9FB),
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 60, 53, 53),
         title: const Text(
           'Daftar Kandang',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            fontSize: 22,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
         ),
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -39,13 +34,13 @@ class Kandang extends StatelessWidget {
           Get.toNamed('/laporan/kandang');
         },
       ),
-
       body: Obx(() {
         final list = controller.kandangList;
+
         if (list.isEmpty) {
           return const Center(
             child: Text(
-              'Belum ada data kandang.',
+              'Belum ada data kandang',
               style: TextStyle(fontWeight: FontWeight.w500),
             ),
           );
@@ -54,119 +49,139 @@ class Kandang extends StatelessWidget {
         return ListView.builder(
           padding: const EdgeInsets.all(16),
           itemCount: list.length,
-          shrinkWrap: true,
           itemBuilder: (context, index) {
             final kandang = list[index];
+
             return Container(
               margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 14,
+                    offset: const Offset(0, 6),
                   ),
                 ],
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Nama kandang
-                    Text(
-                      kandang.name.toUpperCase(),
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: size.width * 0.05,
-                        color: const Color(0xFF3E3E3E),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ================= HEADER =================
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        kandang.name.toUpperCase(),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    // Detail info
-                    Text(
-                      'Kode: ${kandang.code}\n'
-                      'Suhu Standar: ${kandang.stdTemp}°C | Kipas: ${kandang.fanAmount}\n'
-                      'Status: ${kandang.isEmpty ? 'Kosong' : 'Terisi'}',
-                      style: TextStyle(
-                        fontSize: size.width * 0.04,
-                        color: Colors.grey[700],
-                        height: 1.4,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: kandang.isEmpty
+                              ? Colors.grey.shade200
+                              : Colors.green.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          kandang.isEmpty ? 'Kosong' : 'Terisi',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: kandang.isEmpty ? Colors.grey : Colors.green,
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
+                    ],
+                  ),
 
-                    // Tombol-tombol kontrol
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        final isWide = constraints.maxWidth > 400;
-                        return Flex(
-                          direction: isWide ? Axis.horizontal : Axis.vertical,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            _buildControlButton(
-                              label: 'Suhu',
-                              icon: Icons.thermostat,
-                              color: Colors.orangeAccent,
-                              onTap: () {
-                                Get.to(
-                                  () =>
-                                      Suhu(id: kandang.id, name: kandang.name),
-                                );
-                              },
-                              size: size,
-                              fullWidth: !isWide,
-                            ),
-                            _buildControlButton(
-                              label: 'Kipas',
-                              icon: Icons.wind_power,
-                              color: Colors.lightBlueAccent,
-                              onTap: () {
-                                Get.to(
-                                  () => Kipas(
-                                    id: kandang.id,
-                                    name: kandang.name,
-                                    jumlahKipas: kandang.fanAmount,
-                                  ),
-                                );
-                              },
-                              size: size,
-                              fullWidth: !isWide,
-                            ),
-                            _buildControlButton(
-                              label: 'Alarm',
-                              icon: Icons.alarm,
-                              color: Colors.redAccent,
-                              onTap: () {
-                                Get.to(
-                                  () =>
-                                      Alarm(id: kandang.id, name: kandang.name),
-                                );
-                              },
-                              size: size,
-                              fullWidth: !isWide,
-                            ),
-                            _buildControlButton(
-                              label: 'Lampu',
-                              icon: Icons.lightbulb,
-                              color: Colors.amber,
-                              onTap: () {
-                                Get.to(
-                                  () =>
-                                      Lampu(id: kandang.id, name: kandang.name),
-                                );
-                              },
-                              size: size,
-                              fullWidth: !isWide,
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ],
-                ),
+                  const SizedBox(height: 10),
+
+                  // ================= INFO =================
+                  _infoRow('Kode', kandang.code),
+                  _infoRow('Suhu Standar', '${kandang.stdTemp} °C'),
+                  _infoRow('Jumlah Kipas', kandang.fanAmount.toString()),
+
+                  const SizedBox(height: 18),
+
+                  // ================= CONTROL =================
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isWide = constraints.maxWidth > 420;
+
+                      return Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: [
+                          _controlButton(
+                            label: 'Suhu',
+                            icon: Icons.thermostat,
+                            color: Colors.orange,
+                            width: isWide
+                                ? constraints.maxWidth / 4 - 12
+                                : constraints.maxWidth,
+                            onTap: () {
+                              Get.to(
+                                () => Suhu(id: kandang.id, name: kandang.name),
+                              );
+                            },
+                          ),
+                          _controlButton(
+                            label: 'Kipas',
+                            icon: Icons.wind_power,
+                            color: Colors.blue,
+                            width: isWide
+                                ? constraints.maxWidth / 4 - 12
+                                : constraints.maxWidth,
+                            onTap: () {
+                              Get.to(
+                                () => Kipas(
+                                  id: kandang.id,
+                                  name: kandang.name,
+                                  jumlahKipas: kandang.fanAmount,
+                                ),
+                              );
+                            },
+                          ),
+                          _controlButton(
+                            label: 'Alarm',
+                            icon: Icons.alarm,
+                            color: Colors.red,
+                            width: isWide
+                                ? constraints.maxWidth / 4 - 12
+                                : constraints.maxWidth,
+                            onTap: () {
+                              Get.to(
+                                () => Alarm(id: kandang.id, name: kandang.name),
+                              );
+                            },
+                          ),
+                          _controlButton(
+                            label: 'Lampu',
+                            icon: Icons.lightbulb,
+                            color: Colors.amber.shade700,
+                            width: isWide
+                                ? constraints.maxWidth / 4 - 12
+                                : constraints.maxWidth,
+                            onTap: () {
+                              Get.to(
+                                () => Lampu(id: kandang.id, name: kandang.name),
+                              );
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ],
               ),
             );
           },
@@ -175,37 +190,59 @@ class Kandang extends StatelessWidget {
     );
   }
 
-  Widget _buildControlButton({
+  // ================= INFO ROW =================
+  Widget _infoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Text(
+              label,
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+            ),
+          ),
+          Expanded(
+            flex: 5,
+            child: Text(
+              value,
+              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ================= BUTTON =================
+  Widget _controlButton({
     required String label,
     required IconData icon,
     required Color color,
+    required double width,
     required VoidCallback onTap,
-    required Size size,
-    bool fullWidth = false,
   }) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: fullWidth ? 6 : 0),
-      child: SizedBox(
-        width: fullWidth ? double.infinity : size.width * 0.2,
-        height: size.height * 0.06,
-        child: ElevatedButton.icon(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: color,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            elevation: 2,
+    return SizedBox(
+      width: width,
+      height: 44,
+      child: ElevatedButton.icon(
+        onPressed: onTap,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
           ),
-          icon: Icon(icon, size: size.width * 0.08, color: Colors.white),
-          label: Text(
-            label,
-            style: TextStyle(
-              fontSize: size.width * 0.05,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
+        ),
+        icon: Icon(icon, size: 18, color: Colors.white),
+        label: Text(
+          label,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
           ),
-          onPressed: onTap,
         ),
       ),
     );

@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:path/path.dart';
 import 'package:qbsc_saas/app/data/api_endpoint.dart';
 import 'package:qbsc_saas/app/data/api_provider.dart';
+import 'package:qbsc_saas/app/models/location_model.dart';
 import 'package:qbsc_saas/app/models/patroli_model.dart';
 import 'package:uuid/uuid.dart';
 
@@ -17,9 +18,12 @@ class PatroliController extends GetxController {
   Timer? _periodicSyncTimer;
   final ApiProvider api = Get.find<ApiProvider>();
 
+  late Box<LocationModel> lokasiBox;
+
   @override
   void onInit() {
     super.onInit();
+    lokasiBox = Hive.box<LocationModel>('locations');
 
     // Jalankan sync saat controller pertama aktif
     syncPatroliToServer();
@@ -45,6 +49,17 @@ class PatroliController extends GetxController {
     _connectivitySubscription.cancel();
     _periodicSyncTimer?.cancel();
     super.onClose();
+  }
+
+  String getNamaLokasi(String locationId) {
+    try {
+      final lokasi = lokasiBox.values.firstWhere(
+        (loc) => loc.id.toString() == locationId,
+      );
+      return lokasi.namaLokasi;
+    } catch (_) {
+      return '-';
+    }
   }
 
   Future<void> savePatroliLocal({

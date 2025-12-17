@@ -72,14 +72,16 @@ class Laporan extends StatelessWidget {
       ),
       body: ListView.separated(
         padding: EdgeInsets.symmetric(
-          horizontal: isTablet ? 32 : 16,
-          vertical: 20,
+          horizontal: isTablet ? 32 : 18,
+          vertical: 24,
         ),
         itemCount: menuItems.length,
-        separatorBuilder: (context, index) => const SizedBox(height: 16),
+        separatorBuilder: (_, __) => const SizedBox(height: 14),
         itemBuilder: (context, index) {
           final item = menuItems[index];
+
           return InkWell(
+            borderRadius: BorderRadius.circular(18),
             onTap: () {
               if (item['label'] == 'Laporan Patroli') {
                 Get.toNamed('/laporan/patroli');
@@ -95,46 +97,79 @@ class Laporan extends StatelessWidget {
                 Get.toNamed('/laporan/kejadian');
               }
             },
-            borderRadius: BorderRadius.circular(20),
             child: Ink(
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(18),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.indigo.withOpacity(0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 10,
+                    offset: const Offset(0, 6),
                   ),
                 ],
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
                   vertical: 16,
-                  horizontal: 20,
                 ),
                 child: Row(
                   children: [
+                    // ================= ICON BADGE =================
                     Container(
+                      width: iconSize + 20,
+                      height: iconSize + 20,
                       decoration: BoxDecoration(
-                        color: Colors.indigo.shade50,
-                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.indigo.shade400,
+                            Colors.indigo.shade700,
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(14),
                       ),
-                      padding: const EdgeInsets.all(16),
                       child: Icon(
                         item['icon'],
-                        color: Colors.indigo,
+                        color: Colors.white,
                         size: iconSize,
                       ),
                     ),
-                    const SizedBox(width: 20),
-                    Text(
-                      item['label'],
-                      style: TextStyle(
-                        fontSize: fontSize,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.indigo[900],
+
+                    const SizedBox(width: 16),
+
+                    // ================= TEXT =================
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item['label'],
+                            style: TextStyle(
+                              fontSize: fontSize,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF1F2937),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _getSubtitle(item['label']),
+                            style: TextStyle(
+                              fontSize: fontSize - 2,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
                       ),
+                    ),
+
+                    // ================= ARROW =================
+                    const Icon(
+                      Icons.chevron_right_rounded,
+                      size: 30,
+                      color: Colors.grey,
                     ),
                   ],
                 ),
@@ -144,5 +179,24 @@ class Laporan extends StatelessWidget {
         },
       ),
     );
+  }
+}
+
+String _getSubtitle(String label) {
+  switch (label) {
+    case 'Laporan Patroli':
+      return 'Riwayat aktivitas patroli petugas';
+    case 'Laporan Data Lokasi':
+      return 'Data titik lokasi patroli';
+    case 'Laporan Kandang':
+      return 'Monitoring aktivitas kandang';
+    case 'Laporan Data Ekspedisi':
+      return 'Riwayat pengiriman & ekspedisi';
+    case 'Laporan DOC Keluar':
+      return 'Distribusi DOC keluar';
+    case 'Laporan Kejadian':
+      return 'Catatan insiden & kejadian';
+    default:
+      return '';
   }
 }

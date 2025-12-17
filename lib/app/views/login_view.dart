@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:qbsc_saas/app/controllers/auth_controller.dart';
+import 'package:qbsc_saas/app/data/api_provider.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -157,13 +158,29 @@ class _LoginViewState extends State<LoginView> {
 
                   // 🔗 Lupa password
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Get.snackbar(
+                        'Info',
+                        'Silahkan hub administrator anda untuk minta reset password',
+                        backgroundColor: Colors.red,
+                        colorText: Colors.white,
+                        snackPosition: SnackPosition.BOTTOM,
+                      );
+                    },
                     child: Text(
                       "Lupa password?",
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.8),
                         fontSize: isTablet ? 16 : 14,
                       ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    "Versi ${ApiProvider.appVersion}",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],

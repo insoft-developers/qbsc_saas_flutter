@@ -162,28 +162,16 @@ class KejadianController extends GetxController {
     );
 
     await boxSituasi.add(model);
-    cekHive();
-    isLoading(false);
     clearForm();
+    await Future.delayed(const Duration(milliseconds: 600));
+    isLoading(false);
+
     Get.snackbar(
       'Berhasil',
       'Data berhasil disimpan!',
       backgroundColor: Colors.green,
       colorText: Colors.white,
     );
-  }
-
-  Future<void> cekHive() async {
-    final box = Hive.box<SituasiModel>(
-      'situasi',
-    ); // ✅ pakai box yang sudah dibuka
-    print('=== CEK  SITUASI HIVE ===');
-    print('Total data: ${box.length}');
-    for (var item in box.values) {
-      print(
-        'ID: ${item.id}, tanggal: ${item.createdAt}, laporan: ${item.laporan}, satpam: ${item.satpamId}, foto: ${item.foto}, comid: ${item.comid.toString()}',
-      );
-    }
   }
 
   String formatJam(TimeOfDay tod) {

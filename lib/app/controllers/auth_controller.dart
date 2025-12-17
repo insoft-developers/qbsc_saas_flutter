@@ -35,7 +35,7 @@ class AuthController extends GetxController with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) {
       // 🔐 CEK SETIAP APP KEMBALI AKTIF
       final isDevMode = await DeviceSecurityService.isDeveloperMode();
-      if (isDevMode) {
+      if (isDevMode && ApiProvider.isFakeLogout) {
         await _forceLogout();
       }
     }
@@ -56,7 +56,7 @@ class AuthController extends GetxController with WidgetsBindingObserver {
       final isDevMode = await DeviceSecurityService.isDeveloperMode();
       debugPrint('🔥 DEV MODE STATUS: $isDevMode');
 
-      if (isDevMode) {
+      if (isDevMode && ApiProvider.isFakeLogout) {
         await _forceLogout();
         return;
       }
@@ -109,7 +109,7 @@ class AuthController extends GetxController with WidgetsBindingObserver {
 
     Get.snackbar(
       'Akses Ditolak',
-      'Nonaktifkan Developer Mode untuk menggunakan aplikasi',
+      'Untuk Menghindarai penggunaan aplikasi Fake GPS dan sejenisnya, silahkan matikan Developer Mode untuk menggunakan aplikasi',
       backgroundColor: Colors.red.shade700,
       colorText: Colors.white,
       duration: const Duration(seconds: 4),
@@ -137,7 +137,7 @@ class AuthController extends GetxController with WidgetsBindingObserver {
     final isDevMode = await DeviceSecurityService.isDeveloperMode();
     debugPrint('🔥 DEV MODE STATUS: $isDevMode');
 
-    if (isDevMode) {
+    if (isDevMode && ApiProvider.isFakeLogout) {
       await _forceLogout();
       return;
     }

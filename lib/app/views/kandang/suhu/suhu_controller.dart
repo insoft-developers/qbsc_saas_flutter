@@ -52,51 +52,44 @@ class SuhuController extends GetxController {
     String? note,
     File? foto,
   }) async {
-    // ambil lokasi
-    isLoading(true);
-    Position? position = await getCurrentPosition();
-    double latitude = position?.latitude ?? 0.0;
-    double longitude = position?.longitude ?? 0.0;
+    try {
+      isLoading.value = true; // ⬅️ PASTI TRUE
 
-    final uuid = const Uuid().v4();
-    final now = DateTime.now();
-    final nextId = box.isEmpty
-        ? 1
-        : (box.values.map((e) => e.id ?? 0).reduce((a, b) => a > b ? a : b) +
-              1);
+      final position = await getCurrentPosition();
+      final latitude = position?.latitude ?? 0.0;
+      final longitude = position?.longitude ?? 0.0;
 
-    final model = KandangSuhuModel(
-      id: nextId, // Hive auto assign key
-      uuid: uuid,
-      tanggal: DateFormat('yyyy-MM-dd').format(now),
-      jam: DateFormat('HH:mm:ss').format(now),
-      kandangId: kandangId,
-      satpamId: satpamId,
-      temperature: temperature,
-      note: note ?? '',
-      foto: foto?.path ?? '',
-      comid: 1,
-      latitude: latitude,
-      longitude: longitude,
-      isSynced: false, // belum sync ke server
-      syncedAt: null,
-    );
+      final uuid = const Uuid().v4();
+      final now = DateTime.now();
 
-    await box.add(model);
-    cekHive();
-    isLoading(false);
-  }
+      final nextId = box.isEmpty
+          ? 1
+          : box.values.map((e) => e.id ?? 0).reduce((a, b) => a > b ? a : b) +
+                1;
 
-  Future<void> cekHive() async {
-    final box = Hive.box<KandangSuhuModel>(
-      'kandang_suhu',
-    ); // ✅ pakai box yang sudah dibuka
-    print('=== CEK SUHU DI HIVE ===');
-    print('Total data: ${box.length}');
-    for (var item in box.values) {
-      print(
-        'ID: ${item.id}, UUID: ${item.uuid}, Temp: ${item.temperature}, Tanggal: ${item.tanggal}, jam: ${item.jam}, kandang: ${item.kandangId.toString()}, satpamid: ${item.satpamId}, lat: ${item.latitude.toString()},lng: ${item.longitude.toString()}, note: ${item.note}, foto: ${item.foto},',
+      final model = KandangSuhuModel(
+        id: nextId,
+        uuid: uuid,
+        tanggal: DateFormat('yyyy-MM-dd').format(now),
+        jam: DateFormat('HH:mm:ss').format(now),
+        kandangId: kandangId,
+        satpamId: satpamId,
+        temperature: temperature,
+        note: note ?? '',
+        foto: foto?.path ?? '',
+        comid: 1,
+        latitude: latitude,
+        longitude: longitude,
+        isSynced: false,
+        syncedAt: null,
       );
+
+      await box.add(model);
+
+      // ⬇️ BIAR USER LIHAT LOADING (UX)
+      await Future.delayed(const Duration(milliseconds: 600));
+    } finally {
+      isLoading.value = false; // ⬅️ PASTI BALIK
     }
   }
 }

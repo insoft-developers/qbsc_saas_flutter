@@ -251,55 +251,64 @@ class _KipasState extends State<Kipas> {
             const SizedBox(height: 30),
 
             // Tombol simpan
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2C2C2C),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                onPressed: () async {
-                  final note = noteController.text.trim();
-                  final foto = imageFile;
+            Obx(
+              () => controller.isLoading.value
+                  ? const Center(
+                      child: CircularProgressIndicator(color: Colors.amber),
+                    )
+                  : SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2C2C2C),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        onPressed: () async {
+                          final note = noteController.text.trim();
+                          final foto = imageFile;
 
-                  await controller.insertKipas(
-                    kandangId: widget.id,
-                    satpamId: int.parse(AppPrefs.getUserId() ?? '0'),
-                    note: note,
-                    foto: foto,
-                    comId: int.parse(AppPrefs.getComId() ?? '0'),
-                  );
+                          await controller.insertKipas(
+                            kandangId: widget.id,
+                            satpamId: int.parse(AppPrefs.getUserId() ?? '0'),
+                            note: note,
+                            foto: foto,
+                            comId: int.parse(AppPrefs.getComId() ?? '0'),
+                          );
 
-                  Get.snackbar(
-                    'Tersimpan',
-                    'Data berhasil disimpan ke lokal',
-                    backgroundColor: Colors.green.shade600,
-                    colorText: Colors.white,
-                    snackPosition: SnackPosition.BOTTOM,
-                    margin: const EdgeInsets.all(16),
-                    duration: const Duration(seconds: 2),
-                  );
+                          Get.snackbar(
+                            'Tersimpan',
+                            'Data berhasil disimpan ke lokal',
+                            backgroundColor: Colors.green.shade600,
+                            colorText: Colors.white,
+                            snackPosition: SnackPosition.BOTTOM,
+                            margin: const EdgeInsets.all(16),
+                            duration: const Duration(seconds: 2),
+                          );
 
-                  noteController.clear();
-                  setState(() => imageFile = null);
+                          noteController.clear();
+                          setState(() => imageFile = null);
 
-                  Future.delayed(const Duration(milliseconds: 800), () {
-                    Navigator.of(context).pop();
-                  });
-                },
-                icon: const Icon(Icons.save_rounded, color: Colors.white),
-                label: const Text(
-                  'Simpan Status',
-                  style: TextStyle(
-                    fontSize: 17,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
+                          Future.delayed(const Duration(milliseconds: 200), () {
+                            Navigator.of(context).pop();
+                          });
+                        },
+                        icon: const Icon(
+                          Icons.save_rounded,
+                          color: Colors.white,
+                        ),
+                        label: const Text(
+                          'Simpan Status',
+                          style: TextStyle(
+                            fontSize: 17,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
             ),
           ],
         ),

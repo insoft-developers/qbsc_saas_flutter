@@ -10,7 +10,7 @@ class ChangePassword extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FB),
+      backgroundColor: const Color(0xFFF8F9FB),
       appBar: AppBar(
         backgroundColor: Colors.black,
         title: const Text(
@@ -24,42 +24,77 @@ class ChangePassword extends StatelessWidget {
         child: Form(
           key: controller.formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildPasswordField(
-                label: 'Password Lama',
-                controller: controller.oldPasswordC,
-                visible: controller.showOld,
+              // ==================== HEADER ====================
+              const Text(
+                "Keamanan Akun",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 6),
+              Text(
+                "Pastikan password baru Anda aman dan mudah diingat",
+                style: TextStyle(color: Colors.grey.shade600),
+              ),
 
-              _buildPasswordField(
-                label: 'Password Baru',
-                controller: controller.newPasswordC,
-                visible: controller.showNew,
-              ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
 
-              _buildPasswordField(
-                label: 'Konfirmasi Password Baru',
-                controller: controller.confirmPasswordC,
-                visible: controller.showConfirm,
-                confirm: true,
+              // ==================== CARD ====================
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.06),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    _buildPasswordField(
+                      label: 'Password Lama',
+                      icon: Icons.lock_outline,
+                      controller: controller.oldPasswordC,
+                      visible: controller.showOld,
+                    ),
+                    const SizedBox(height: 16),
+
+                    _buildPasswordField(
+                      label: 'Password Baru',
+                      icon: Icons.lock_reset_outlined,
+                      controller: controller.newPasswordC,
+                      visible: controller.showNew,
+                    ),
+                    const SizedBox(height: 16),
+
+                    _buildPasswordField(
+                      label: 'Konfirmasi Password Baru',
+                      icon: Icons.check_circle_outline,
+                      controller: controller.confirmPasswordC,
+                      visible: controller.showConfirm,
+                      confirm: true,
+                    ),
+                  ],
+                ),
               ),
+
               const SizedBox(height: 30),
 
+              // ==================== BUTTON ====================
               Obx(
                 () => SizedBox(
                   width: double.infinity,
-                  height: 50,
+                  height: 52,
                   child: ElevatedButton(
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(Colors.black),
-                      foregroundColor: MaterialStateProperty.all(Colors.white),
-                      elevation: MaterialStateProperty.all(4),
-                      shape: MaterialStateProperty.all(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
                       ),
                     ),
                     onPressed: controller.isLoading.value
@@ -69,7 +104,10 @@ class ChangePassword extends StatelessWidget {
                         ? const CircularProgressIndicator(color: Colors.white)
                         : const Text(
                             'Simpan Password',
-                            style: TextStyle(fontSize: 16),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                   ),
                 ),
@@ -86,6 +124,7 @@ class ChangePassword extends StatelessWidget {
   // ======================
   Widget _buildPasswordField({
     required String label,
+    required IconData icon,
     required TextEditingController controller,
     required RxBool visible,
     bool confirm = false,
@@ -96,6 +135,7 @@ class ChangePassword extends StatelessWidget {
         obscureText: !visible.value,
         decoration: InputDecoration(
           labelText: label,
+          prefixIcon: Icon(icon),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           suffixIcon: IconButton(
             icon: Icon(visible.value ? Icons.visibility : Icons.visibility_off),

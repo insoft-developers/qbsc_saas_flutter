@@ -2,13 +2,14 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qbsc_saas/app/models/location_model.dart';
 // ignore: depend_on_referenced_packages
 import 'package:collection/collection.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:qbsc_saas/app/models/patroli_model.dart';
 import 'package:qbsc_saas/app/utils/app_prefs.dart';
 import 'package:qbsc_saas/app/views/patroli/patroli_controller.dart';
 
@@ -25,6 +26,7 @@ class _PatroliState extends State<Patroli> {
   bool _torchOn = false;
   String? _lastScanned;
   late Box<LocationModel> _box;
+  Box<PatroliModel>? _boxPatroli;
   double _maxDistance = 0.0;
 
   final MobileScannerController _controller = MobileScannerController(
@@ -47,6 +49,8 @@ class _PatroliState extends State<Patroli> {
 
   Future<void> _openHiveBox() async {
     _box = await Hive.openBox<LocationModel>('locations');
+    _boxPatroli = await Hive.openBox<PatroliModel>('patroli');
+    setState(() {});
   }
 
   Future<double> _getDistance(
@@ -146,7 +150,9 @@ class _PatroliState extends State<Patroli> {
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('QR Code tidak ditemukan di database lokal'),
+              content: Text(
+                'QR Code tidak ditemukan atau lokasi di nonaktifkan',
+              ),
               backgroundColor: Colors.redAccent,
             ),
           );
@@ -349,6 +355,108 @@ class _PatroliState extends State<Patroli> {
                   vertical: 12,
                 ),
               ),
+            ),
+          ),
+          Positioned(
+            top: 100,
+            right: 8,
+            bottom: 100,
+            child: Container(
+              width: 140,
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.6),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: _boxPatroli == null
+                  ? const Center(
+                      child: CircularProgressIndicator(color: Colors.white),
+                    )
+                  : ValueListenableBuilder(
+                      valueListenable: _boxPatroli!.listenable(),
+                      builder: (context, Box<PatroliModel> box, _) {
+                        if (box.isEmpty) {
+                          return const Center(
+                            child: Text(
+                              'Belum scan',
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
+                            ),
+                          );
+                        }
+
+                        final now = DateTime.now();
+                        final today =
+                            '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+
+                        final yesterdayDate = now.subtract(
+                          const Duration(days: 1),
+                        );
+                        final yesterday =
+                            '${yesterdayDate.year}-${yesterdayDate.month.toString().padLeft(2, '0')}-${yesterdayDate.day.toString().padLeft(2, '0')}';
+
+                        final items =
+                            box.values
+                                .where(
+                                  (e) =>
+                                      (e.tanggal == today ||
+                                      e.tanggal == yesterday),
+                                )
+                                .toList()
+                              ..sort((a, b) {
+                                // gabungkan tanggal + jam
+                                final aDateTime = DateTime.parse(
+                                  '${a.tanggal} ${a.jam}',
+                                );
+                                final bDateTime = DateTime.parse(
+                                  '${b.tanggal} ${b.jam}',
+                                );
+
+                                return bDateTime.compareTo(aDateTime); // DESC
+                              });
+
+                        return ListView.builder(
+                          itemCount: items.length,
+                          itemBuilder: (context, index) {
+                            final item = items[index];
+                            String namaLokasi = patroliController.getNamaLokasi(
+                              item.locationId.toString(),
+                            );
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 6,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    namaLokasi,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    "${item.tanggal} - ${item.jam}",
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 10,
+                                    ),
+                                  ),
+                                  const Divider(color: Colors.white24),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
             ),
           ),
         ],

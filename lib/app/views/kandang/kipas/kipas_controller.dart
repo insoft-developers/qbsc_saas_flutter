@@ -96,20 +96,7 @@ class KipasController extends GetxController {
     );
 
     await box.add(model);
-    cekHive();
+    await Future.delayed(const Duration(milliseconds: 600));
     isLoading(false);
-  }
-
-  Future<void> cekHive() async {
-    final box = Hive.box<KandangKipasModel>(
-      'kandang_kipas',
-    ); // ✅ pakai box yang sudah dibuka
-    print('=== CEK KIPAS DI HIVE ===');
-    print('Total data: ${box.length}');
-    for (var item in box.values) {
-      print(
-        'ID: ${item.id}, UUID: ${item.uuid}, Kipas: ${item.kipas.toString()}, Tanggal: ${item.tanggal}, jam: ${item.jam}, kandang: ${item.kandangId.toString()}, satpamid: ${item.satpamId}, lat: ${item.latitude.toString()},lng: ${item.longitude.toString()}, note: ${item.note}, foto: ${item.foto},',
-      );
-    }
   }
 }
