@@ -168,7 +168,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner: ApiProvider.isDev ? true : false,
       title: 'QBSC',
       initialRoute: '/splash',
       getPages: [

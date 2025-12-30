@@ -42,12 +42,6 @@ class NotifDetail extends StatelessWidget {
             ),
 
             const SizedBox(height: 20),
-
-            // Pesan
-            Text(data.pesan, style: const TextStyle(fontSize: 16, height: 1.4)),
-
-            const SizedBox(height: 20),
-
             // 🔥 Gambar Opsional (jika ada saja tampil)
             if (hasImage)
               ClipRRect(
@@ -58,6 +52,14 @@ class NotifDetail extends StatelessWidget {
                   errorBuilder: (_, __, ___) => const SizedBox(),
                 ),
               ),
+            // Pesan
+            const SizedBox(height: 20),
+            Text(
+              data.fullPesan,
+              style: const TextStyle(fontSize: 16, height: 1.4),
+            ),
+
+            const SizedBox(height: 20),
           ],
         ),
       ),
