@@ -66,7 +66,7 @@ class _SplashViewState extends State<SplashView>
               padding: const EdgeInsets.symmetric(horizontal: 40),
               child: FadeTransition(
                 opacity: _animation,
-                child: Image.asset("assets/images/logo_satpam.png", width: 200),
+                child: Image.asset("assets/images/qb_icon.png", width: 200),
               ),
             ),
             const SizedBox(height: 30),

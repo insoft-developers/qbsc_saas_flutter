@@ -56,9 +56,8 @@ class _LoginViewState extends State<LoginView> {
                 children: [
                   // 🧩 Logo
                   Image.asset(
-                    "assets/images/logo_satpam.png",
-                    color: Colors.white,
-                    colorBlendMode: BlendMode.srcIn,
+                    "assets/images/qb_icon.png",
+
                     width: isTablet ? 220 : 180,
                   ),
                   const SizedBox(height: 20),

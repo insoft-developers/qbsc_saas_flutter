@@ -75,8 +75,8 @@ dev_dependencies:
   
 
 flutter_native_splash:
-  color: "#FFFFFF" # background putih (native splash)
-  image: assets/images/qbsc_splash.png
+  color: "#000000" # background putih (native splash)
+  image: assets/images/qb_icon.png
   android: true
   ios: true
   web: false
@@ -86,9 +86,9 @@ flutter_native_splash:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/images/qbsc_icon.png"  # icon baru
+  image_path: "assets/images/qb_icon.png"  # icon baru
   adaptive_icon_background: "#FFFFFF"       # background untuk Android 8+
-  adaptive_icon_foreground: "assets/images/qbsc_icon.png" # icon foreground
+  adaptive_icon_foreground: "assets/images/qb_icon.png" # icon foreground
 
 
 
@@ -112,10 +112,8 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/images/logo_satpam.png
     - assets/images/satpam_default.png
-    - assets/images/qbsc_splash.png
-    - assets/images/qbsc_icon.png
+    - assets/images/qb_icon.png
     - assets/images/wa_icon.png
     - assets/images/absensi.png
     - assets/images/patroli.png
