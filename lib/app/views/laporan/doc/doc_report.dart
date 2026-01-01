@@ -25,9 +25,10 @@ class DocReport extends StatelessWidget {
           return const Center(child: Text('Belum ada data doc keluar'));
         }
 
-        return ListView.builder(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        return ListView.separated(
+          padding: const EdgeInsets.all(16),
           itemCount: controller.docList.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 14),
           itemBuilder: (context, index) {
             final docs = controller.docList[index];
             final namaEkspedisi = controller.getNamaEkspedisi(docs.ekspedisiId);
@@ -54,149 +55,144 @@ class DocReport extends StatelessWidget {
                   },
                 );
               },
-              child: Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.06),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
                 ),
-                elevation: 3,
-                margin: const EdgeInsets.symmetric(vertical: 6),
                 child: Padding(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Nama lokasi + status sync
+                      // ===== HEADER =====
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
                             child: Text(
                               namaEkspedisi,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
-                                fontWeight: FontWeight.bold,
                                 fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF1C1C1E),
                               ),
                             ),
                           ),
-                          Chip(
-                            label: Text(
-                              docs.isSynced ? 'Tersync' : 'Belum Sync',
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                            backgroundColor: docs.isSynced
-                                ? Colors.green
-                                : Colors.red,
-                            avatar: Icon(
-                              docs.isSynced
-                                  ? Icons.cloud_done
-                                  : Icons.cloud_off,
-                              color: Colors.white,
-                              size: 18,
-                            ),
-                          ),
+                          _SyncBadge(isSynced: docs.isSynced),
                         ],
                       ),
 
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
 
-                      // Teks dan foto di satu baris
+                      // ===== BODY =====
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Kiri: teks
+                          // TEXT INFO
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  'Jumlah Box : ${docs.jumlah.toString()}',
-                                  style: const TextStyle(fontSize: 14),
+                                _InfoRow(
+                                  icon: Icons.inventory_2_outlined,
+                                  label: 'Jumlah Box',
+                                  value: docs.jumlah.toString(),
                                 ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  'Tanggal: ${docs.tanggal} ${docs.jam}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[700],
-                                  ),
+                                _InfoRow(
+                                  icon: Icons.calendar_today_outlined,
+                                  label: 'Tanggal',
+                                  value: '${docs.tanggal} ${docs.jam}',
                                 ),
-                                Text(
-                                  'Tujuan: ${docs.tujuan}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[700],
-                                  ),
+                                _InfoRow(
+                                  icon: Icons.location_on_outlined,
+                                  label: 'Tujuan',
+                                  value: docs.tujuan ?? '',
                                 ),
-
-                                Text(
-                                  'No Polisi: ${docs.noPolisi}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[700],
-                                  ),
+                                _InfoRow(
+                                  icon: Icons.directions_car_outlined,
+                                  label: 'No Polisi',
+                                  value: docs.noPolisi ?? '',
                                 ),
-                                Text(
-                                  'Jenis: ${jenis}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[700],
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  'Catatan: ${docs.note}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[700],
-                                  ),
+                                _InfoRow(
+                                  icon: Icons.pets_outlined,
+                                  label: 'Jenis',
+                                  value: jenis,
                                 ),
                               ],
                             ),
                           ),
 
-                          // Kanan: foto kecil
+                          // FOTO
                           if (docs.foto != null &&
                               docs.foto!.isNotEmpty &&
                               File(docs.foto!).existsSync())
                             ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(12),
                               child: Image.file(
                                 File(docs.foto!),
-                                height: 80,
-                                width: 80,
+                                height: 86,
+                                width: 86,
                                 fit: BoxFit.cover,
                               ),
                             ),
                         ],
                       ),
 
-                      const SizedBox(height: 6),
+                      if (docs.note != null && docs.note!.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          'Catatan',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          docs.note!,
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                      ],
 
-                      // Tombol sync manual
-                      if (!docs.isSynced)
+                      // ===== ACTION =====
+                      if (!docs.isSynced) ...[
+                        const SizedBox(height: 14),
                         Align(
                           alignment: Alignment.centerRight,
-                          child: TextButton.icon(
+                          child: OutlinedButton.icon(
                             icon: const Icon(Icons.sync, size: 18),
                             label: const Text('Sync Manual'),
-                            style: TextButton.styleFrom(
-                              backgroundColor: Colors.blueAccent,
-                              foregroundColor: Colors.white,
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF2563EB),
+                              side: const BorderSide(color: Color(0xFF2563EB)),
                               padding: const EdgeInsets.symmetric(
-                                vertical: 6,
-                                horizontal: 12,
+                                horizontal: 14,
+                                vertical: 8,
                               ),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(10),
                               ),
                             ),
                             onPressed: () {
                               controller.syncDocManual(docs);
                             },
-
-                            // controller.syncdocsManual(docs),
                           ),
                         ),
+                      ],
                     ],
                   ),
                 ),
@@ -205,6 +201,86 @@ class DocReport extends StatelessWidget {
           },
         );
       }),
+    );
+  }
+}
+
+class _SyncBadge extends StatelessWidget {
+  final bool isSynced;
+
+  const _SyncBadge({required this.isSynced});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isSynced ? const Color(0xFF16A34A) : const Color(0xFFDC2626);
+    final icon = isSynced ? Icons.cloud_done : Icons.cloud_off;
+    final text = isSynced ? 'Tersync' : 'Belum Sync';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 4),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 14, color: Colors.grey.shade600),
+          const SizedBox(width: 6),
+          Text(
+            '$label: ',
+            style: TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade700,
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF1C1C1E),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -31,9 +31,10 @@ class KejadianReport extends StatelessWidget {
           return Center(child: Text('Belum ada data kejadian'));
         }
 
-        return ListView.builder(
+        return ListView.separated(
           padding: const EdgeInsets.all(16),
           itemCount: controller.situasiList.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 14),
           itemBuilder: (context, index) {
             final kejadian = controller.situasiList[index];
 
@@ -57,118 +58,90 @@ class KejadianReport extends StatelessWidget {
                   },
                 );
               },
-
-              child: Card(
-                shape: RoundedRectangleBorder(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.06),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
                 ),
-                elevation: 2,
-                shadowColor: Colors.black26,
-                margin: const EdgeInsets.only(bottom: 14),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // ---------------- TEXT LAPORAN ----------------
-                      Text(
-                        kejadian.createdAt,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue,
-                          fontSize: 15,
-                        ),
+                      // ================= HEADER =================
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            kejadian.createdAt,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                          _SyncBadge(isSynced: kejadian.isSynced),
+                        ],
                       ),
 
                       const SizedBox(height: 12),
 
+                      // ================= LAPORAN =================
                       Text(
                         kejadian.laporan,
                         style: const TextStyle(
-                          fontWeight: FontWeight.normal,
-                          fontSize: 15,
-                          height: 1.3,
+                          fontSize: 14.5,
+                          height: 1.4,
+                          color: Color(0xFF1C1C1E),
                         ),
                       ),
 
-                      const SizedBox(height: 12),
-
-                      // ---------------- FOTO ----------------
+                      // ================= FOTO =================
                       if (kejadian.foto != null &&
                           kejadian.foto!.isNotEmpty &&
-                          File(kejadian.foto!).existsSync())
+                          File(kejadian.foto!).existsSync()) ...[
+                        const SizedBox(height: 12),
                         ClipRRect(
                           borderRadius: BorderRadius.circular(12),
                           child: Image.file(
                             File(kejadian.foto!),
-                            height: 180,
+                            height: 190,
                             width: double.infinity,
                             fit: BoxFit.cover,
                           ),
                         ),
+                      ],
 
-                      const SizedBox(height: 16),
-
-                      // ------------------------------------------------------------
-                      //  BOTTOM ROW: STATUS SYNC (left) + SYNC MANUAL (right)
-                      // ------------------------------------------------------------
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          // === STATUS SYNC (kiri) ===
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: kejadian.isSynced
-                                  ? Colors.green
-                                  : Colors.orange,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  kejadian.isSynced
-                                      ? Icons.cloud_done
-                                      : Icons.cloud_off,
-                                  color: Colors.white,
-                                  size: 18,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  kejadian.isSynced ? "Tersync" : "Belum Sync",
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          // === BUTTON SYNC MANUAL (kanan) – tampil kalau belum sync ===
-                          if (!kejadian.isSynced)
-                            ElevatedButton.icon(
-                              icon: const Icon(Icons.sync, size: 18),
-                              label: const Text('Sync Manual'),
-                              onPressed: () => controller.syncManual(kejadian),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: primary,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 10,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
+                      // ================= ACTION =================
+                      if (!kejadian.isSynced) ...[
+                        const SizedBox(height: 14),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: OutlinedButton.icon(
+                            icon: const Icon(Icons.sync, size: 18),
+                            label: const Text('Sync Manual'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: primary,
+                              side: BorderSide(color: primary),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                        ],
-                      ),
+                            onPressed: () => controller.syncManual(kejadian),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -177,6 +150,42 @@ class KejadianReport extends StatelessWidget {
           },
         );
       }),
+    );
+  }
+}
+
+class _SyncBadge extends StatelessWidget {
+  final bool isSynced;
+
+  const _SyncBadge({required this.isSynced});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isSynced ? const Color(0xFF16A34A) : const Color(0xFFEA580C);
+    final icon = isSynced ? Icons.cloud_done : Icons.cloud_off;
+    final text = isSynced ? 'Tersync' : 'Belum Sync';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 4),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

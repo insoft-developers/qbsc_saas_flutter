@@ -30,6 +30,8 @@ import 'package:qbsc_saas/app/views/emergency/emgergency.dart';
 import 'package:qbsc_saas/app/views/home_view.dart';
 import 'package:qbsc_saas/app/views/kandang/kandang.dart';
 import 'package:qbsc_saas/app/views/kejadian/kejadian.dart';
+import 'package:qbsc_saas/app/views/laporan/absensi/absensi.dart';
+import 'package:qbsc_saas/app/views/laporan/anggota/laporan_anggota.dart';
 import 'package:qbsc_saas/app/views/laporan/doc/doc_report.dart';
 import 'package:qbsc_saas/app/views/laporan/ekspedisi/ekspedisi_report.dart';
 import 'package:qbsc_saas/app/views/laporan/kandang/kandang_laporan.dart';
@@ -196,6 +198,8 @@ class _MyAppState extends State<MyApp> {
         GetPage(name: '/notifikasi', page: () => Notif()),
         GetPage(name: '/pengaturan/profile', page: () => ProfilePage()),
         GetPage(name: '/pengaturan/password', page: () => ChangePassword()),
+        GetPage(name: '/laporan/absensi', page: () => Absensi()),
+        GetPage(name: '/laporan/anggota', page: () => LaporanAnggota()),
       ],
     );
   }

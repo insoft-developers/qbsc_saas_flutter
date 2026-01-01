@@ -199,8 +199,8 @@ class KandangLaporan extends StatelessWidget {
     return GestureDetector(
       onLongPress: () {
         Get.defaultDialog(
-          title: "Hapus Data",
-          middleText: "Yakin mau hapus laporan ini?",
+          title: "Hapus Laporan",
+          middleText: "Yakin ingin menghapus laporan ini?",
           textCancel: "Batal",
           textConfirm: "Hapus",
           confirmTextColor: Colors.white,
@@ -209,7 +209,7 @@ class KandangLaporan extends StatelessWidget {
             Get.back();
             Get.snackbar(
               'Dihapus',
-              'Data laporan berhasil dihapus',
+              'Laporan berhasil dihapus',
               backgroundColor: Colors.redAccent,
               colorText: Colors.white,
               snackPosition: SnackPosition.BOTTOM,
@@ -218,86 +218,200 @@ class KandangLaporan extends StatelessWidget {
         );
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
+        margin: const EdgeInsets.only(bottom: 18),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
             ),
           ],
         ),
-        child: ListTile(
-          contentPadding: const EdgeInsets.all(16),
-          title: Text(
-            title,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-          ),
-          subtitle: Column(
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Tanggal: $tanggal $jam'),
-              Text(subtitle),
-              Text(location),
-              Text(catatan),
-              const SizedBox(height: 8),
+              // ===== HEADER =====
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Chip(
-                    label: Text(
-                      isSynced ? 'Synced' : 'Local',
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                    backgroundColor: isSynced ? Colors.green : Colors.red,
-                    avatar: Icon(
-                      isSynced ? Icons.cloud_done : Icons.cloud_off,
-                      color: Colors.white,
-                      size: 18,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1C1C1E),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '$tanggal • $jam',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  ElevatedButton.icon(
-                    onPressed: isSynced ? null : onSync,
+                  _SyncBadge(isSynced: isSynced),
+                ],
+              ),
+
+              const SizedBox(height: 12),
+
+              // ===== BODY =====
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // TEXT
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          subtitle,
+                          style: const TextStyle(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        _InfoRow(
+                          icon: Icons.location_on_outlined,
+                          text: location,
+                        ),
+
+                        _InfoRow(
+                          icon: Icons.notes_rounded,
+                          text: catatan.isNotEmpty
+                              ? catatan
+                              : 'Tidak ada catatan',
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // FOTO
+                  if (fotoFile != null)
+                    Container(
+                      margin: const EdgeInsets.only(left: 12),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(14),
+                        child: Image.file(
+                          fotoFile,
+                          width: size.width * 0.2,
+                          height: size.width * 0.2,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+
+              // ===== ACTION =====
+              if (!isSynced) ...[
+                const SizedBox(height: 14),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: ElevatedButton.icon(
+                    onPressed: onSync,
+                    icon: const Icon(Icons.sync, size: 18),
+                    label: const Text('Sync Sekarang'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      disabledBackgroundColor: Colors.grey,
+                      backgroundColor: const Color(0xFF2FBF71),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
+                        horizontal: 14,
                         vertical: 8,
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    icon: const Icon(Icons.sync, color: Colors.white, size: 18),
-                    label: const Text(
-                      'Sync',
-                      style: TextStyle(color: Colors.white),
-                    ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ],
           ),
-          trailing: fotoFile != null
-              ? ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.file(
-                    fotoFile,
-                    width: size.width * 0.18,
-                    height: size.width * 0.18,
-                    fit: BoxFit.cover,
-                  ),
-                )
-              : const Icon(
-                  Icons.image_not_supported,
-                  color: Colors.grey,
-                  size: 40,
-                ),
         ),
+      ),
+    );
+  }
+}
+
+class _SyncBadge extends StatelessWidget {
+  final bool isSynced;
+
+  const _SyncBadge({required this.isSynced});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: isSynced
+            ? Colors.green.withOpacity(0.12)
+            : Colors.orange.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            isSynced ? Icons.cloud_done : Icons.cloud_off,
+            size: 14,
+            color: isSynced ? Colors.green : Colors.orange,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            isSynced ? 'Tersinkron' : 'Local',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: isSynced ? Colors.green : Colors.orange,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final IconData icon;
+  final String text;
+
+  const _InfoRow({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 14, color: Colors.grey.shade600),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(fontSize: 12.5, color: Colors.grey.shade700),
+            ),
+          ),
+        ],
       ),
     );
   }

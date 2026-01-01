@@ -151,7 +151,8 @@ class _HomeViewState extends State<HomeView> {
             children: [
               _buildProfileCard(isTablet),
               const SizedBox(height: 28),
-              _buildMenuGrid(isTablet),
+              _buildMenuList(),
+              const SizedBox(height: 38),
             ],
           ),
         ),
@@ -226,6 +227,7 @@ class _HomeViewState extends State<HomeView> {
   Widget _buildProfileCard(bool isTablet) {
     return Obx(() {
       final photo = "${ApiProvider.imageUrl}/${authC.userPhoto.value}";
+      final role = AppPrefs.getIsDanru() ?? '-';
 
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
@@ -276,18 +278,26 @@ class _HomeViewState extends State<HomeView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    'Selamat Bertugas',
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      color: Colors.grey.shade600,
-                      fontWeight: FontWeight.w400,
-                      letterSpacing: 0.2,
-                    ),
+                  // GREETING + JABATAN
+                  Row(
+                    children: [
+                      Text(
+                        'Selamat Bertugas',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      _RoleBadge(role),
+                    ],
                   ),
 
                   const SizedBox(height: 6),
 
+                  // NAMA
                   Text(
                     AppPrefs.getUserName() ?? '-',
                     maxLines: 1,
@@ -300,8 +310,9 @@ class _HomeViewState extends State<HomeView> {
                     ),
                   ),
 
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
 
+                  // PERUSAHAAN
                   Row(
                     children: [
                       const Icon(
@@ -334,36 +345,25 @@ class _HomeViewState extends State<HomeView> {
     });
   }
 
-  Widget _buildMenuGrid(bool isTablet) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: menuItems.length,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: isTablet ? 3 : 2,
-        crossAxisSpacing: 18,
-        mainAxisSpacing: 18,
-      ),
-      itemBuilder: (_, i) {
-        final item = menuItems[i];
-        return _MenuCard(
+  Widget _buildMenuList() {
+    return Column(
+      children: menuItems.map((item) {
+        return _MenuListCard(
           icon: item['icon'],
           label: item['label'],
           onTap: () => _onMenuTap(item['label']),
         );
-      },
+      }).toList(),
     );
   }
 }
 
-// ================= MENU CARD =================
-
-class _MenuCard extends StatelessWidget {
+class _MenuListCard extends StatelessWidget {
   final String icon;
   final String label;
   final VoidCallback onTap;
 
-  const _MenuCard({
+  const _MenuListCard({
     required this.icon,
     required this.label,
     required this.onTap,
@@ -371,43 +371,82 @@ class _MenuCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        splashColor: Colors.black.withOpacity(0.05),
-        highlightColor: Colors.black.withOpacity(0.03),
-        child: ClipPath(
-          clipper: DiagonalClipper(),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 26),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(18),
+          splashColor: Colors.black.withOpacity(0.04),
+          highlightColor: Colors.black.withOpacity(0.02),
+          child: Ink(
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Colors.white30, Color.fromARGB(255, 207, 226, 235)],
-              ),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.15),
+                  color: Colors.black.withOpacity(0.04),
                   blurRadius: 24,
-                  offset: const Offset(0, 12),
+                  offset: const Offset(0, 14),
                 ),
               ],
             ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Row(
               children: [
-                Image.asset(icon, width: 52, height: 52),
-                const SizedBox(height: 16),
-                Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 14.5,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black,
-                    letterSpacing: 0.2,
+                // ===== LEFT ACCENT BAR =====
+                Container(
+                  width: 5,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.horizontal(
+                      left: Radius.circular(18),
+                    ),
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Colors.indigo.shade400, Colors.indigo.shade700],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(width: 16),
+
+                // ===== ICON =====
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF3C3535).withOpacity(0.06),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Center(
+                    child: Image.asset(icon, width: 40, height: 40),
+                  ),
+                ),
+
+                const SizedBox(width: 16),
+
+                // ===== TEXT =====
+                Expanded(
+                  child: Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1C1C1E),
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ),
+
+                // ===== ARROW =====
+                const Padding(
+                  padding: EdgeInsets.only(right: 14),
+                  child: Icon(
+                    Icons.chevron_right_rounded,
+                    color: Colors.grey,
+                    size: 24,
                   ),
                 ),
               ],
@@ -419,21 +458,28 @@ class _MenuCard extends StatelessWidget {
   }
 }
 
-class DiagonalClipper extends CustomClipper<Path> {
+class _RoleBadge extends StatelessWidget {
+  final String role;
+
+  const _RoleBadge(this.role);
+
   @override
-  Path getClip(Size size) {
-    final path = Path();
-
-    path.moveTo(0, 20);
-    path.lineTo(0, size.height);
-    path.lineTo(size.width, size.height - 20);
-    path.lineTo(size.width, 0);
-    path.lineTo(20, 0);
-    path.close();
-
-    return path;
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: const Color(0xFF34C759).withOpacity(0.12),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        role == '1' ? 'Danru' : 'Anggota',
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: role == '1' ? Colors.blue : Colors.redAccent,
+          letterSpacing: 0.2,
+        ),
+      ),
+    );
   }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }

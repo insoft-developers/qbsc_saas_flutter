@@ -20,6 +20,7 @@ class AppPrefs {
   static const String _keyComId = 'comid';
   static const String _keyCompanyName = 'companyName';
   static const String _keyIsPeternakan = 'isPeternakan';
+  static const String _keyIsDanru = 'isDanru';
 
   // ------------------ SETTERS ------------------
   static Future setToken(String value) async =>
@@ -55,6 +56,9 @@ class AppPrefs {
   static Future setIsPeternakan(String value) async =>
       await _prefs.setString(_keyIsPeternakan, value);
 
+  static Future setIsDanru(String value) async =>
+      await _prefs.setString(_keyIsDanru, value);
+
   // ------------------ GETTERS ------------------
   static String? getToken() => _prefs.getString(_keyToken);
 
@@ -77,6 +81,8 @@ class AppPrefs {
   static String? getCompanyName() => _prefs.getString(_keyCompanyName);
 
   static String? getIsPeternakan() => _prefs.getString(_keyIsPeternakan);
+
+  static String? getIsDanru() => _prefs.getString(_keyIsDanru);
 
   // ------------------ CLEAR DATA ------------------
   static Future clearAll() async => await _prefs.clear();

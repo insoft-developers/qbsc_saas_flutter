@@ -15,6 +15,7 @@ class AuthController extends GetxController with WidgetsBindingObserver {
   var comId = ''.obs;
   var companyName = ''.obs;
   var isPeternakan = ''.obs;
+  var isDanru = ''.obs;
 
   final ApiProvider api = Get.find<ApiProvider>();
 
@@ -71,6 +72,8 @@ class AuthController extends GetxController with WidgetsBindingObserver {
       isPeternakan.value = response.data['data']['company']['is_peternakan']
           .toString();
 
+      isDanru.value = response.data['data']['is_danru'].toString();
+
       await AppPrefs.setToken(token.value);
       await AppPrefs.setUserName(userName.value);
       await AppPrefs.setUserId(userId.value);
@@ -78,6 +81,7 @@ class AuthController extends GetxController with WidgetsBindingObserver {
       await AppPrefs.setComId(comId.value);
       await AppPrefs.setCompanyName(companyName.value);
       await AppPrefs.setIsPeternakan(isPeternakan.value);
+      await AppPrefs.setIsDanru(isDanru.value);
 
       final topic = 'qbsc_satpam_${comId.value}';
       await TopicService.unsubscribeOldTopic();

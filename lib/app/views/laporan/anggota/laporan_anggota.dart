@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:qbsc_saas/app/utils/app_prefs.dart';
-import 'package:qbsc_saas/app/utils/snackbar_helper.dart';
 
-class Laporan extends StatelessWidget {
-  Laporan({super.key});
-
-  final String? isPeternakan = AppPrefs.getIsPeternakan();
+class LaporanAnggota extends StatelessWidget {
+  LaporanAnggota({super.key});
 
   late final List<Map<String, dynamic>> menuItems = _buildMenu();
 
@@ -14,50 +10,15 @@ class Laporan extends StatelessWidget {
     final baseMenu = [
       {
         'icon': Icons.fingerprint,
-        'label': 'Laporan Absensi',
-        'route': '/laporan/absensi',
+        'label': 'Laporan Absensi Anggota',
+        'route': '/laporan/absensi/anggota',
       },
       {
         'icon': Icons.location_history,
-        'label': 'Laporan Patroli',
-        'route': '/laporan/patroli',
-      },
-      {
-        'icon': Icons.location_on,
-        'label': 'Laporan Data Lokasi',
-        'route': '/laporan/lokasi',
-      },
-      {
-        'icon': Icons.info,
-        'label': 'Laporan Kejadian',
-        'route': '/laporan/kejadian',
-      },
-      {
-        'icon': Icons.people,
-        'label': 'Laporan Kerja Anggota',
-        'route': '/laporan/anggota',
+        'label': 'Laporan Patroli Anggota',
+        'route': '/laporan/patroli/anggota',
       },
     ];
-
-    if (isPeternakan == '1') {
-      baseMenu.insertAll(2, [
-        {
-          'icon': Icons.bungalow_rounded,
-          'label': 'Laporan Kandang',
-          'route': '/laporan/kandang',
-        },
-        {
-          'icon': Icons.car_rental,
-          'label': 'Laporan Data Ekspedisi',
-          'route': '/laporan/ekspedisi',
-        },
-        {
-          'icon': Icons.fire_truck,
-          'label': 'Laporan DOC Keluar',
-          'route': '/laporan/doc',
-        },
-      ]);
-    }
 
     return baseMenu;
   }
@@ -74,7 +35,7 @@ class Laporan extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 60, 53, 53),
         title: const Text(
-          'Laporan',
+          'Laporan Kerja Anggota',
           style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
         ),
         iconTheme: const IconThemeData(
@@ -94,30 +55,10 @@ class Laporan extends StatelessWidget {
           return InkWell(
             borderRadius: BorderRadius.circular(18),
             onTap: () {
-              if (item['label'] == 'Laporan Patroli') {
+              if (item['label'] == 'Laporan Absensi Anggota') {
                 Get.toNamed('/laporan/patroli');
-              } else if (item['label'] == 'Laporan Data Lokasi') {
+              } else if (item['label'] == 'Laporan Patroli Anggota') {
                 Get.toNamed('/laporan/lokasi');
-              } else if (item['label'] == 'Laporan Kandang') {
-                Get.toNamed('/laporan/kandang');
-              } else if (item['label'] == 'Laporan Data Ekspedisi') {
-                Get.toNamed('/laporan/ekspedisi');
-              } else if (item['label'] == 'Laporan DOC Keluar') {
-                Get.toNamed('/laporan/doc');
-              } else if (item['label'] == 'Laporan Kejadian') {
-                Get.toNamed('/laporan/kejadian');
-              } else if (item['label'] == 'Laporan Absensi') {
-                Get.toNamed('/laporan/absensi');
-              } else if (item['label'] == 'Laporan Kerja Anggota') {
-                final isDanru = AppPrefs.getIsDanru();
-                if (isDanru == '1') {
-                  Get.toNamed('/laporan/anggota');
-                } else {
-                  SnackbarHelper.error(
-                    'Warning',
-                    'Halaman ini khusus untuk Danru (Komandan Regu)',
-                  );
-                }
               }
             },
             child: Ink(
@@ -207,22 +148,11 @@ class Laporan extends StatelessWidget {
 
 String _getSubtitle(String label) {
   switch (label) {
-    case 'Laporan Patroli':
-      return 'Riwayat aktivitas patroli Anda';
-    case 'Laporan Data Lokasi':
-      return 'Data titik lokasi patroli';
-    case 'Laporan Kandang':
-      return 'Monitoring aktivitas kandang';
-    case 'Laporan Data Ekspedisi':
-      return 'Riwayat pengiriman & ekspedisi';
-    case 'Laporan DOC Keluar':
-      return 'Distribusi DOC keluar';
-    case 'Laporan Kejadian':
-      return 'Catatan insiden & kejadian yang anda laporkan';
-    case 'Laporan Absensi':
-      return 'Riwayat Absensi Anda';
-    case 'Laporan Kerja Anggota':
-      return 'Riwayat Absensi dan Patroli Anggota Lainnya (Khusus untuk Danru)';
+    case 'Laporan Absensi Anggota':
+      return 'Riwayat aktivitas absensi satpam dibawah pengawasan Anda';
+    case 'Laporan Patroli Anggota':
+      return 'Riwayat aktivitas patroli satpam dibawah pengawasan Anda';
+
     default:
       return '';
   }
