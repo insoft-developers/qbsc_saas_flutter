@@ -10,6 +10,7 @@ import 'package:qbsc_saas/app/models/location_model.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:qbsc_saas/app/data/api_provider.dart';
 import 'package:qbsc_saas/app/data/api_endpoint.dart';
+import 'package:qbsc_saas/app/utils/app_prefs.dart';
 import 'package:qbsc_saas/app/utils/snackbar_helper.dart';
 
 class PatroliReportController extends GetxController {
@@ -18,10 +19,12 @@ class PatroliReportController extends GetxController {
 
   var patroliList = <PatroliModel>[].obs;
   final ApiProvider api = Get.find<ApiProvider>();
+  late String _loginUserId;
 
   @override
   void onInit() {
     super.onInit();
+    _loginUserId = AppPrefs.getUserId() ?? '0';
     patroliBox = Hive.box<PatroliModel>('patroli');
     lokasiBox = Hive.box<LocationModel>('locations');
     loadPatroli();
@@ -31,12 +34,13 @@ class PatroliReportController extends GetxController {
   }
 
   void loadPatroli() {
-    final list = patroliBox.values.toList()
-      ..sort((a, b) {
-        final aDateTime = DateTime.parse('${a.tanggal} ${a.jam}');
-        final bDateTime = DateTime.parse('${b.tanggal} ${b.jam}');
-        return bDateTime.compareTo(aDateTime); // terbaru di atas
-      });
+    final list =
+        patroliBox.values.where((e) => e.satpamId == _loginUserId).toList()
+          ..sort((a, b) {
+            final aDateTime = DateTime.parse('${a.tanggal} ${a.jam}');
+            final bDateTime = DateTime.parse('${b.tanggal} ${b.jam}');
+            return bDateTime.compareTo(aDateTime); // terbaru di atas
+          });
     patroliList.value = list;
   }
 

@@ -8,6 +8,7 @@ import 'package:path/path.dart';
 import 'package:qbsc_saas/app/data/api_endpoint.dart';
 import 'package:qbsc_saas/app/data/api_provider.dart';
 import 'package:qbsc_saas/app/models/situasi_model.dart';
+import 'package:qbsc_saas/app/utils/app_prefs.dart';
 import 'package:qbsc_saas/app/utils/snackbar_helper.dart';
 
 class KejadianReportController extends GetxController {
@@ -16,9 +17,12 @@ class KejadianReportController extends GetxController {
 
   var situasiList = <SituasiModel>[].obs;
 
+  late int _loginUserId;
+
   @override
   void onInit() {
     super.onInit();
+    _loginUserId = int.parse(AppPrefs.getUserId() ?? '0');
     situasiBox = Hive.box<SituasiModel>('situasi');
     loadData();
 
@@ -26,8 +30,9 @@ class KejadianReportController extends GetxController {
   }
 
   void loadData() {
-    final list = situasiBox.values.toList()
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final list =
+        situasiBox.values.where((e) => e.satpamId == _loginUserId).toList()
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     situasiList.value = list;
   }
 

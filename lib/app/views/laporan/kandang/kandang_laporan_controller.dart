@@ -14,6 +14,7 @@ import 'package:qbsc_saas/app/models/kandang_suhu_model.dart';
 import 'dart:io';
 // ignore: depend_on_referenced_packages
 import 'package:collection/collection.dart';
+import 'package:qbsc_saas/app/utils/app_prefs.dart';
 import 'package:qbsc_saas/app/utils/snackbar_helper.dart';
 
 class KandangLaporanController extends GetxController {
@@ -28,9 +29,13 @@ class KandangLaporanController extends GetxController {
   late Box<KandangLampuModel> boxLampu;
   late Box<KandangModel> boxKandang;
 
+  late int _loginUserId;
+
   @override
   void onInit() {
     super.onInit();
+
+    _loginUserId = int.parse(AppPrefs.getUserId() ?? '0');
     box = Hive.box<KandangSuhuModel>('kandang_suhu');
     boxKipas = Hive.box<KandangKipasModel>('kandang_kipas');
     boxAlarm = Hive.box<KandangAlarmModel>('kandang_alarm');
@@ -39,11 +44,37 @@ class KandangLaporanController extends GetxController {
     loadData();
   }
 
+  // void loadData() {
+  //   suhuList.value = box.values.toList().reversed.toList();
+  //   alarmList.value = boxAlarm.values.toList().reversed.toList();
+  //   lampuList.value = boxLampu.values.toList().reversed.toList();
+  //   kipasList.value = boxKipas.values.toList().reversed.toList();
+  // }
+
   void loadData() {
-    suhuList.value = box.values.toList().reversed.toList();
-    alarmList.value = boxAlarm.values.toList().reversed.toList();
-    lampuList.value = boxLampu.values.toList().reversed.toList();
-    kipasList.value = boxKipas.values.toList().reversed.toList();
+    suhuList.value = box.values
+        .where((e) => e.satpamId == _loginUserId)
+        .toList()
+        .reversed
+        .toList();
+
+    kipasList.value = boxKipas.values
+        .where((e) => e.satpamId == _loginUserId)
+        .toList()
+        .reversed
+        .toList();
+
+    alarmList.value = boxAlarm.values
+        .where((e) => e.satpamId == _loginUserId)
+        .toList()
+        .reversed
+        .toList();
+
+    lampuList.value = boxLampu.values
+        .where((e) => e.satpamId == _loginUserId)
+        .toList()
+        .reversed
+        .toList();
   }
 
   void deleteLaporanSuhu(int index) {

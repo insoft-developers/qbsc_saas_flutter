@@ -9,6 +9,7 @@ import 'package:qbsc_saas/app/data/api_endpoint.dart';
 import 'package:qbsc_saas/app/data/api_provider.dart';
 import 'package:qbsc_saas/app/models/doc_model.dart';
 import 'package:qbsc_saas/app/models/ekspedisi_model.dart';
+import 'package:qbsc_saas/app/utils/app_prefs.dart';
 import 'package:qbsc_saas/app/utils/snackbar_helper.dart';
 
 class DocReportController extends GetxController {
@@ -17,10 +18,12 @@ class DocReportController extends GetxController {
   late Box<EkspedisiModel> eksBox;
 
   var docList = <DocModel>[].obs;
+  late int _loginUserId;
 
   @override
   void onInit() {
     super.onInit();
+    _loginUserId = int.parse(AppPrefs.getUserId() ?? '0');
     docBox = Hive.box<DocModel>('doc');
     eksBox = Hive.box<EkspedisiModel>('ekspedisi');
     loadData();
@@ -28,9 +31,19 @@ class DocReportController extends GetxController {
     docBox.listenable().addListener(loadData);
   }
 
+  // void loadData() {
+  //   final list = docBox.values.toList()
+  //     ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  //   docList.value = list;
+  // }
+
   void loadData() {
-    final list = docBox.values.toList()
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final list =
+        docBox.values
+            .where((e) => e.satpamId == _loginUserId) // 🔹 FILTER USER
+            .toList()
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt)); // 🔹 SORT
+
     docList.value = list;
   }
 

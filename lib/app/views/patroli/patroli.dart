@@ -28,6 +28,7 @@ class _PatroliState extends State<Patroli> {
   late Box<LocationModel> _box;
   Box<PatroliModel>? _boxPatroli;
   double _maxDistance = 0.0;
+  late String _loginUserId;
 
   final MobileScannerController _controller = MobileScannerController(
     detectionSpeed: DetectionSpeed.noDuplicates,
@@ -38,6 +39,7 @@ class _PatroliState extends State<Patroli> {
     super.initState();
     _openHiveBox();
     _loadMaxDistance();
+    _loginUserId = AppPrefs.getUserId() ?? '0';
   }
 
   Future<void> _loadMaxDistance() async {
@@ -50,6 +52,7 @@ class _PatroliState extends State<Patroli> {
   Future<void> _openHiveBox() async {
     _box = await Hive.openBox<LocationModel>('locations');
     _boxPatroli = await Hive.openBox<PatroliModel>('patroli');
+
     setState(() {});
   }
 
@@ -400,20 +403,20 @@ class _PatroliState extends State<Patroli> {
                             box.values
                                 .where(
                                   (e) =>
+                                      e.satpamId ==
+                                          _loginUserId && // ✅ FILTER COMID
                                       (e.tanggal == today ||
-                                      e.tanggal == yesterday),
+                                          e.tanggal == yesterday),
                                 )
                                 .toList()
                               ..sort((a, b) {
-                                // gabungkan tanggal + jam
                                 final aDateTime = DateTime.parse(
                                   '${a.tanggal} ${a.jam}',
                                 );
                                 final bDateTime = DateTime.parse(
                                   '${b.tanggal} ${b.jam}',
                                 );
-
-                                return bDateTime.compareTo(aDateTime); // DESC
+                                return bDateTime.compareTo(aDateTime);
                               });
 
                         return ListView.builder(
