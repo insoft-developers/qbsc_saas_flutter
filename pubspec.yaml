@@ -123,7 +123,7 @@ flutter:
     - assets/images/kejadian.png
     - assets/images/setting.png
     - assets/images/tamu.png    
-
+    - assets/images/maintenance.png
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

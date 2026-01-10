@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:qbsc_saas/app/views/laporan/anggota/absensi/absensi_anggota.dart';
+import 'package:qbsc_saas/app/views/laporan/anggota/patroli/patroli_anggota.dart';
 
 class LaporanAnggota extends StatelessWidget {
   LaporanAnggota({super.key});
@@ -56,9 +58,9 @@ class LaporanAnggota extends StatelessWidget {
             borderRadius: BorderRadius.circular(18),
             onTap: () {
               if (item['label'] == 'Laporan Absensi Anggota') {
-                Get.toNamed('/laporan/patroli');
+                Get.to(() => AbsensiAnggota());
               } else if (item['label'] == 'Laporan Patroli Anggota') {
-                Get.toNamed('/laporan/lokasi');
+                Get.to(() => PatroliAnggota());
               }
             },
             child: Ink(

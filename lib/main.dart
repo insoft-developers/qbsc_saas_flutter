@@ -28,6 +28,8 @@ import 'package:qbsc_saas/app/views/absensi/absensi_shift.dart';
 import 'package:qbsc_saas/app/views/doc/doc.dart';
 import 'package:qbsc_saas/app/views/emergency/emgergency.dart';
 import 'package:qbsc_saas/app/views/home_view.dart';
+import 'package:qbsc_saas/app/views/jadwal/patroli/jadwal_patroli.dart';
+import 'package:qbsc_saas/app/views/jadwal/patroli/jadwal_patroli_model.dart';
 import 'package:qbsc_saas/app/views/kandang/kandang.dart';
 import 'package:qbsc_saas/app/views/kejadian/kejadian.dart';
 import 'package:qbsc_saas/app/views/laporan/absensi/absensi.dart';
@@ -96,6 +98,7 @@ Future<void> main() async {
   Hive.registerAdapter(EkspedisiModelAdapter());
   Hive.registerAdapter(DocModelAdapter());
   Hive.registerAdapter(SituasiModelAdapter());
+  Hive.registerAdapter(JadwalPatroliModelAdapter());
 
   await Hive.openBox<LocationModel>('locations');
   await Hive.openBox<PatroliModel>('patroli');
@@ -107,6 +110,7 @@ Future<void> main() async {
   await Hive.openBox<EkspedisiModel>('ekspedisi');
   await Hive.openBox<DocModel>('doc');
   await Hive.openBox<SituasiModel>('situasi');
+  await Hive.openBox<JadwalPatroliModel>('jadwal_patroli');
 
   await Get.putAsync<ApiProvider>(() async => await ApiProvider().init());
   await AppPrefs.init();
@@ -177,7 +181,6 @@ class _MyAppState extends State<MyApp> {
         GetPage(name: '/splash', page: () => const SplashView()),
         GetPage(name: '/login', page: () => const LoginView()),
         GetPage(name: '/home', page: () => HomeView()),
-        GetPage(name: '/patroli', page: () => Patroli()),
         GetPage(name: '/pengaturan', page: () => Pengaturan()),
         GetPage(name: '/pengaturan/lokasi', page: () => Lokasi()),
         GetPage(name: '/laporan', page: () => Laporan()),
@@ -200,6 +203,7 @@ class _MyAppState extends State<MyApp> {
         GetPage(name: '/pengaturan/password', page: () => ChangePassword()),
         GetPage(name: '/laporan/absensi', page: () => Absensi()),
         GetPage(name: '/laporan/anggota', page: () => LaporanAnggota()),
+        GetPage(name: '/jadwal_patroli', page: () => JadwalPatroli()),
       ],
     );
   }

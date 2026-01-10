@@ -11,6 +11,7 @@ import 'package:qbsc_saas/app/data/api_endpoint.dart';
 import 'package:qbsc_saas/app/data/api_provider.dart';
 import 'package:qbsc_saas/app/models/location_model.dart';
 import 'package:qbsc_saas/app/models/patroli_model.dart';
+import 'package:qbsc_saas/app/views/jadwal/patroli/jadwal_patroli_model.dart';
 import 'package:uuid/uuid.dart';
 
 class PatroliController extends GetxController {
@@ -19,11 +20,13 @@ class PatroliController extends GetxController {
   final ApiProvider api = Get.find<ApiProvider>();
 
   late Box<LocationModel> lokasiBox;
+  late Box<JadwalPatroliModel> jadwalBox;
 
   @override
   void onInit() {
     super.onInit();
     lokasiBox = Hive.box<LocationModel>('locations');
+    jadwalBox = Hive.box<JadwalPatroliModel>('jadwal_patroli');
 
     // Jalankan sync saat controller pertama aktif
     syncPatroliToServer();
@@ -71,6 +74,7 @@ class PatroliController extends GetxController {
     String? note,
     required String comid,
     String? photoPath,
+    required int jadwalId,
   }) async {
     final box = Hive.box<PatroliModel>('patroli');
     final now = DateTime.now();
@@ -92,6 +96,16 @@ class PatroliController extends GetxController {
     );
 
     await box.put(id, patroli);
+
+    final jadwal = jadwalBox.values.firstWhere(
+      (e) => e.id == jadwalId, // id jadwal patroli
+    );
+
+    if (jadwal != null) {
+      jadwal.isChecked = true;
+      await jadwal.save(); // 🔥 PENTING
+    }
+
     await cekHivePatroli();
   }
 

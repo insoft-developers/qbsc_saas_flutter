@@ -34,4 +34,13 @@ class Fungsi {
       return "-";
     }
   }
+
+  static String formatDateTime(String dateTime) {
+    final DateTime dt = DateTime.parse(dateTime).toLocal();
+
+    String twoDigit(int n) => n.toString().padLeft(2, '0');
+
+    return '${twoDigit(dt.day)}-${twoDigit(dt.month)}-${dt.year} '
+        '${twoDigit(dt.hour)}:${twoDigit(dt.minute)}';
+  }
 }

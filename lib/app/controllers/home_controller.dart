@@ -7,13 +7,18 @@ import 'package:qbsc_saas/app/models/kandang_model.dart';
 import 'package:qbsc_saas/app/models/location_model.dart';
 import 'package:qbsc_saas/app/utils/app_prefs.dart';
 import 'package:qbsc_saas/app/utils/snackbar_helper.dart';
+import 'package:qbsc_saas/app/views/jadwal/patroli/jadwal_patroli_model.dart';
 import 'package:qbsc_saas/app/views/paket.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxList<LocationModel> locations = <LocationModel>[].obs;
   late Box<LocationModel> _box;
   RxInt unreadCount = 0.obs;
+  var runningText = 'QBSC Running Text'.obs;
+  var rtStatus = false.obs;
+  var adminWhatsapp = ''.obs;
 
   final RxBool kandangLoading = false.obs;
   final RxList<KandangModel> kandangs = <KandangModel>[].obs;
@@ -22,6 +27,9 @@ class HomeController extends GetxController {
   final RxBool ekspedisiLoading = false.obs;
   final RxList<EkspedisiModel> ekspedisi = <EkspedisiModel>[].obs;
   late Box<EkspedisiModel> _boxEkspedisi;
+
+  final RxList<JadwalPatroliModel> jadwalPatroli = <JadwalPatroliModel>[].obs;
+  late Box<JadwalPatroliModel> _boxJadwalPatroli;
 
   final ApiProvider api = Get.find<ApiProvider>();
 
@@ -44,15 +52,16 @@ class HomeController extends GetxController {
   }
 
   Future<void> _initAndLoad() async {
-    await checkPaket();
     _box = Hive.box<LocationModel>(
       'locations',
     ); // ✅ box yang sudah dibuka di main.dart
     _boxKandang = Hive.box<KandangModel>('kandang');
     _boxEkspedisi = Hive.box<EkspedisiModel>('ekspedisi');
+    _boxJadwalPatroli = Hive.box<JadwalPatroliModel>('jadwal_patroli');
     await getDataLocation();
     await getDataKandang();
     await getDataEkspedisi();
+    await getJadwalPatroli();
     await cekDataHive();
 
     // panggil setelah ambil data
@@ -180,14 +189,14 @@ class HomeController extends GetxController {
   }
 
   Future<void> cekDataHive() async {
-    final box = Hive.box<EkspedisiModel>(
-      'ekspedisi',
+    final box = Hive.box<JadwalPatroliModel>(
+      'jadwal_patroli',
     ); // ✅ pakai box yang sudah dibuka
     print('=== CEK DATA DI HIVE ===');
     print('Total data: ${box.length}');
     for (var item in box.values) {
       print(
-        'ID: ${item.id}, Code: ${item.code}, Name: ${item.name}, COM: ${item.comid.toString()}',
+        'ID: ${item.id}, Code: ${item.locationId}, Name: ${item.patroliId}, Check: ${item.isChecked.toString()}',
       );
     }
   }
@@ -214,5 +223,96 @@ class HomeController extends GetxController {
     } catch (e) {
       // SnackbarHelper.error('Error', 'Offline');
     } finally {}
+  }
+
+  Future<void> setRunningText() async {
+    String comid = AppPrefs.getComId().toString();
+
+    if (comid.isEmpty) {
+      SnackbarHelper.error('Error', 'Com id tidak ditemukan');
+      return;
+    }
+
+    try {
+      final response = await api.post(
+        ApiEndpoint.runningText,
+        data: {'comid': comid},
+      );
+
+      var body = response.data;
+      if (body['success']) {
+        rtStatus(true);
+        runningText.value = body['data'] ?? 'QBSC';
+        adminWhatsapp.value = body['whatsapp'];
+      } else {
+        rtStatus(false);
+        adminWhatsapp.value = body['whatsapp'];
+      }
+    } catch (e) {
+      // SnackbarHelper.error('Error', 'Offline');
+      rtStatus(false);
+    } finally {}
+  }
+
+  Future<void> getJadwalPatroli() async {
+    isLoading.value = true;
+    String comid = AppPrefs.getComId().toString();
+
+    if (comid.isEmpty) {
+      Get.snackbar('Error', 'Com id tidak ditemukan');
+      isLoading.value = false;
+      return;
+    }
+
+    try {
+      final response = await api.post(
+        ApiEndpoint.jadwalPatroliPerusahaan,
+        data: {'comid': comid},
+      );
+
+      var body = response.data;
+      if (body['success']) {
+        final List<dynamic> list = body['data'];
+        final List<JadwalPatroliModel> jadwalPatroliList = list
+            .map((e) => JadwalPatroliModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+
+        // 🟢 Ganti clear dengan overwrite manual biar gak hapus total
+        await _boxJadwalPatroli.clear();
+        await _boxJadwalPatroli.addAll(jadwalPatroliList);
+
+        jadwalPatroli.assignAll(jadwalPatroliList);
+      } else {
+        SnackbarHelper.error('Gagal', 'Data tidak ada');
+      }
+    } catch (e) {
+      final local = _boxJadwalPatroli.values.toList();
+      jadwalPatroli.assignAll(local);
+      // SnackbarHelper.error('Error', 'Offline');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  String normalizeWa(String number) {
+    number = number.replaceAll(RegExp(r'\D'), ''); // hilangkan spasi / simbol
+
+    if (number.startsWith("0")) {
+      return "62" + number.substring(1);
+    }
+    if (number.startsWith("62")) {
+      return number;
+    }
+    return number; // fallback
+  }
+
+  Future<void> callWhatsApp() async {
+    final wa = normalizeWa(adminWhatsapp.value);
+    final url = Uri.parse("whatsapp://send?phone=$wa&text=");
+
+    // trik untuk open WA dulu lalu user klik call manual
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      throw 'Tidak bisa membuka WhatsApp';
+    }
   }
 }

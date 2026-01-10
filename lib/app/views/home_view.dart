@@ -13,12 +13,16 @@ class HomeView extends StatefulWidget {
   State<HomeView> createState() => _HomeViewState();
 }
 
-class _HomeViewState extends State<HomeView> {
+class _HomeViewState extends State<HomeView>
+    with SingleTickerProviderStateMixin {
   late List<Map<String, dynamic>> menuItems;
 
   final AuthController authC = Get.put(AuthController());
   final HomeController homeC = Get.put(HomeController());
   final AbsenController absenC = Get.put(AbsenController());
+
+  late final ScrollController _marqueeScrollController;
+  late final AnimationController _marqueeAnimationController;
 
   final String? isPeternakan = AppPrefs.getIsPeternakan();
 
@@ -28,6 +32,28 @@ class _HomeViewState extends State<HomeView> {
     _loadUserPhoto();
     absenC.getLocationData();
     _initMenu();
+    _marqueeScrollController = ScrollController();
+    _marqueeAnimationController =
+        AnimationController(vsync: this, duration: const Duration(seconds: 18))
+          ..addListener(() {
+            if (_marqueeScrollController.hasClients) {
+              _marqueeScrollController.jumpTo(
+                _marqueeAnimationController.value *
+                    _marqueeScrollController.position.maxScrollExtent,
+              );
+            }
+          });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _marqueeAnimationController.repeat();
+    });
+  }
+
+  @override
+  void dispose() {
+    _marqueeAnimationController.dispose();
+    _marqueeScrollController.dispose();
+    super.dispose();
   }
 
   void _initMenu() {
@@ -48,6 +74,8 @@ class _HomeViewState extends State<HomeView> {
     }
 
     menuItems = baseMenu;
+    homeC.checkPaket();
+    homeC.setRunningText();
   }
 
   void _loadUserPhoto() {
@@ -92,6 +120,7 @@ class _HomeViewState extends State<HomeView> {
       await homeC.getDataKandang();
       await absenC.getLocationData();
       await homeC.getDataEkspedisi();
+      await homeC.getJadwalPatroli();
 
       Get.back();
       Get.snackbar(
@@ -115,7 +144,7 @@ class _HomeViewState extends State<HomeView> {
   void _onMenuTap(String label) {
     final routes = {
       'Absensi': '/shift',
-      'Patroli': '/patroli',
+      'Patroli': '/jadwal_patroli',
       'Pengaturan': '/pengaturan',
       'Laporan': '/laporan',
       'Kontrol Kandang': '/patroli/kandang',
@@ -129,6 +158,94 @@ class _HomeViewState extends State<HomeView> {
     }
   }
 
+  Widget _buildRunningText() {
+    return Container(
+      height: 52,
+      padding: const EdgeInsets.only(right: 12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(colors: [Colors.indigo.shade50, Colors.white]),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 14,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // ICON KIRI
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: Colors.indigo.shade600,
+              borderRadius: const BorderRadius.horizontal(
+                left: Radius.circular(16),
+              ),
+            ),
+            child: const Icon(
+              Icons.campaign_rounded,
+              color: Colors.white,
+              size: 20,
+            ),
+          ),
+
+          const SizedBox(width: 8),
+
+          // RUNNING TEXT
+          Expanded(
+            child: ClipRect(
+              child: ListView(
+                controller: _marqueeScrollController,
+                scrollDirection: Axis.horizontal,
+                physics: const NeverScrollableScrollPhysics(),
+                children: [
+                  Row(
+                    children: const [
+                      _MarqueeText(),
+                      _MarqueeText(), // DUPLIKAT = LOOP MULUS
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWhatsAppButton() {
+    return GestureDetector(
+      onTap: () {
+        // ganti nomor WA
+
+        homeC.callWhatsApp();
+      },
+      child: Container(
+        width: 58,
+        height: 58,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: const Color(0xFF25D366),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF25D366).withOpacity(0.45),
+              blurRadius: 14,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(5),
+          child: Image.asset('assets/images/wa_icon.png'),
+        ),
+      ),
+    );
+  }
+
   // ================= UI =================
   @override
   Widget build(BuildContext context) {
@@ -137,10 +254,16 @@ class _HomeViewState extends State<HomeView> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
       appBar: _buildAppBar(),
-      floatingActionButton: Container(
-        margin: const EdgeInsets.only(bottom: 0),
-        child: _buildEmergencyButton(),
+      floatingActionButton: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          _buildWhatsAppButton(),
+          const SizedBox(height: 14),
+          _buildEmergencyButton(),
+        ],
       ),
+
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(
@@ -150,6 +273,8 @@ class _HomeViewState extends State<HomeView> {
           child: Column(
             children: [
               _buildProfileCard(isTablet),
+              const SizedBox(height: 14),
+              _buildRunningText(),
               const SizedBox(height: 28),
               _buildMenuList(),
               const SizedBox(height: 38),
@@ -213,14 +338,30 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Widget _buildEmergencyButton() {
-    return FloatingActionButton.extended(
-      backgroundColor: Colors.red.shade700,
-      icon: const Icon(Icons.warning_amber_rounded, color: Colors.white),
-      label: const Text(
-        'Kontak Darurat',
-        style: TextStyle(color: Colors.white),
+    return GestureDetector(
+      onTap: () => Get.toNamed('/darurat'),
+      child: Container(
+        width: 58,
+        height: 58,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.red.shade700,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.red.shade700.withOpacity(0.45),
+              blurRadius: 14,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: const Center(
+          child: Icon(
+            Icons.warning_amber_rounded,
+            color: Colors.white,
+            size: 30,
+          ),
+        ),
       ),
-      onPressed: () => Get.toNamed('/darurat'),
     );
   }
 
@@ -478,6 +619,29 @@ class _RoleBadge extends StatelessWidget {
           fontWeight: FontWeight.w600,
           color: role == '1' ? Colors.blue : Colors.redAccent,
           letterSpacing: 0.2,
+        ),
+      ),
+    );
+  }
+}
+
+class _MarqueeText extends StatelessWidget {
+  const _MarqueeText();
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = Get.find<HomeController>();
+    return Padding(
+      padding: const EdgeInsets.only(right: 10),
+      child: Obx(
+        () => Text(
+          controller.runningText.value.toString(),
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: Colors.red,
+            letterSpacing: 0.3,
+          ),
         ),
       ),
     );

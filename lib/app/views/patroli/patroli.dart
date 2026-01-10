@@ -14,7 +14,15 @@ import 'package:qbsc_saas/app/utils/app_prefs.dart';
 import 'package:qbsc_saas/app/views/patroli/patroli_controller.dart';
 
 class Patroli extends StatefulWidget {
-  const Patroli({super.key});
+  final int id;
+  final int locationId;
+  final String locationName;
+  const Patroli({
+    super.key,
+    required this.id,
+    required this.locationId,
+    required this.locationName,
+  });
 
   @override
   State<Patroli> createState() => _PatroliState();
@@ -147,6 +155,18 @@ class _PatroliState extends State<Patroli> {
                 duration: const Duration(seconds: 4),
               ),
             );
+          } else if (match.id != widget.locationId) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'QR Code tidak sesuai dengan lokasi patroli ini!\n'
+                  'Lokasi scan: ${match.namaLokasi} '
+                  '(Lokasi patroli: ${widget.locationName})',
+                ),
+                backgroundColor: Colors.redAccent,
+                duration: const Duration(seconds: 4),
+              ),
+            );
           } else {
             _showKondisiDialog(match, pos);
           }
@@ -255,6 +275,7 @@ class _PatroliState extends State<Patroli> {
                       note: kondisiController.text,
                       comid: lokasi.comid.toString(),
                       photoPath: _fotoFile?.path, // bisa null, opsional
+                      jadwalId: widget.id,
                     );
 
                     Navigator.pop(context);
@@ -296,9 +317,12 @@ class _PatroliState extends State<Patroli> {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 60, 53, 53),
-        title: const Text(
-          'Patroli - Scan QR Code',
-          style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
+        title: Text(
+          'Scan ${widget.locationName}',
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),

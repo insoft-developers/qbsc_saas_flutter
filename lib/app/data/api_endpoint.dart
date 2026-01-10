@@ -32,6 +32,12 @@ class ApiEndpoint {
   static const String updateSatpamProfile = '/update_satpam_profile';
   static const String changePassword = '/ubah_password_satpam';
   static const String laporanAbsensi = '/laporan_absensi';
+  static const String laporanAnggotaAbsensi = '/laporan_anggota_absensi';
+  static const String laporanAnggotaPatroli = '/laporan_anggota_patroli';
+  static const String apiSatpam = '/api_satpam';
+  static const String apiLokasi = '/api_lokasi';
+  static const String runningText = '/running_text';
+  static const String jadwalPatroliPerusahaan = '/jadwal_patroli_perusahaan';
 
   // User
   static const String profile = "/user/profile";
