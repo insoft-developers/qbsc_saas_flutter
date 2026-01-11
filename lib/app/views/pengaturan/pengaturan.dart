@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:qbsc_saas/app/utils/app_prefs.dart';
 import 'package:qbsc_saas/app/views/pengaturan/lokasi/lokasi_controller.dart';
+import 'package:qbsc_saas/app/views/pengaturan/pengaturan_controller.dart';
 
 class Pengaturan extends StatelessWidget {
   Pengaturan({super.key});
@@ -14,6 +15,7 @@ class Pengaturan extends StatelessWidget {
 
     if (role == '1') {
       items.add({'icon': Icons.location_on, 'label': 'Lokasi'});
+      items.add({'icon': Icons.location_history, 'label': 'Pos Absen'});
     }
 
     items.addAll([
@@ -66,6 +68,12 @@ class Pengaturan extends StatelessWidget {
                 Get.toNamed('/pengaturan/profile');
               } else if (item['label'] == 'Ubah Password') {
                 Get.toNamed('/pengaturan/password');
+              } else if (item['label'] == 'Pos Absen') {
+                showSetAbsensiPositionDialog(
+                  onConfirm: () {
+                    Get.put(PengaturanController()).setAbsensiPosition();
+                  },
+                );
               }
             },
             child: Ink(
@@ -157,6 +165,8 @@ String _getPengaturanSubtitle(String label) {
   switch (label) {
     case 'Lokasi':
       return 'Kelola titik lokasi patroli';
+    case 'Pos Absen':
+      return 'Kelola titik lokasi Pos untuk Absensi';
     case 'Profil':
       return 'Informasi akun pengguna';
     case 'Ubah Password':
@@ -164,4 +174,26 @@ String _getPengaturanSubtitle(String label) {
     default:
       return '';
   }
+}
+
+void showSetAbsensiPositionDialog({required VoidCallback onConfirm}) {
+  Get.dialog(
+    AlertDialog(
+      title: const Text('Konfirmasi'),
+      content: const Text(
+        'Apakah anda ingin mengatur agar posisi Absensi berada di titik ini?',
+      ),
+      actions: [
+        TextButton(onPressed: Get.back, child: const Text('BATAL')),
+        ElevatedButton(
+          onPressed: () {
+            Get.back();
+            onConfirm();
+          },
+          child: const Text('YA'),
+        ),
+      ],
+    ),
+    barrierDismissible: false,
+  );
 }

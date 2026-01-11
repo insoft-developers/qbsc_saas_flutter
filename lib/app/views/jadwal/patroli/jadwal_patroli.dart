@@ -19,7 +19,17 @@ class JadwalPatroli extends StatelessWidget {
           style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            tooltip: 'Bersihkan Check',
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              controller.resetIsCheckedJadwalPatroli();
+            },
+          ),
+        ],
       ),
+
       body: Obx(() {
         if (controller.jadwalPatroliList.isEmpty) {
           return const Center(child: Text('Belum ada jadwal patroli aktif'));
@@ -57,6 +67,8 @@ class JadwalPatroli extends StatelessWidget {
                         id: jadwal.id,
                         locationId: jadwal.locationId,
                         locationName: namaLokasi,
+                        jamAwal: jadwal.jamAwal,
+                        jamAkhir: jadwal.jamAkhir,
                       ),
                     );
                   },
@@ -183,6 +195,39 @@ class _InfoChip extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void showResetChecklistDialog() {
+    Get.dialog(
+      AlertDialog(
+        title: const Text('Konfirmasi'),
+        content: const Text(
+          'Apakah Anda yakin ingin mereset semua checklist patroli?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Get.back(); // tutup dialog
+            },
+            child: const Text('BATAL'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              Get.back(); // tutup dialog dulu
+              Get.find<JadwalPatroliController>().resetIsCheckedJadwalPatroli();
+              Get.snackbar(
+                'Berhasil',
+                'Semua checklist patroli telah direset',
+                snackPosition: SnackPosition.BOTTOM,
+              );
+            },
+            child: const Text('RESET'),
+          ),
+        ],
+      ),
+      barrierDismissible: false,
     );
   }
 }

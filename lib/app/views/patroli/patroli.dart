@@ -17,11 +17,15 @@ class Patroli extends StatefulWidget {
   final int id;
   final int locationId;
   final String locationName;
+  final String jamAwal;
+  final String jamAkhir;
   const Patroli({
     super.key,
     required this.id,
     required this.locationId,
     required this.locationName,
+    required this.jamAwal,
+    required this.jamAkhir,
   });
 
   @override
@@ -276,6 +280,8 @@ class _PatroliState extends State<Patroli> {
                       comid: lokasi.comid.toString(),
                       photoPath: _fotoFile?.path, // bisa null, opsional
                       jadwalId: widget.id,
+                      jamAwal: widget.jamAwal,
+                      jamAkhir: widget.jamAkhir,
                     );
 
                     Navigator.pop(context);

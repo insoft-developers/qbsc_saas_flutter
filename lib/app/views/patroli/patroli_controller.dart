@@ -75,6 +75,8 @@ class PatroliController extends GetxController {
     required String comid,
     String? photoPath,
     required int jadwalId,
+    String? jamAwal,
+    String? jamAkhir,
   }) async {
     final box = Hive.box<PatroliModel>('patroli');
     final now = DateTime.now();
@@ -92,6 +94,8 @@ class PatroliController extends GetxController {
       note: note ?? '',
       comid: comid,
       photoPath: photoPath ?? '',
+      jamAwal: jamAwal,
+      jamAkhir: jamAkhir,
       isSynced: false,
     );
 
@@ -154,6 +158,8 @@ class PatroliController extends GetxController {
               file.path,
               filename: basename(file.path),
             ),
+          'jam_awal_patroli': p.jamAwal,
+          'jam_akhir_patroli': p.jamAkhir,
         });
 
         // Kirim ke server

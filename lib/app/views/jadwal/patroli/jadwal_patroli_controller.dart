@@ -41,4 +41,15 @@ class JadwalPatroliController extends GetxController {
     jadwalBox.listenable().removeListener(loadJadwalPatroli);
     super.onClose();
   }
+
+  Future<void> resetIsCheckedJadwalPatroli() async {
+    final box = Hive.box<JadwalPatroliModel>('jadwal_patroli');
+
+    for (final item in box.values) {
+      if (item.isChecked == true) {
+        item.isChecked = false;
+        await item.save();
+      }
+    }
+  }
 }
