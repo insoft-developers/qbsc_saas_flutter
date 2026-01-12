@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:qbsc_saas/app/utils/app_prefs.dart';
@@ -25,18 +24,15 @@ class _SuhuState extends State<Suhu> {
   File? imageFile;
   final ImagePicker picker = ImagePicker();
 
-  // Ambil foto dari kamera
   Future<void> pickImage() async {
     final XFile? pickedFile = await picker.pickImage(
       source: ImageSource.camera,
-      imageQuality: 80,
-      maxWidth: 1080,
-      maxHeight: 1080,
+      imageQuality: 70,
+      maxWidth: 900,
+      maxHeight: 900,
     );
     if (pickedFile != null) {
-      setState(() {
-        imageFile = File(pickedFile.path);
-      });
+      setState(() => imageFile = File(pickedFile.path));
     }
   }
 
@@ -47,20 +43,16 @@ class _SuhuState extends State<Suhu> {
     super.dispose();
   }
 
-  // Cek lokasi, jika mati tampilkan dialog buka pengaturan
-  Future<bool> checkLocationAndAlert() async {
-    final position = await controller.getCurrentPosition();
-    if (position == null) {
-      Get.defaultDialog(
-        title: "Lokasi Tidak Aktif",
-        middleText: "Silahkan aktifkan lokasi untuk menyimpan data.",
-        actions: [
-          TextButton(
-            onPressed: () => Geolocator.openLocationSettings(),
-            child: const Text("Buka Pengaturan"),
-          ),
-          TextButton(onPressed: () => Get.back(), child: const Text("Batal")),
-        ],
+  /// CEK LOKASI RINGAN (tanpa dialog berat)
+  Future<bool> checkLocation() async {
+    final pos = await controller.getCurrentPosition();
+    if (pos == null) {
+      Get.snackbar(
+        'Lokasi Mati',
+        'Aktifkan lokasi untuk menyimpan data',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
       );
       return false;
     }
@@ -80,7 +72,7 @@ class _SuhuState extends State<Suhu> {
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.white,
-            fontSize: 22,
+            fontSize: 20,
           ),
         ),
         centerTitle: true,
@@ -88,238 +80,143 @@ class _SuhuState extends State<Suhu> {
         elevation: 0,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(20),
         child: Center(
-          child: SingleChildScrollView(
-            child: Container(
-              width: size.width > 600 ? 500 : double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      'Input Data Kandang',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF3E3E3E),
-                      ),
+          child: Container(
+            width: size.width > 600 ? 420 : double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8),
+              ],
+            ),
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  /// INPUT SUHU (AUTOFOCUS → CEPAT)
+                  TextFormField(
+                    controller: suhuController,
+                    autofocus: true,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
                     ),
-                    const SizedBox(height: 20),
-
-                    // Input suhu
-                    TextFormField(
-                      controller: suhuController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
+                    decoration: InputDecoration(
+                      labelText: 'Suhu (°C)',
+                      hintText: 'Contoh: 27.4',
+                      prefixIcon: const Icon(
+                        Icons.device_thermostat,
+                        color: Colors.orange,
                       ),
-                      decoration: InputDecoration(
-                        labelText: 'Suhu Terdeteksi (°C)',
-                        hintText: 'Contoh: 27.4',
-                        labelStyle: const TextStyle(fontSize: 16),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        prefixIcon: const Icon(
-                          Icons.device_thermostat,
-                          color: Colors.orange,
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFFF9F9F9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Masukkan suhu yang terdeteksi';
-                        }
+                      filled: true,
+                      fillColor: const Color(0xFFF9F9F9),
+                    ),
+                    validator: (value) {
+                      if (value != null && value.isNotEmpty) {
                         if (double.tryParse(value) == null) {
-                          return 'Masukkan angka yang valid';
+                          return 'Angka tidak valid';
                         }
-                        return null;
-                      },
-                    ),
+                      }
+                      return null;
+                    },
+                  ),
 
-                    const SizedBox(height: 16),
+                  const SizedBox(height: 12),
 
-                    // Input Catatan
-                    TextFormField(
-                      controller: noteController,
-                      maxLines: 3,
-                      decoration: InputDecoration(
-                        labelText: 'Catatan (opsional)',
-                        labelStyle: const TextStyle(fontSize: 16),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        prefixIcon: const Icon(
-                          Icons.note,
-                          color: Colors.blueGrey,
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFFF9F9F9),
+                  /// CATATAN (OPSIONAL)
+                  TextFormField(
+                    controller: noteController,
+                    maxLines: 2,
+                    decoration: InputDecoration(
+                      labelText: 'Catatan (opsional)',
+                      prefixIcon: const Icon(Icons.note),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
+                      filled: true,
+                      fillColor: const Color(0xFFF9F9F9),
                     ),
+                  ),
 
-                    const SizedBox(height: 16),
+                  const SizedBox(height: 12),
 
-                    // Tombol ambil foto + preview
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        if (imageFile != null)
-                          ClipRRect(
+                  /// FOTO (OPSIONAL)
+                  Row(
+                    children: [
+                      if (imageFile != null)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: Image.file(
                               imageFile!,
-                              width: 80,
-                              height: 80,
+                              width: 60,
+                              height: 60,
                               fit: BoxFit.cover,
                             ),
                           ),
-                        ElevatedButton.icon(
+                        ),
+                      Expanded(
+                        child: ElevatedButton.icon(
                           onPressed: pickImage,
-                          icon: const Icon(Icons.photo_camera),
-                          label: const Text('Ambil Foto (opsional)'),
-                        ),
-                        const SizedBox(width: 12),
-                      ],
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    // Tombol simpan
-                    Obx(
-                      () => controller.isLoading.value
-                          ? const Center(
-                              child: CircularProgressIndicator(
-                                color: Colors.amber,
-                              ),
-                            )
-                          : SizedBox(
-                              width: double.infinity,
-                              height: size.height * 0.065,
-                              child: ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color.fromARGB(
-                                    255,
-                                    60,
-                                    53,
-                                    53,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                  elevation: 4,
-                                ),
-                                icon: const Icon(
-                                  Icons.save_rounded,
-                                  color: Colors.white,
-                                  size: 26,
-                                ),
-                                label: const Text(
-                                  'SIMPAN DATA',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
-                                    letterSpacing: 1,
-                                  ),
-                                ),
-                                onPressed: () async {
-                                  if (!formKey.currentState!.validate()) return;
-                                  final canSave = await checkLocationAndAlert();
-                                  if (!canSave) return;
-
-                                  final suhu = double.parse(
-                                    suhuController.text.trim(),
-                                  );
-                                  final note = noteController.text.trim();
-                                  final foto = imageFile;
-
-                                  await controller.insertSuhu(
-                                    kandangId: widget.id,
-                                    satpamId: int.parse(
-                                      AppPrefs.getUserId() ?? '0',
-                                    ),
-                                    temperature: suhu,
-                                    note: note,
-                                    foto: foto,
-                                  );
-
-                                  Get.snackbar(
-                                    'Tersimpan',
-                                    'Data berhasil disimpan ke lokal',
-                                    backgroundColor: Colors.green.shade600,
-                                    colorText: Colors.white,
-                                    snackPosition: SnackPosition.BOTTOM,
-                                    margin: const EdgeInsets.all(16),
-                                    duration: const Duration(seconds: 2),
-                                  );
-
-                                  suhuController.clear();
-                                  noteController.clear();
-                                  setState(() => imageFile = null);
-
-                                  Future.delayed(
-                                    const Duration(milliseconds: 200),
-                                    () {
-                                      Navigator.of(context).pop();
-                                    },
-                                  );
-                                },
-                              ),
-                            ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Tampilan suhu terbaca
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Colors.orangeAccent,
-                          width: 1.2,
+                          icon: const Icon(Icons.camera_alt),
+                          label: const Text('Foto (opsional)'),
                         ),
                       ),
-                      child: Column(
-                        children: [
-                          const Text(
-                            'Suhu Terbaca dari Sensor:',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.black54,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '${suhuController.text.isEmpty ? "--" : suhuController.text}°C',
-                            style: TextStyle(
-                              fontSize: size.width * 0.12,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.orangeAccent,
-                            ),
-                          ),
-                        ],
+                    ],
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  /// SIMPAN CEPAT (OFFLINE FIRST)
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 60, 53, 53),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
+                      child: const Text(
+                        'SIMPAN',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      onPressed: () async {
+                        if (!formKey.currentState!.validate()) return;
+                        if (!await checkLocation()) return;
+
+                        final suhuText = suhuController.text.trim();
+
+                        final suhu = suhuText.isEmpty
+                            ? 0.0
+                            : double.tryParse(suhuText) ?? 0.0;
+
+                        controller.insertSuhu(
+                          kandangId: widget.id,
+                          satpamId: int.parse(AppPrefs.getUserId() ?? '0'),
+                          temperature: suhu,
+                          note: noteController.text,
+                          foto: imageFile,
+                        );
+
+                        /// LANGSUNG KELUAR → UX CEPAT
+                        Navigator.pop(context);
+                      },
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),

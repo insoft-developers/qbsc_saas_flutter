@@ -109,6 +109,7 @@ class _LokasiState extends State<Lokasi> {
                     onTap: () {
                       Get.to(
                         () => ScanLokasi(
+                          locationId: lokasi.id,
                           locationName: lokasi.namaLokasi,
                           qrcode: lokasi.qrcode,
                         ),

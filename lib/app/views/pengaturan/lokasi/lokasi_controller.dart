@@ -43,9 +43,11 @@ class LokasiController extends GetxController {
   }
 
   Future<void> updateLocationCoordinates(
+    int id,
     String qrcode,
     String lat,
     String lng,
+    String namaLokasi,
   ) async {
     isLoading.value = true;
     String comid = AppPrefs.getComId().toString();
@@ -65,7 +67,14 @@ class LokasiController extends GetxController {
     try {
       final response = await api.post(
         ApiEndpoint.updateLocationCoordinates,
-        data: {'comid': comid, 'qrcode': qrcode, 'lat': lat, 'lng': lng},
+        data: {
+          'id': id,
+          'comid': comid,
+          'qrcode': qrcode,
+          'lat': lat,
+          'lng': lng,
+          'nama_lokasi': namaLokasi,
+        },
       );
 
       var body = response.data;

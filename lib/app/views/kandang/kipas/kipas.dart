@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:qbsc_saas/app/utils/app_prefs.dart';
@@ -30,7 +29,6 @@ class _KipasState extends State<Kipas> {
 
   @override
   void initState() {
-    checkLocationAndAlert();
     controller.initKipas(widget.jumlahKipas);
     super.initState();
   }
@@ -44,35 +42,29 @@ class _KipasState extends State<Kipas> {
   Future<void> pickImage() async {
     final XFile? pickedFile = await picker.pickImage(
       source: ImageSource.camera,
-      imageQuality: 80,
-      maxWidth: 1080,
-      maxHeight: 1080,
+      imageQuality: 70,
+      maxWidth: 900,
+      maxHeight: 900,
     );
     if (pickedFile != null) {
-      setState(() {
-        imageFile = File(pickedFile.path);
-      });
+      setState(() => imageFile = File(pickedFile.path));
     }
   }
 
-  void toggleKipas(index) {
+  void toggleKipas(int index) {
     controller.toggleKipas(index);
-    setState(() {});
   }
 
-  Future<bool> checkLocationAndAlert() async {
-    final position = await controller.getCurrentPosition();
-    if (position == null) {
-      Get.defaultDialog(
-        title: "Lokasi Tidak Aktif",
-        middleText: "Silahkan aktifkan lokasi untuk menyimpan data.",
-        actions: [
-          TextButton(
-            onPressed: () => Geolocator.openLocationSettings(),
-            child: const Text("Buka Pengaturan"),
-          ),
-          TextButton(onPressed: () => Get.back(), child: const Text("Batal")),
-        ],
+  /// LOKASI CEPAT (NON BLOCKING)
+  Future<bool> checkLocationFast() async {
+    final pos = await controller.getCurrentPosition();
+    if (pos == null) {
+      Get.snackbar(
+        'Lokasi Mati',
+        'Aktifkan lokasi untuk menyimpan data',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
       );
       return false;
     }
@@ -98,44 +90,88 @@ class _KipasState extends State<Kipas> {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(14),
         child: Column(
           children: [
+            /// INFO
             Card(
-              elevation: 3,
+              elevation: 1,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
+                  horizontal: 16,
+                  vertical: 12,
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Obx(
-                      () => Text(
+                child: Obx(
+                  () => Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
                         'Total Kipas: ${controller.kipasCount.value}',
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.045,
+                        style: const TextStyle(
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ),
-                    Icon(
-                      Icons.wind_power_rounded,
-                      size: screenWidth * 0.07,
-                      color: Colors.blueGrey,
-                    ),
-                  ],
+                      const Icon(Icons.wind_power_rounded),
+                    ],
+                  ),
                 ),
               ),
             ),
-            const SizedBox(height: 16),
 
-            // ✅ GridView non-scrollable agar ikut scroll bareng halaman
+            const SizedBox(height: 12),
+
+            /// GRID KIPAS (LEBIH KECIL & RINGAN)
+            ///
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: controller.hidupkanSemua,
+                    icon: const Icon(
+                      Icons.power,
+                      size: 18,
+                      color: Colors.white,
+                    ),
+                    label: const Text(
+                      'Hidup Semua',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green.shade600,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: controller.matikanSemua,
+                    icon: const Icon(
+                      Icons.power_off,
+                      size: 18,
+                      color: Colors.white,
+                    ),
+                    label: const Text(
+                      'Mati Semua',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.shade600,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
             Obx(() {
               return GridView.builder(
                 shrinkWrap: true,
@@ -143,172 +179,153 @@ class _KipasState extends State<Kipas> {
                 itemCount: controller.kipasCount.value,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: screenWidth > 600
-                      ? 6
+                      ? 7
                       : screenWidth > 400
-                      ? 4
-                      : 3,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  childAspectRatio: 0.9,
+                      ? 5
+                      : 4,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                  childAspectRatio: 1.1,
                 ),
                 itemBuilder: (context, index) {
-                  final aktif = controller.kipasStatus[index];
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(14),
-                      color: aktif
-                          ? Colors.green.shade600
-                          : Colors.grey.shade200,
-                      boxShadow: [
-                        BoxShadow(
-                          color: aktif
-                              ? Colors.greenAccent.withOpacity(0.3)
-                              : Colors.black12,
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(14),
-                      onTap: () => toggleKipas(index),
-                      child: Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              aktif ? Icons.air_rounded : Icons.air_outlined,
-                              size: screenWidth * 0.09,
-                              color: aktif ? Colors.white : Colors.black54,
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'K${index + 1}',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: screenWidth * 0.035,
-                                color: aktif ? Colors.white : Colors.black87,
+                  return Obx(() {
+                    final aktif = controller.kipasStatus[index];
+
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10), // lebih kecil
+                        color: aktif
+                            ? Colors.green.shade600
+                            : Colors.grey.shade200,
+                        boxShadow: [
+                          BoxShadow(
+                            color: aktif
+                                ? Colors.greenAccent.withOpacity(0.3)
+                                : Colors.black12,
+                            blurRadius: 3,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(10),
+                        onTap: () => controller.toggleKipas(index),
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                aktif ? Icons.air_rounded : Icons.air_outlined,
+                                size: screenWidth * 0.075, // lebih kecil
+                                color: aktif ? Colors.white : Colors.black54,
                               ),
-                            ),
-                            Text(
-                              aktif ? 'ON' : 'OFF',
-                              style: TextStyle(
-                                fontSize: screenWidth * 0.03,
-                                color: aktif ? Colors.white70 : Colors.black54,
+                              const SizedBox(height: 4),
+                              Text(
+                                'K${index + 1}',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: screenWidth * 0.03,
+                                  color: aktif ? Colors.white : Colors.black87,
+                                ),
                               ),
-                            ),
-                          ],
+                              Text(
+                                aktif ? 'ON' : 'OFF',
+                                style: TextStyle(
+                                  fontSize: screenWidth * 0.025,
+                                  color: aktif
+                                      ? Colors.white70
+                                      : Colors.black54,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  );
+                    );
+                  });
                 },
               );
             }),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
 
-            // Catatan
-            TextFormField(
+            /// CATATAN
+            TextField(
               controller: noteController,
-              maxLines: 3,
+              maxLines: 2,
               decoration: InputDecoration(
                 labelText: 'Catatan (opsional)',
-                labelStyle: const TextStyle(fontSize: 16),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                prefixIcon: const Icon(Icons.note, color: Colors.blueGrey),
-                filled: true,
-                fillColor: const Color(0xFFF9F9F9),
               ),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
 
-            // Ambil foto
-            Column(
+            /// FOTO
+            Row(
               children: [
                 if (imageFile != null)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.file(
-                      imageFile!,
-                      width: 80,
-                      height: 80,
-                      fit: BoxFit.cover,
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.file(
+                        imageFile!,
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
-                ElevatedButton.icon(
-                  onPressed: pickImage,
-                  icon: const Icon(Icons.photo_camera),
-                  label: const Text('Ambil Foto (opsional)'),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: pickImage,
+                    icon: const Icon(Icons.camera_alt),
+                    label: const Text('Foto'),
+                  ),
                 ),
               ],
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
 
-            // Tombol simpan
-            Obx(
-              () => controller.isLoading.value
-                  ? const Center(
-                      child: CircularProgressIndicator(color: Colors.amber),
-                    )
-                  : SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2C2C2C),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        onPressed: () async {
-                          final note = noteController.text.trim();
-                          final foto = imageFile;
+            /// SIMPAN CEPAT
+            SizedBox(
+              width: double.infinity,
+              height: 46,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2C2C2C),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                onPressed: () async {
+                  if (!await checkLocationFast()) return;
 
-                          await controller.insertKipas(
-                            kandangId: widget.id,
-                            satpamId: int.parse(AppPrefs.getUserId() ?? '0'),
-                            note: note,
-                            foto: foto,
-                            comId: int.parse(AppPrefs.getComId() ?? '0'),
-                          );
+                  controller.insertKipas(
+                    kandangId: widget.id,
+                    satpamId: int.parse(AppPrefs.getUserId() ?? '0'),
+                    note: noteController.text.trim(),
+                    foto: imageFile,
+                    comId: int.parse(AppPrefs.getComId() ?? '0'),
+                  );
 
-                          Get.snackbar(
-                            'Tersimpan',
-                            'Data berhasil disimpan ke lokal',
-                            backgroundColor: Colors.green.shade600,
-                            colorText: Colors.white,
-                            snackPosition: SnackPosition.BOTTOM,
-                            margin: const EdgeInsets.all(16),
-                            duration: const Duration(seconds: 2),
-                          );
-
-                          noteController.clear();
-                          setState(() => imageFile = null);
-
-                          Future.delayed(const Duration(milliseconds: 200), () {
-                            Navigator.of(context).pop();
-                          });
-                        },
-                        icon: const Icon(
-                          Icons.save_rounded,
-                          color: Colors.white,
-                        ),
-                        label: const Text(
-                          'Simpan Status',
-                          style: TextStyle(
-                            fontSize: 17,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
+                  /// LANGSUNG KELUAR
+                  Navigator.pop(context);
+                },
+                child: const Text(
+                  'SIMPAN',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
             ),
           ],
         ),

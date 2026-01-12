@@ -75,14 +75,29 @@ class LampuController extends GetxController {
 
   /// Mendapatkan posisi saat ini
   Future<Position?> getCurrentPosition() async {
+    // 1️⃣ Cek service
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) return null;
 
-    bool permissionGranted = await checkLocationPermission();
-    if (!permissionGranted) return null;
+    // 2️⃣ Cek permission
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
 
-    return await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      return null;
+    }
+
+    // 3️⃣ AMBIL TERCEPAT DULU (INI KUNCI)
+    Position? position = await Geolocator.getLastKnownPosition();
+
+    // 4️⃣ Fallback kalau null (LOW accuracy, BUKAN GPS)
+    position ??= await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.low,
     );
+
+    return position;
   }
 }

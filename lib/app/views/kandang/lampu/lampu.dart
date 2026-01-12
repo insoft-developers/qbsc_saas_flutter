@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:qbsc_saas/app/utils/app_prefs.dart';
@@ -25,7 +24,7 @@ class Lampu extends StatefulWidget {
 
 class _LampuState extends State<Lampu> {
   late bool isLampOn;
-  final controller = Get.put(LampuController());
+  final LampuController controller = Get.put(LampuController());
   final TextEditingController noteController = TextEditingController();
   File? imageFile;
   final ImagePicker picker = ImagePicker();
@@ -34,8 +33,7 @@ class _LampuState extends State<Lampu> {
   void initState() {
     super.initState();
     isLampOn = widget.isOn;
-    checkLocationAndAlert();
-    controller.init();
+    controller.init(); // 🔥 no blocking
   }
 
   @override
@@ -56,25 +54,6 @@ class _LampuState extends State<Lampu> {
         imageFile = File(pickedFile.path);
       });
     }
-  }
-
-  Future<bool> checkLocationAndAlert() async {
-    final position = await controller.getCurrentPosition();
-    if (position == null) {
-      Get.defaultDialog(
-        title: "Lokasi Tidak Aktif",
-        middleText: "Silahkan aktifkan lokasi untuk menyimpan data.",
-        actions: [
-          TextButton(
-            onPressed: () => Geolocator.openLocationSettings(),
-            child: const Text("Buka Pengaturan"),
-          ),
-          TextButton(onPressed: () => Get.back(), child: const Text("Batal")),
-        ],
-      );
-      return false;
-    }
-    return true;
   }
 
   @override
@@ -203,68 +182,47 @@ class _LampuState extends State<Lampu> {
               ),
 
               const SizedBox(height: 30),
-              Obx(
-                () => controller.isLoading.value
-                    ? const Center(
-                        child: CircularProgressIndicator(color: Colors.amber),
-                      )
-                    : SizedBox(
-                        width: double.infinity,
-                        height: 55,
-                        child: ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2C2C2C),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          onPressed: () async {
-                            final note = noteController.text.trim();
-                            final foto = imageFile;
 
-                            await controller.insertLampu(
-                              kandangId: widget.id,
-                              satpamId: int.parse(AppPrefs.getUserId() ?? '0'),
-                              note: note,
-                              foto: foto,
-                              comId: int.parse(AppPrefs.getComId() ?? '0'),
-                              isLampuOn: isLampOn,
-                            );
+              // 🔥 SIMPAN SUPER CEPAT
+              SizedBox(
+                width: double.infinity,
+                height: 55,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2C2C2C),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () {
+                    final note = noteController.text.trim();
+                    final foto = imageFile;
 
-                            Get.snackbar(
-                              'Tersimpan',
-                              'Data berhasil disimpan ke lokal',
-                              backgroundColor: Colors.green.shade600,
-                              colorText: Colors.white,
-                              snackPosition: SnackPosition.BOTTOM,
-                              margin: const EdgeInsets.all(16),
-                              duration: const Duration(seconds: 2),
-                            );
+                    // 🚀 background save
+                    controller.insertLampu(
+                      kandangId: widget.id,
+                      satpamId: int.parse(AppPrefs.getUserId() ?? '0'),
+                      note: note,
+                      foto: foto,
+                      comId: int.parse(AppPrefs.getComId() ?? '0'),
+                      isLampuOn: isLampOn,
+                    );
 
-                            noteController.clear();
-                            setState(() => imageFile = null);
-                            Future.delayed(
-                              const Duration(milliseconds: 200),
-                              () {
-                                Navigator.of(context).pop();
-                              },
-                            );
-                          },
-                          icon: const Icon(
-                            Icons.save_rounded,
-                            color: Colors.white,
-                          ),
-                          label: const Text(
-                            'Simpan Status',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
+                    // ⚡ langsung balik
+                    Navigator.of(context).pop();
+                  },
+                  icon: const Icon(Icons.save_rounded, color: Colors.white),
+                  label: const Text(
+                    'Simpan Status',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
               ),
+
               const SizedBox(height: 20),
             ],
           ),

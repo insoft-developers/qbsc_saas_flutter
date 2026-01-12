@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:qbsc_saas/app/utils/app_prefs.dart';
 
 class ApiProvider extends GetxService {
-  static const String appVersion = "1.0.4";
+  static const String appVersion = "1.0.5";
 
   static const bool isFakeLogout = true;
   static const bool isDev = false;

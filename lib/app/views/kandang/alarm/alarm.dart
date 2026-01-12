@@ -24,7 +24,7 @@ class Alarm extends StatefulWidget {
 
 class _AlarmState extends State<Alarm> {
   late bool alarmOn;
-  final controller = Get.put(AlarmController());
+  final AlarmController controller = Get.put(AlarmController());
   final TextEditingController noteController = TextEditingController();
   File? imageFile;
   final ImagePicker picker = ImagePicker();
@@ -33,8 +33,7 @@ class _AlarmState extends State<Alarm> {
   void initState() {
     super.initState();
     alarmOn = widget.isOn;
-    checkLocationAndAlert();
-    controller.init();
+    controller.init(); // 🔥 tidak cek lokasi di UI
   }
 
   @override
@@ -55,25 +54,6 @@ class _AlarmState extends State<Alarm> {
         imageFile = File(pickedFile.path);
       });
     }
-  }
-
-  Future<bool> checkLocationAndAlert() async {
-    final position = await controller.getCurrentPosition();
-    if (position == null) {
-      Get.defaultDialog(
-        title: "Lokasi Tidak Aktif",
-        middleText: "Silahkan aktifkan lokasi untuk menyimpan data.",
-        actions: [
-          TextButton(
-            onPressed: () => Geolocator.openLocationSettings(),
-            child: const Text("Buka Pengaturan"),
-          ),
-          TextButton(onPressed: () => Get.back(), child: const Text("Batal")),
-        ],
-      );
-      return false;
-    }
-    return true;
   }
 
   @override
@@ -175,68 +155,47 @@ class _AlarmState extends State<Alarm> {
               ),
 
               const SizedBox(height: 30),
-              Obx(
-                () => controller.isLoading.value
-                    ? const Center(
-                        child: CircularProgressIndicator(color: Colors.amber),
-                      )
-                    : SizedBox(
-                        width: double.infinity,
-                        height: 55,
-                        child: ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2C2C2C),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          onPressed: () async {
-                            final note = noteController.text.trim();
-                            final foto = imageFile;
 
-                            await controller.insertAlarm(
-                              kandangId: widget.id,
-                              satpamId: int.parse(AppPrefs.getUserId() ?? '0'),
-                              note: note,
-                              foto: foto,
-                              comId: int.parse(AppPrefs.getComId() ?? '0'),
-                              isAlarmOn: alarmOn,
-                            );
+              // 🔥 TOMBOL SUPER CEPAT
+              SizedBox(
+                width: double.infinity,
+                height: 55,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2C2C2C),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () {
+                    final note = noteController.text.trim();
+                    final foto = imageFile;
 
-                            Get.snackbar(
-                              'Tersimpan',
-                              'Data berhasil disimpan ke lokal',
-                              backgroundColor: Colors.green.shade600,
-                              colorText: Colors.white,
-                              snackPosition: SnackPosition.BOTTOM,
-                              margin: const EdgeInsets.all(16),
-                              duration: const Duration(seconds: 2),
-                            );
+                    // 🚀 SIMPAN BACKGROUND (TANPA AWAIT)
+                    controller.insertAlarm(
+                      kandangId: widget.id,
+                      satpamId: int.parse(AppPrefs.getUserId() ?? '0'),
+                      note: note,
+                      foto: foto,
+                      comId: int.parse(AppPrefs.getComId() ?? '0'),
+                      isAlarmOn: alarmOn,
+                    );
 
-                            noteController.clear();
-                            setState(() => imageFile = null);
-                            Future.delayed(
-                              const Duration(milliseconds: 200),
-                              () {
-                                Navigator.of(context).pop();
-                              },
-                            );
-                          },
-                          icon: const Icon(
-                            Icons.save_rounded,
-                            color: Colors.white,
-                          ),
-                          label: const Text(
-                            'Simpan Status',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
+                    // ⚡ LANGSUNG BALIK
+                    Navigator.of(context).pop();
+                  },
+                  icon: const Icon(Icons.save_rounded, color: Colors.white),
+                  label: const Text(
+                    'Simpan Status',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
               ),
+
               const SizedBox(height: 40),
             ],
           ),
