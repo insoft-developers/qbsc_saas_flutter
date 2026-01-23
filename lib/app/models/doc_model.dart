@@ -1,8 +1,9 @@
+import 'dart:convert';
 import 'package:hive_flutter/hive_flutter.dart';
 
 part 'doc_model.g.dart';
 
-@HiveType(typeId: 10) // pastikan unik (beda dari model-model Hive lainnya)
+@HiveType(typeId: 10)
 class DocModel extends HiveObject {
   @HiveField(0)
   String id;
@@ -34,16 +35,32 @@ class DocModel extends HiveObject {
   @HiveField(9)
   String? note;
 
+  /// MULTI FOTO
   @HiveField(10)
-  String? foto;
+  List<String> foto;
 
+  /// ===============================
+  /// DOC BOX OPTION (JSON STRING)
+  /// ===============================
   @HiveField(11)
-  int comid;
+  String docBoxOptionJson;
 
   @HiveField(12)
-  String createdAt;
+  String namaSupir;
 
   @HiveField(13)
+  String nomorSegel;
+
+  @HiveField(14)
+  int totalEkor;
+
+  @HiveField(15)
+  int comid;
+
+  @HiveField(16)
+  String createdAt;
+
+  @HiveField(17)
   bool isSynced;
 
   DocModel({
@@ -57,13 +74,32 @@ class DocModel extends HiveObject {
     this.noPolisi,
     required this.jenis,
     this.note,
-    this.foto,
+    List<String>? foto,
+    String? docBoxOptionJson,
+    required this.namaSupir,
+    required this.nomorSegel,
+    required this.totalEkor,
     required this.comid,
     required this.createdAt,
     this.isSynced = false,
-  });
+  }) : foto = foto ?? [],
+       docBoxOptionJson = docBoxOptionJson ?? '[]';
 
-  /// Konversi ke JSON untuk dikirim ke server
+  // ===============================
+  // HELPER GETTER / SETTER
+  // ===============================
+  List<Map<String, dynamic>> get docBoxOption {
+    final decoded = jsonDecode(docBoxOptionJson);
+    return List<Map<String, dynamic>>.from(decoded);
+  }
+
+  set docBoxOption(List<Map<String, dynamic>> value) {
+    docBoxOptionJson = jsonEncode(value);
+  }
+
+  // ===============================
+  // TO JSON (KIRIM KE SERVER)
+  // ===============================
   Map<String, dynamic> toJson() {
     return {
       "id": id,
@@ -71,17 +107,23 @@ class DocModel extends HiveObject {
       "jam": jam,
       "satpam_id": satpamId,
       "jumlah": jumlah,
-      "ekpedisi_id": ekspedisiId,
+      "ekspedisi_id": ekspedisiId,
       "tujuan": tujuan,
       "no_polisi": noPolisi,
       "jenis": jenis,
       "note": note,
       "foto": foto,
+      "doc_box_option": docBoxOption,
+      "nama_supir": namaSupir,
+      "nomor_segel": nomorSegel,
+      "total_ekor": totalEkor,
       "comid": comid,
     };
   }
 
-  /// Konversi dari JSON (misal saat ambil data dari API)
+  // ===============================
+  // FROM JSON (DARI SERVER)
+  // ===============================
   factory DocModel.fromJson(Map<String, dynamic> json) {
     return DocModel(
       id: json['id'],
@@ -90,13 +132,20 @@ class DocModel extends HiveObject {
       satpamId: json['satpam_id'],
       jumlah: json['jumlah'],
       ekspedisiId: json['ekspedisi_id'],
-      tujuan: json['tujuan'] ?? '',
-      noPolisi: json['no_polisi'] ?? '',
+      tujuan: json['tujuan'],
+      noPolisi: json['no_polisi'],
       jenis: json['jenis'],
-      note: json['note'] ?? '',
-      foto: json['foto'],
+      note: json['note'],
+      foto: json['foto'] != null ? List<String>.from(json['foto']) : [],
+      docBoxOptionJson: json['doc_box_option'] != null
+          ? jsonEncode(json['doc_box_option'])
+          : '[]',
+      namaSupir: json['nama_supir'] ?? '',
+      nomorSegel: json['nomor_segel'] ?? '',
+      totalEkor: json['total_ekor'] ?? 0,
       comid: json['comid'],
       createdAt: json['created_at'],
+      isSynced: true,
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:qbsc_saas/app/data/api_endpoint.dart';
 import 'package:qbsc_saas/app/data/api_provider.dart';
+import 'package:qbsc_saas/app/models/box_option_model.dart';
 import 'package:qbsc_saas/app/models/ekspedisi_model.dart';
 import 'package:qbsc_saas/app/models/kandang_model.dart';
 import 'package:qbsc_saas/app/models/location_model.dart';
@@ -31,6 +32,9 @@ class HomeController extends GetxController {
   final RxList<JadwalPatroliModel> jadwalPatroli = <JadwalPatroliModel>[].obs;
   late Box<JadwalPatroliModel> _boxJadwalPatroli;
 
+  final RxList<BoxOptionModel> boxOptions = <BoxOptionModel>[].obs;
+  late Box<BoxOptionModel> _boxBoxOption;
+
   final ApiProvider api = Get.find<ApiProvider>();
 
   @override
@@ -58,11 +62,13 @@ class HomeController extends GetxController {
     _boxKandang = Hive.box<KandangModel>('kandang');
     _boxEkspedisi = Hive.box<EkspedisiModel>('ekspedisi');
     _boxJadwalPatroli = Hive.box<JadwalPatroliModel>('jadwal_patroli');
+    _boxBoxOption = Hive.box<BoxOptionModel>('box_option');
     await getDataLocation();
     await getDataKandang();
     await getDataEkspedisi();
     await getJadwalPatroli();
     await cekDataHive();
+    await getDataBoxOption();
 
     // panggil setelah ambil data
   }
@@ -136,6 +142,45 @@ class HomeController extends GetxController {
         await _boxEkspedisi.addAll(ekspedisiList);
 
         ekspedisi.assignAll(ekspedisiList);
+      } else {
+        SnackbarHelper.error('Gagal', 'Data tidak ada');
+      }
+    } catch (e) {
+      final local = _boxEkspedisi.values.toList();
+      ekspedisi.assignAll(local);
+      // SnackbarHelper.error('Error', 'Offline');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> getDataBoxOption() async {
+    String comid = AppPrefs.getComId().toString();
+
+    if (comid.isEmpty) {
+      Get.snackbar('Error', 'Com id tidak ditemukan');
+      isLoading.value = false;
+      return;
+    }
+
+    try {
+      final response = await api.post(
+        ApiEndpoint.getDataJenisBox,
+        data: {'comid': comid},
+      );
+
+      var body = response.data;
+      if (body['success']) {
+        final List<dynamic> list = body['data'];
+        final List<BoxOptionModel> boxOptionList = list
+            .map((e) => BoxOptionModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+
+        // 🟢 Ganti clear dengan overwrite manual biar gak hapus total
+        await _boxBoxOption.clear();
+        await _boxBoxOption.addAll(boxOptionList);
+
+        boxOptions.assignAll(boxOptionList);
       } else {
         SnackbarHelper.error('Gagal', 'Data tidak ada');
       }

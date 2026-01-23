@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'doc_controller.dart';
@@ -79,13 +81,100 @@ class Doc extends StatelessWidget {
 
               _section("Informasi Pengiriman"),
 
+              Obx(
+                () => Column(
+                  children: c.boxOptionList.map((box) {
+                    c.initBoxController(box);
+                    final jumlahCtrl = c.jumlahBoxCtrl[box.id];
+                    final isiCtrl = c.isiBoxCtrl[box.id];
+
+                    int totalEkor() {
+                      final j = int.tryParse(jumlahCtrl?.text ?? '0') ?? 0;
+                      final i = int.tryParse(isiCtrl?.text ?? '0') ?? 0;
+                      return j * i;
+                    }
+
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              box.jenisBox,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+
+                            const SizedBox(height: 10),
+
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: jumlahCtrl,
+                                    keyboardType: TextInputType.number,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Jumlah Box',
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: isiCtrl,
+                                    keyboardType: TextInputType.number,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Isi / Box',
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 8),
+
+                            Obx(
+                              () => Text(
+                                'Total Ekor: ${c.totalEkorMap[box.id]?.value ?? 0}',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.green,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+              const SizedBox(height: 10),
               _input(
-                label: "Jumlah Box",
+                label: "Jumlah Total Box",
                 icon: Icons.inventory_2_outlined,
                 keyboardType: TextInputType.number,
-                validator: (v) =>
-                    v == null || v.isEmpty ? 'Jumlah box wajib diisi' : null,
+                validator: (v) => v == null || v.isEmpty
+                    ? 'Jumlah total box wajib diisi'
+                    : null,
                 onChanged: c.setJumlahBox,
+              ),
+
+              _input(
+                label: "Jumlah Total Ekor",
+                icon: Icons.calculate_outlined,
+                keyboardType: TextInputType.number,
+                validator: (v) => v == null || v.isEmpty
+                    ? 'Jumlah total ekor wajib diisi'
+                    : null,
+                onChanged: c.setTotalEkor,
               ),
 
               Obx(
@@ -112,6 +201,14 @@ class Doc extends StatelessWidget {
               ),
 
               _input(
+                label: "Nama Supir",
+                icon: Icons.person_outline,
+                validator: (v) =>
+                    v == null || v.isEmpty ? 'Nama supir wajib diisi' : null,
+                onChanged: c.setNamaSupir,
+              ),
+
+              _input(
                 label: "No Polisi",
                 icon: Icons.confirmation_number_outlined,
                 validator: (v) =>
@@ -119,20 +216,27 @@ class Doc extends StatelessWidget {
                 onChanged: c.setNoPolisi,
               ),
 
-              Obx(
-                () => _dropdown(
-                  hint: "Jenis DOC",
-                  icon: Icons.pets_outlined,
-                  value: c.jenis.value,
-                  items: const [
-                    DropdownMenuItem(value: 1, child: Text('Male')),
-                    DropdownMenuItem(value: 2, child: Text('Female')),
-                  ],
-                  validator: (v) => v == null ? 'Pilih jenis' : null,
-                  onChanged: (v) => c.setJenis(v!),
-                ),
+              _input(
+                label: "Nomor Segel",
+                icon: Icons.shield_outlined,
+                validator: (v) =>
+                    v == null || v.isEmpty ? 'Nomor segel wajib diisi' : null,
+                onChanged: c.setNomorSegel,
               ),
 
+              // Obx(
+              //   () => _dropdown(
+              //     hint: "Jenis DOC",
+              //     icon: Icons.pets_outlined,
+              //     value: c.jenis.value,
+              //     items: const [
+              //       DropdownMenuItem(value: 1, child: Text('Male')),
+              //       DropdownMenuItem(value: 2, child: Text('Female')),
+              //     ],
+              //     validator: (v) => v == null ? 'Pilih jenis' : null,
+              //     onChanged: (v) => c.setJenis(v!),
+              //   ),
+              // ),
               _input(
                 label: "Catatan",
                 icon: Icons.note_outlined,
@@ -144,7 +248,13 @@ class Doc extends StatelessWidget {
 
               _section("Dokumentasi"),
 
-              Obx(() => _photoPicker(image: c.foto.value, onPick: c.pickFoto)),
+              Obx(
+                () => _photoPicker(
+                  images: c.fotoList,
+                  onPick: c.pickFoto,
+                  onRemove: c.removeFoto,
+                ),
+              ),
 
               const SizedBox(height: 36),
 
@@ -281,41 +391,38 @@ Widget _dropdown<T>({
   ),
 );
 
-Widget _photoPicker({required dynamic image, required VoidCallback onPick}) =>
-    Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade300),
-        color: Colors.grey.shade50,
-      ),
-      child: Column(
-        children: [
-          image == null
-              ? Container(
-                  height: 160,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Text('Belum ada foto'),
-                )
-              : ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.file(
-                    image,
-                    height: 160,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
+Widget _photoPicker({
+  required List<File> images,
+  required VoidCallback onPick,
+  required Function(int) onRemove,
+}) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Wrap(
+        spacing: 8,
+        children: List.generate(images.length, (i) {
+          return Stack(
+            children: [
+              Image.file(images[i], width: 80, height: 80, fit: BoxFit.cover),
+              Positioned(
+                right: 0,
+                top: 0,
+                child: GestureDetector(
+                  onTap: () => onRemove(i),
+                  child: const Icon(Icons.close, color: Colors.red),
                 ),
-          const SizedBox(height: 12),
-          OutlinedButton.icon(
-            onPressed: onPick,
-            icon: const Icon(Icons.camera_alt_outlined),
-            label: const Text("Ambil Foto"),
-          ),
-        ],
+              ),
+            ],
+          );
+        }),
       ),
-    );
+      const SizedBox(height: 8),
+      ElevatedButton.icon(
+        onPressed: onPick,
+        icon: const Icon(Icons.photo),
+        label: const Text('Tambah Foto'),
+      ),
+    ],
+  );
+}

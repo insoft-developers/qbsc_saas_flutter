@@ -90,14 +90,27 @@ class AlarmController extends GetxController {
       return null;
     }
 
-    // 3️⃣ AMBIL TERCEPAT DULU (INI KUNCI)
-    Position? position = await Geolocator.getLastKnownPosition();
+    // 3️⃣ Ambil last known (offline-first & cepat)
+    Position? last = await Geolocator.getLastKnownPosition();
 
-    // 4️⃣ Fallback kalau null (LOW accuracy, BUKAN GPS)
-    position ??= await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.low,
-    );
+    if (last != null && last.timestamp != null) {
+      final age = DateTime.now().difference(last.timestamp!);
 
-    return position;
+      // ⬅️ Masih fresh & cukup akurat
+      if (age.inSeconds <= 30 && last.accuracy <= 50) {
+        return last;
+      }
+    }
+
+    // 4️⃣ Paksa GPS (HIGH accuracy, tapi ada batas waktu)
+    try {
+      return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 8),
+      );
+    } catch (e) {
+      // 5️⃣ Fallback terakhir (jangan return null kalau masih ada data)
+      return last;
+    }
   }
 }

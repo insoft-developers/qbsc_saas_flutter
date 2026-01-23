@@ -1,15 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:qbsc_saas/app/services/location_tracking_service.dart';
 import 'package:qbsc_saas/app/views/jadwal/patroli/jadwal_patroli_controller.dart';
 import 'package:qbsc_saas/app/views/patroli/patroli.dart';
 
-class JadwalPatroli extends StatelessWidget {
+class JadwalPatroli extends StatefulWidget {
   const JadwalPatroli({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.put(JadwalPatroliController());
+  State<JadwalPatroli> createState() => _JadwalPatroliState();
+}
 
+class _JadwalPatroliState extends State<JadwalPatroli> {
+  final JadwalPatroliController controller = Get.put(JadwalPatroliController());
+  final LocationTrackingService _trackingService = LocationTrackingService();
+
+  @override
+  initState() {
+    super.initState();
+    _trackingService.startTracking();
+    print('mulai tracking lokasi satpam');
+  }
+
+  @override
+  void dispose() {
+    print("stop tracking lokasi satpam");
+    _trackingService.stopTracking();
+    super.dispose();
+  }
+
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(

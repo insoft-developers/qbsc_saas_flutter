@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -93,12 +94,29 @@ class DocReportController extends GetxController {
         'jenis': p.jenis,
         'note': p.note,
         'comid': p.comid,
-        if (p.foto != null && File(p.foto!).existsSync())
-          'foto': await dio.MultipartFile.fromFile(
-            p.foto!,
-            filename: basename(p.foto!),
-          ),
+        'nama_supir': p.namaSupir,
+        'nomor_segel': p.nomorSegel,
+        'total_ekor': p.totalEkor,
+        'doc_box_option': jsonEncode(p.docBoxOption),
       });
+
+      if (p.foto != null && p.foto!.isNotEmpty) {
+        for (final path in p.foto!) {
+          final file = File(path);
+
+          if (file.existsSync()) {
+            formData.files.add(
+              MapEntry(
+                'foto[]',
+                await dio.MultipartFile.fromFile(
+                  file.path,
+                  filename: basename(file.path),
+                ),
+              ),
+            );
+          }
+        }
+      }
 
       final response = await api.post(
         ApiEndpoint.syncDocReport,
@@ -108,7 +126,8 @@ class DocReportController extends GetxController {
 
       final body = response.data;
 
-      if (body['success'] == true) {
+      if (body['success'] == true ||
+          body['message'].contains('sudah pernah di sync')) {
         p.isSynced = true;
         await p.save();
         SnackbarHelper.success('Sukses', 'Data berhasil di-sync');

@@ -13,6 +13,11 @@ class Laporan extends StatelessWidget {
   List<Map<String, dynamic>> _buildMenu() {
     final baseMenu = [
       {
+        'icon': Icons.analytics,
+        'label': 'Laporan Kinerja',
+        'route': '/laporan/kinerja',
+      },
+      {
         'icon': Icons.fingerprint,
         'label': 'Laporan Absensi',
         'route': '/laporan/absensi',
@@ -106,6 +111,8 @@ class Laporan extends StatelessWidget {
                 Get.toNamed('/laporan/doc');
               } else if (item['label'] == 'Laporan Kejadian') {
                 Get.toNamed('/laporan/kejadian');
+              } else if (item['label'] == 'Laporan Kinerja') {
+                Get.toNamed('/laporan/kinerja');
               } else if (item['label'] == 'Laporan Absensi') {
                 Get.toNamed('/laporan/absensi');
               } else if (item['label'] == 'Laporan Kerja Anggota') {
@@ -223,6 +230,9 @@ String _getSubtitle(String label) {
       return 'Riwayat Absensi Anda';
     case 'Laporan Kerja Anggota':
       return 'Riwayat Absensi dan Patroli Anggota Lainnya (Khusus untuk Danru)';
+
+    case 'Laporan Kinerja':
+      return 'Rangkuman Kehadiran, Terlambat, Pulang cepat, dan Patroli Semua Personil';
     default:
       return '';
   }

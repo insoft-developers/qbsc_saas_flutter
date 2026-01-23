@@ -5,6 +5,8 @@ class AbsensiModel {
   final String satpamName;
   final String latitude;
   final String longitude;
+  final String latitude2;
+  final String longitude2;
   final String jamMasuk;
   final String jamKeluar;
   final String shiftName;
@@ -15,6 +17,8 @@ class AbsensiModel {
   final int comid;
   final String comName;
   final String createdAt;
+  final String fotoMasuk;
+  final String fotoKeluar;
 
   AbsensiModel({
     required this.id,
@@ -23,6 +27,8 @@ class AbsensiModel {
     required this.satpamName,
     required this.latitude,
     required this.longitude,
+    required this.latitude2,
+    required this.longitude2,
     required this.jamMasuk,
     required this.jamKeluar,
     required this.shiftName,
@@ -33,6 +39,8 @@ class AbsensiModel {
     required this.comid,
     required this.comName,
     required this.createdAt,
+    this.fotoMasuk = '',
+    this.fotoKeluar = '',
   });
 
   /// ================= FROM JSON =================
@@ -44,6 +52,10 @@ class AbsensiModel {
       satpamName: json['satpam']['name'] ?? '',
       latitude: json['latitude']?.toString() ?? '',
       longitude: json['longitude']?.toString() ?? '',
+      latitude2:
+          json['latitude2']?.toString() ?? json['longitude']?.toString() ?? '',
+      longitude2:
+          json['longitude2']?.toString() ?? json['longitude']?.toString() ?? '',
       jamMasuk: json['jam_masuk'] ?? '',
       jamKeluar: json['jam_keluar'] ?? '',
       shiftName: json['shift_name'] ?? '',
@@ -54,6 +66,8 @@ class AbsensiModel {
       comid: json['comid'] ?? 0,
       comName: json['company']['company_name'] ?? '',
       createdAt: json['created_at'] ?? '',
+      fotoMasuk: json['foto_masuk'] ?? '',
+      fotoKeluar: json['foto_pulang'] ?? '',
     );
   }
 }

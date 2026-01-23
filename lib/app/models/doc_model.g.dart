@@ -27,17 +27,21 @@ class DocModelAdapter extends TypeAdapter<DocModel> {
       noPolisi: fields[7] as String?,
       jenis: fields[8] as int,
       note: fields[9] as String?,
-      foto: fields[10] as String?,
-      comid: fields[11] as int,
-      createdAt: fields[12] as String,
-      isSynced: fields[13] as bool,
+      foto: (fields[10] as List?)?.cast<String>(),
+      docBoxOptionJson: fields[11] as String?,
+      namaSupir: fields[12] as String,
+      nomorSegel: fields[13] as String,
+      totalEkor: fields[14] as int,
+      comid: fields[15] as int,
+      createdAt: fields[16] as String,
+      isSynced: fields[17] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, DocModel obj) {
     writer
-      ..writeByte(14)
+      ..writeByte(18)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -61,10 +65,18 @@ class DocModelAdapter extends TypeAdapter<DocModel> {
       ..writeByte(10)
       ..write(obj.foto)
       ..writeByte(11)
-      ..write(obj.comid)
+      ..write(obj.docBoxOptionJson)
       ..writeByte(12)
-      ..write(obj.createdAt)
+      ..write(obj.namaSupir)
       ..writeByte(13)
+      ..write(obj.nomorSegel)
+      ..writeByte(14)
+      ..write(obj.totalEkor)
+      ..writeByte(15)
+      ..write(obj.comid)
+      ..writeByte(16)
+      ..write(obj.createdAt)
+      ..writeByte(17)
       ..write(obj.isSynced);
   }
 

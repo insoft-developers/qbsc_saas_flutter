@@ -8,6 +8,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:qbsc_saas/app/data/api_provider.dart';
 import 'package:qbsc_saas/app/controllers/home_controller.dart'; // 🔥 DITAMBAHKAN
 import 'package:qbsc_saas/app/controllers/auth_controller.dart'; // 🔥 DITAMBAHKAN
+import 'package:qbsc_saas/app/models/box_option_model.dart';
 
 import 'package:qbsc_saas/app/models/doc_model.dart';
 import 'package:qbsc_saas/app/models/ekspedisi_model.dart';
@@ -17,6 +18,7 @@ import 'package:qbsc_saas/app/models/kandang_lampu_model.dart';
 import 'package:qbsc_saas/app/models/kandang_model.dart';
 import 'package:qbsc_saas/app/models/kandang_suhu_model.dart';
 import 'package:qbsc_saas/app/models/location_model.dart';
+import 'package:qbsc_saas/app/models/offline_tracking_model.dart';
 import 'package:qbsc_saas/app/models/patroli_model.dart';
 import 'package:qbsc_saas/app/models/situasi_model.dart';
 
@@ -38,12 +40,12 @@ import 'package:qbsc_saas/app/views/laporan/doc/doc_report.dart';
 import 'package:qbsc_saas/app/views/laporan/ekspedisi/ekspedisi_report.dart';
 import 'package:qbsc_saas/app/views/laporan/kandang/kandang_laporan.dart';
 import 'package:qbsc_saas/app/views/laporan/kejadian/kejadian_report.dart';
+import 'package:qbsc_saas/app/views/laporan/kinerja/kinerja.dart';
 import 'package:qbsc_saas/app/views/laporan/laporan.dart';
 import 'package:qbsc_saas/app/views/laporan/lokasi/lokasi_report.dart';
 import 'package:qbsc_saas/app/views/laporan/patroli/patroli_report.dart';
 import 'package:qbsc_saas/app/views/login_view.dart';
 import 'package:qbsc_saas/app/views/notif/notif.dart';
-import 'package:qbsc_saas/app/views/patroli/patroli.dart';
 import 'package:qbsc_saas/app/views/pengaturan/lokasi/lokasi.dart';
 import 'package:qbsc_saas/app/views/pengaturan/password/change_password.dart';
 import 'package:qbsc_saas/app/views/pengaturan/pengaturan.dart';
@@ -99,6 +101,8 @@ Future<void> main() async {
   Hive.registerAdapter(DocModelAdapter());
   Hive.registerAdapter(SituasiModelAdapter());
   Hive.registerAdapter(JadwalPatroliModelAdapter());
+  Hive.registerAdapter(OfflineTrackingModelAdapter());
+  Hive.registerAdapter(BoxOptionModelAdapter());
 
   await Hive.openBox<LocationModel>('locations');
   await Hive.openBox<PatroliModel>('patroli');
@@ -111,6 +115,8 @@ Future<void> main() async {
   await Hive.openBox<DocModel>('doc');
   await Hive.openBox<SituasiModel>('situasi');
   await Hive.openBox<JadwalPatroliModel>('jadwal_patroli');
+  await Hive.openBox<OfflineTrackingModel>('tracking');
+  await Hive.openBox<BoxOptionModel>('box_option');
 
   await Get.putAsync<ApiProvider>(() async => await ApiProvider().init());
   await AppPrefs.init();
@@ -204,6 +210,7 @@ class _MyAppState extends State<MyApp> {
         GetPage(name: '/laporan/absensi', page: () => Absensi()),
         GetPage(name: '/laporan/anggota', page: () => LaporanAnggota()),
         GetPage(name: '/jadwal_patroli', page: () => JadwalPatroli()),
+        GetPage(name: '/laporan/kinerja', page: () => Kinerja()),
       ],
     );
   }

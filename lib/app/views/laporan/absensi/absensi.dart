@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:qbsc_saas/app/data/api_provider.dart';
 import 'package:qbsc_saas/app/utils/fungsi.dart';
 import 'package:qbsc_saas/app/views/laporan/absensi/absensi_controller.dart';
 import 'package:qbsc_saas/app/views/laporan/absensi/absensi_model.dart';
@@ -111,6 +112,7 @@ class _AbsensiState extends State<Absensi> {
                 onTap: () {
                   // Get.to(() => AbsensiDetail(data: absensi));
                 },
+
                 child: Card(
                   margin: const EdgeInsets.symmetric(vertical: 8),
                   child: Padding(
@@ -126,16 +128,48 @@ class _AbsensiState extends State<Absensi> {
                           "Jam Masuk / Pulang",
                           "${Fungsi.formatToTime(absensi.jamMasuk)} - ${Fungsi.formatToTime(absensi.jamKeluar)}",
                         ),
-
                         _buildRow(
                           "Status",
                           absensi.status == 1 ? 'Masuk' : 'Pulang',
                         ),
-
                         _buildRow(
-                          "Catatan Masuk/Pulang",
-                          "${absensi.catatanMasuk} - ${absensi.catatanKeluar}",
+                          "Catatan Masuk/Catatan Pulang",
+                          "${absensi.catatanMasuk} | ${absensi.catatanKeluar}",
                         ),
+
+                        // ================= FOTO MASUK & PULANG =================
+                        if ((absensi.fotoMasuk?.isNotEmpty ?? false) ||
+                            (absensi.fotoKeluar?.isNotEmpty ?? false)) ...[
+                          const SizedBox(height: 10),
+                          Text(
+                            'Foto Absensi',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              if (absensi.fotoMasuk.isNotEmpty)
+                                _buildFoto(
+                                  "${ApiProvider.imageUrl}/${absensi.fotoMasuk}",
+                                  'Masuk',
+                                ),
+
+                              if (absensi.fotoMasuk.isNotEmpty ||
+                                  absensi.fotoKeluar.isNotEmpty)
+                                const SizedBox(width: 12),
+
+                              if (absensi.fotoKeluar.isNotEmpty)
+                                _buildFoto(
+                                  "${ApiProvider.imageUrl}/${absensi.fotoKeluar}",
+                                  'Pulang',
+                                ),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -183,4 +217,43 @@ class _AbsensiState extends State<Absensi> {
       ),
     );
   }
+}
+
+Widget _buildFoto(String url, String label) {
+  return Column(
+    children: [
+      ClipOval(
+        child: Image.network(
+          url,
+          width: 56,
+          height: 56,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Container(
+            width: 56,
+            height: 56,
+            color: Colors.grey.shade300,
+            child: const Icon(Icons.broken_image, size: 24),
+          ),
+          loadingBuilder: (context, child, progress) {
+            if (progress == null) return child;
+            return SizedBox(
+              width: 56,
+              height: 56,
+              child: Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  value: progress.expectedTotalBytes != null
+                      ? progress.cumulativeBytesLoaded /
+                            progress.expectedTotalBytes!
+                      : null,
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+      const SizedBox(height: 4),
+      Text(label, style: const TextStyle(fontSize: 10)),
+    ],
+  );
 }

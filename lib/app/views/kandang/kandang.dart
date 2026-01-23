@@ -1,17 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:qbsc_saas/app/services/location_tracking_service.dart';
 import 'package:qbsc_saas/app/views/kandang/alarm/alarm.dart';
 import 'package:qbsc_saas/app/views/kandang/kandang_controller.dart';
 import 'package:qbsc_saas/app/views/kandang/kipas/kipas.dart';
 import 'package:qbsc_saas/app/views/kandang/lampu/lampu.dart';
 import 'package:qbsc_saas/app/views/kandang/suhu/suhu.dart';
 
-class Kandang extends StatelessWidget {
+class Kandang extends StatefulWidget {
   const Kandang({super.key});
 
   @override
+  State<Kandang> createState() => _KandangState();
+}
+
+class _KandangState extends State<Kandang> {
+  final KandangController controller = Get.put(KandangController());
+  final LocationTrackingService _trackingService = LocationTrackingService();
+
+  @override
+  initState() {
+    super.initState();
+    _trackingService.startTracking();
+    print('mulai tracking lokasi satpam');
+  }
+
+  @override
+  void dispose() {
+    print("stop tracking lokasi satpam");
+    _trackingService.stopTracking();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final controller = Get.put(KandangController());
     final size = MediaQuery.of(context).size;
 
     return Scaffold(

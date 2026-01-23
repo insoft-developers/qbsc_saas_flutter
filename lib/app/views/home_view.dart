@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:qbsc_saas/app/components/satpam_summary_slider.dart';
 import 'package:qbsc_saas/app/controllers/absen_controller.dart';
 import 'package:qbsc_saas/app/controllers/auth_controller.dart';
 import 'package:qbsc_saas/app/controllers/home_controller.dart';
@@ -275,8 +276,10 @@ class _HomeViewState extends State<HomeView>
               _buildProfileCard(isTablet),
               const SizedBox(height: 14),
               _buildRunningText(),
-              const SizedBox(height: 28),
+
+              const SizedBox(height: 14),
               _buildMenuList(),
+
               const SizedBox(height: 38),
             ],
           ),

@@ -39,6 +39,9 @@ class ApiEndpoint {
   static const String runningText = '/running_text';
   static const String jadwalPatroliPerusahaan = '/jadwal_patroli_perusahaan';
   static const String updatePosAbsenSatpam = '/update_pos_absen_satpam';
+  static const String updateSatpamLocation = '/update_satpam_location';
+  static const String kinerjaSatpam = '/kinerja_satpam';
+  static const String getDataJenisBox = '/get_data_jenis_box';
 
   // User
   static const String profile = "/user/profile";

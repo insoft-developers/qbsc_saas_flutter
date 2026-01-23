@@ -20,6 +20,11 @@ class LaporanAnggota extends StatelessWidget {
         'label': 'Laporan Patroli Anggota',
         'route': '/laporan/patroli/anggota',
       },
+      {
+        'icon': Icons.house,
+        'label': 'Laporan Patroli Kandang',
+        'route': '/laporan/patroli/kandang',
+      },
     ];
 
     return baseMenu;
@@ -154,6 +159,9 @@ String _getSubtitle(String label) {
       return 'Riwayat aktivitas absensi satpam dibawah pengawasan Anda';
     case 'Laporan Patroli Anggota':
       return 'Riwayat aktivitas patroli satpam dibawah pengawasan Anda';
+
+    case 'Laporan Patroli Kandang':
+      return 'Riwayat aktivitas patroli suhu,kipas,alarm dan lampu kandang oleh satpam';
 
     default:
       return '';
