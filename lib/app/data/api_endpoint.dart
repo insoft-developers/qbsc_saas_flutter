@@ -34,6 +34,18 @@ class ApiEndpoint {
   static const String laporanAbsensi = '/laporan_absensi';
   static const String laporanAnggotaAbsensi = '/laporan_anggota_absensi';
   static const String laporanAnggotaPatroli = '/laporan_anggota_patroli';
+  static const String laporanAnggotaAbsen = '/laporan_anggota_absen';
+  static const String kandangList = '/kandang';
+  static const String kandangSuhu = '/kandang_suhu';
+  static const String kandangKipas = '/kandang_kipas';
+  static const String kandangAlarm = '/kandang_alarm';
+  static const String kandangLampu = '/kandang_lampu';
+  static const String bosDoc = '/bos_doc';
+  static const String bosEkspedisi = '/bos_ekspedisi';
+  static const String bosTamu = '/bos_tamu';
+  static const String bosUser = '/bos_user';
+  static const String bosSituasi = '/bos_situasi';
+
   static const String apiSatpam = '/api_satpam';
   static const String apiLokasi = '/api_lokasi';
   static const String runningText = '/running_text';

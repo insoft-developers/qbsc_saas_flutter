@@ -27,7 +27,7 @@ class LocationTrackingService {
         Geolocator.getPositionStream(
           locationSettings: const LocationSettings(
             accuracy: LocationAccuracy.high,
-            distanceFilter: 5,
+            distanceFilter: 10,
           ),
         ).listen(
           (Position position) {
@@ -132,9 +132,8 @@ class LocationTrackingService {
         );
 
         if (response.data['success'] == true) {
-          item.synced = true;
-          await item.save();
-          print('✅ Lokasi tersinkron (${item.uuid})');
+          await item.delete(); // 🔥 hapus dari Hive
+          print('🗑️ Lokasi dihapus dari Hive (${item.uuid})');
         }
       } catch (e) {
         print('❌ Gagal sync, akan dicoba ulang');

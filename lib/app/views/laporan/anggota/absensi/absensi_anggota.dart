@@ -16,7 +16,7 @@ class AbsensiAnggota extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 60, 53, 53),
         title: const Text(
-          'Laporan Absensi Anggota',
+          'Laporan Satpam Bertugas',
           style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
         ),
         iconTheme: const IconThemeData(

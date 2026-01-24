@@ -142,16 +142,25 @@ class AbsensiShift extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
-                                  'Masuk: ${lokasi.jamMasuk}, Pulang: ${lokasi.jamPulang}',
+                                  'Jam Masuk: ${lokasi.jamMasuk}',
                                   style: TextStyle(
                                     fontSize: fontSize - 2,
-                                    color: Colors.blue,
+                                    color: Colors.green,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
-                                  'Jam Mulai Masuk: ${lokasi.jamMasukAwal}',
+                                  'Jam Pulang: ${lokasi.jamPulang}',
+                                  style: TextStyle(
+                                    fontSize: fontSize - 2,
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Batas Masuk: ${lokasi.jamMasukAwal} - ${lokasi.jamMasukAkhir}',
                                   style: TextStyle(
                                     fontSize: fontSize - 2,
                                     color: Colors.black54,
@@ -159,20 +168,13 @@ class AbsensiShift extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
-                                  'Jam Terakhir Masuk: ${lokasi.jamMasukAkhir}',
+                                  'Batas Pulang: ${lokasi.jamPulangAwal} - ${lokasi.jamPulangAkhir}',
                                   style: TextStyle(
                                     fontSize: fontSize - 2,
                                     color: Colors.black54,
                                   ),
                                 ),
                                 const SizedBox(height: 6),
-                                Text(
-                                  'Jam Pulang Awal: ${lokasi.jamPulangAwal}',
-                                  style: TextStyle(
-                                    fontSize: fontSize - 2,
-                                    color: Colors.black54,
-                                  ),
-                                ),
                               ],
                             ),
                           ),

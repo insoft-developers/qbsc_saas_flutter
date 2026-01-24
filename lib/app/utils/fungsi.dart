@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class Fungsi {
   static String formatToTime(String dateTimeString) {
     try {
@@ -42,5 +44,30 @@ class Fungsi {
 
     return '${twoDigit(dt.day)}-${twoDigit(dt.month)}-${dt.year} '
         '${twoDigit(dt.hour)}:${twoDigit(dt.minute)}';
+  }
+
+  static String? getFirstFotoDynamic(dynamic foto) {
+    if (foto == null) return null;
+
+    // 1️⃣ Sudah array (List<String>)
+    if (foto is List && foto.isNotEmpty) {
+      return foto.first.toString();
+    }
+
+    // 2️⃣ String
+    if (foto is String && foto.isNotEmpty) {
+      // Coba parse JSON array
+      if (foto.trim().startsWith('[')) {
+        try {
+          final List list = jsonDecode(foto);
+          if (list.isNotEmpty) return list.first.toString();
+        } catch (_) {}
+      }
+
+      // Fallback: string tunggal (format lama)
+      return foto;
+    }
+
+    return null;
   }
 }

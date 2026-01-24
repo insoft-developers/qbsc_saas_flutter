@@ -4,9 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:qbsc_saas/app/utils/app_prefs.dart';
 
 class ApiProvider extends GetxService {
-  static const String appVersion = "1.0.8";
+  static const String appVersion = "1.0.9";
 
-  static const bool isFakeLogout = false;
+  static const bool isFakeLogout = true;
   static const bool isDev = false;
   static const String devUrl = "http://192.168.100.3:8000";
   static const String proUrl = "https://app.qbsc.cloud";
@@ -49,6 +49,16 @@ class ApiProvider extends GetxService {
           }
 
           return handler.next(options);
+        },
+        // =====================
+        // 🔥 HANDLE 401 UNAUTHENTICATED
+        // =====================
+        onError: (dio.DioException e, handler) async {
+          if (e.response?.statusCode == 401) {
+            await _forceLogout();
+          }
+
+          return handler.next(e);
         },
       ),
     );
@@ -103,5 +113,11 @@ class ApiProvider extends GetxService {
     } else {
       return Exception("Network error: ${e.message}");
     }
+  }
+
+  Future<void> _forceLogout() async {
+    await AppPrefs.clearAll();
+
+    Get.offAllNamed('/login');
   }
 }

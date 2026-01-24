@@ -10,6 +10,7 @@ class NotifDetail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasImage = data.image != null && data.image!.isNotEmpty;
+    final imageUrl = hasImage ? "${ApiProvider.imageUrl}/${data.image!}" : null;
 
     return Scaffold(
       appBar: AppBar(
@@ -18,16 +19,14 @@ class NotifDetail extends StatelessWidget {
           'Detail Notifikasi',
           style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
         ),
-        iconTheme: const IconThemeData(
-          color: Colors.white, // warna back button
-        ),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Judul
+            // ================= JUDUL =================
             Text(
               data.judul,
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
@@ -35,32 +34,84 @@ class NotifDetail extends StatelessWidget {
 
             const SizedBox(height: 12),
 
-            // Pengirim & waktu
+            // ================= META =================
             Text(
               "${data.pengirim} • ${data.waktu}",
               style: TextStyle(fontSize: 14, color: Colors.grey[600]),
             ),
 
             const SizedBox(height: 20),
-            // 🔥 Gambar Opsional (jika ada saja tampil)
+
+            // ================= GAMBAR (CLICK TO ZOOM) =================
             if (hasImage)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  "${ApiProvider.imageUrl}/${data.image!}",
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const SizedBox(),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => _ImagePreviewPage(imageUrl: imageUrl!),
+                    ),
+                  );
+                },
+                child: Hero(
+                  tag: imageUrl!,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, progress) {
+                        if (progress == null) return child;
+                        return const SizedBox(
+                          height: 200,
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      },
+                      errorBuilder: (_, __, ___) => const SizedBox(),
+                    ),
+                  ),
                 ),
               ),
-            // Pesan
+
             const SizedBox(height: 20),
+
+            // ================= PESAN =================
             Text(
               data.fullPesan,
               style: const TextStyle(fontSize: 16, height: 1.4),
             ),
-
-            const SizedBox(height: 20),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// ================= FULLSCREEN IMAGE =================
+class _ImagePreviewPage extends StatelessWidget {
+  final String imageUrl;
+
+  const _ImagePreviewPage({required this.imageUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
+      body: GestureDetector(
+        onTap: () => Navigator.pop(context),
+        child: Center(
+          child: Hero(
+            tag: imageUrl,
+            child: InteractiveViewer(
+              minScale: 1,
+              maxScale: 4,
+              child: Image.network(imageUrl, fit: BoxFit.contain),
+            ),
+          ),
         ),
       ),
     );

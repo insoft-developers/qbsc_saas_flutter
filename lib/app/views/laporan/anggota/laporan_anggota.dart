@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:qbsc_saas/app/views/laporan/anggota/absen/absen.dart';
 import 'package:qbsc_saas/app/views/laporan/anggota/absensi/absensi_anggota.dart';
+import 'package:qbsc_saas/app/views/laporan/anggota/doc/doc.dart';
+import 'package:qbsc_saas/app/views/laporan/anggota/kandang/kandang_tab_page.dart';
 import 'package:qbsc_saas/app/views/laporan/anggota/patroli/patroli_anggota.dart';
+import 'package:qbsc_saas/app/views/laporan/anggota/situasi/situasi.dart';
+import 'package:qbsc_saas/app/views/laporan/anggota/tamu/tamu.dart';
 
 class LaporanAnggota extends StatelessWidget {
   LaporanAnggota({super.key});
@@ -10,6 +15,12 @@ class LaporanAnggota extends StatelessWidget {
 
   List<Map<String, dynamic>> _buildMenu() {
     final baseMenu = [
+      {
+        'icon': Icons.security,
+        'label': 'Laporan Satpam Bertugas',
+        'route': '/laporan/absensi/anggota',
+      },
+
       {
         'icon': Icons.fingerprint,
         'label': 'Laporan Absensi Anggota',
@@ -25,6 +36,14 @@ class LaporanAnggota extends StatelessWidget {
         'label': 'Laporan Patroli Kandang',
         'route': '/laporan/patroli/kandang',
       },
+
+      {
+        'icon': Icons.fire_truck,
+        'label': 'Laporan Pengiriman DOC',
+        'route': '/laporan/patroli/kandang',
+      },
+      {'icon': Icons.people, 'label': 'Laporan Tamu', 'route': ''},
+      {'icon': Icons.info, 'label': 'Laporan Kejadian', 'route': ''},
     ];
 
     return baseMenu;
@@ -63,9 +82,19 @@ class LaporanAnggota extends StatelessWidget {
             borderRadius: BorderRadius.circular(18),
             onTap: () {
               if (item['label'] == 'Laporan Absensi Anggota') {
-                Get.to(() => AbsensiAnggota());
+                Get.to(() => AbsenLaporan());
               } else if (item['label'] == 'Laporan Patroli Anggota') {
                 Get.to(() => PatroliAnggota());
+              } else if (item['label'] == 'Laporan Satpam Bertugas') {
+                Get.to(() => AbsensiAnggota());
+              } else if (item['label'] == 'Laporan Patroli Kandang') {
+                Get.to(() => KandangTabPage());
+              } else if (item['label'] == 'Laporan Pengiriman DOC') {
+                Get.to(() => DocPage());
+              } else if (item['label'] == 'Laporan Tamu') {
+                Get.to(() => TamuPage());
+              } else if (item['label'] == 'Laporan Kejadian') {
+                Get.to(() => SituasiPage());
               }
             },
             child: Ink(
@@ -155,6 +184,9 @@ class LaporanAnggota extends StatelessWidget {
 
 String _getSubtitle(String label) {
   switch (label) {
+    case 'Laporan Satpam Bertugas':
+      return 'Status satpam dibawah pengawasan Anda apakah sedang bertugas atau tidak';
+
     case 'Laporan Absensi Anggota':
       return 'Riwayat aktivitas absensi satpam dibawah pengawasan Anda';
     case 'Laporan Patroli Anggota':
@@ -162,6 +194,14 @@ String _getSubtitle(String label) {
 
     case 'Laporan Patroli Kandang':
       return 'Riwayat aktivitas patroli suhu,kipas,alarm dan lampu kandang oleh satpam';
+
+    case 'Laporan Pengiriman DOC':
+      return 'Riwayat Pencatatan pengiriman DOC dari Hatchery ke Customer oleh satpam';
+
+    case 'Laporan Tamu':
+      return 'Riwayat tamu yang berkunjung ke lokasi Anda';
+    case 'Laporan Kejadian':
+      return 'Riwayat kejadian penting yang terjadi di lokasi Anda';
 
     default:
       return '';

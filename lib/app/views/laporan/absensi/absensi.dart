@@ -125,8 +125,8 @@ class _AbsensiState extends State<Absensi> {
                           "${Fungsi.tanggalIndo(absensi.tanggal)} - ${absensi.satpamName}",
                         ),
                         _buildRow(
-                          "Jam Masuk / Pulang",
-                          "${Fungsi.formatToTime(absensi.jamMasuk)} - ${Fungsi.formatToTime(absensi.jamKeluar)}",
+                          "Shift/ Jam Masuk / Pulang",
+                          "${absensi.shiftName} - ${Fungsi.formatToTime(absensi.jamMasuk)} - ${Fungsi.formatToTime(absensi.jamKeluar)}",
                         ),
                         _buildRow(
                           "Status",
