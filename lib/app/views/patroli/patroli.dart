@@ -54,6 +54,101 @@ class _PatroliState extends State<Patroli> {
     _loginUserId = AppPrefs.getUserId() ?? '0';
   }
 
+  Future<void> _cekLokasiSekarang() async {
+    final match = _box.values.firstWhereOrNull(
+      (loc) => loc.id == widget.locationId,
+    );
+
+    if (match == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Lokasi patroli tidak ditemukan'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    Position? pos = await _getAccuratePosition();
+    if (pos == null) return;
+
+    double distance = await _getDistance(
+      pos.latitude,
+      pos.longitude,
+      match.latitude,
+      match.longitude,
+    );
+
+    bool aman = distance <= _maxDistance;
+
+    // Dialog interaktif
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            Future<void> _refreshLocation() async {
+              final newPos = await _getCurrentPosition();
+              if (newPos == null) return;
+
+              final newDistance = await _getDistance(
+                newPos.latitude,
+                newPos.longitude,
+                match.latitude,
+                match.longitude,
+              );
+
+              setStateDialog(() {
+                pos = newPos;
+                distance = newDistance;
+                aman = distance <= _maxDistance;
+              });
+            }
+
+            return AlertDialog(
+              title: const Text('Cek Lokasi'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Lokasi: ${match.namaLokasi}'),
+                  const SizedBox(height: 8),
+                  Text('Jarak kamu: ${distance.toStringAsFixed(1)} meter'),
+                  const SizedBox(height: 8),
+                  Text(
+                    aman ? 'Status: AMAN' : 'Status: TERLALU JAUH',
+                    style: TextStyle(
+                      color: aman ? Colors.green : Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Batas maksimal: ${_maxDistance.toStringAsFixed(1)} meter',
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
+              ),
+              actions: [
+                if (!aman)
+                  ElevatedButton.icon(
+                    onPressed: _refreshLocation,
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Refresh Lokasi'),
+                  ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Tutup'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   Future<void> _loadMaxDistance() async {
     final maxDistanceString = AppPrefs.getMaxDistance();
     setState(() {
@@ -121,6 +216,41 @@ class _PatroliState extends State<Patroli> {
     );
   }
 
+  Future<Position?> _getAccuratePosition() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) return null;
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) return null;
+    }
+
+    if (permission == LocationPermission.deniedForever) return null;
+
+    // 🔥 PAKSA GPS REAL-TIME
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.bestForNavigation,
+      timeLimit: const Duration(seconds: 15),
+    );
+
+    // ⛔ Tolak jika akurasi buruk
+    if (position.accuracy > 30) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Akurasi GPS belum stabil (${position.accuracy.toStringAsFixed(0)} m). '
+            'Silakan refresh lokasi.',
+          ),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return null;
+    }
+
+    return position;
+  }
+
   void _onDetect(BarcodeCapture capture) async {
     final List<Barcode> barcodes = capture.barcodes;
     for (final barcode in barcodes) {
@@ -134,7 +264,7 @@ class _PatroliState extends State<Patroli> {
         final match = _box.values.firstWhereOrNull((loc) => loc.qrcode == code);
 
         if (match != null) {
-          final pos = await _getCurrentPosition();
+          final pos = await _getAccuratePosition();
           if (pos == null) {
             setState(() => _isScanning = true);
             return;
@@ -368,26 +498,48 @@ class _PatroliState extends State<Patroli> {
           ),
           Positioned(
             bottom: 30,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                setState(() {
-                  _isScanning = true;
-                  _lastScanned = null;
-                });
-              },
-              icon: const Icon(Icons.qr_code_scanner),
-              label: const Text('Scan Ulang'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blueAccent,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: _cekLokasiSekarang,
+                  icon: const Icon(Icons.location_on),
+                  label: const Text('Cek Lokasi'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orangeAccent,
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                  ),
                 ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 12,
+                const SizedBox(width: 10),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _isScanning = true;
+                      _lastScanned = null;
+                    });
+                  },
+                  icon: const Icon(Icons.qr_code_scanner),
+                  label: const Text('Scan Ulang'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueAccent,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
           Positioned(

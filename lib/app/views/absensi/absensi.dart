@@ -119,6 +119,68 @@ class _AbsensiState extends State<Absensi> {
     }
   }
 
+  Future<void> _cekLokasiSekarang() async {
+    final pos = await _getCurrentLocation();
+    if (pos == null) return;
+
+    final posLatStr = AppPrefs.getLatitude() ?? '0.0';
+    final posLngStr = AppPrefs.getLongitude() ?? '0.0';
+    final maxDistStr = AppPrefs.getMaxDistance() ?? '50';
+
+    final posLat = double.tryParse(posLatStr) ?? 0.0;
+    final posLng = double.tryParse(posLngStr) ?? 0.0;
+    final maxDistance = double.tryParse(maxDistStr) ?? 50.0;
+
+    final distanceInMeters = Geolocator.distanceBetween(
+      posLat,
+      posLng,
+      pos.latitude,
+      pos.longitude,
+    );
+
+    bool aman = distanceInMeters <= maxDistance;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Cek Lokasi"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text("Latitude: ${pos.latitude.toStringAsFixed(6)}"),
+              Text("Longitude: ${pos.longitude.toStringAsFixed(6)}"),
+              const SizedBox(height: 8),
+              Text(
+                "Jarak dari pos: ${distanceInMeters.toStringAsFixed(1)} meter",
+              ),
+              const SizedBox(height: 8),
+              Text(
+                aman ? "Status: AMAN ✅" : "Status: TERLALU JAUH ❌",
+                style: TextStyle(
+                  color: aman ? Colors.green : Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "Batas maksimal: ${maxDistance.toStringAsFixed(1)} meter",
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ],
+          ),
+          actions: [
+            ElevatedButton.icon(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.check),
+              label: const Text("Tutup"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _verifyFace() async {
     if (!_isFaceDetected || _isVerifying) return;
 
@@ -345,6 +407,23 @@ class _AbsensiState extends State<Absensi> {
                           ),
                         )
                       : const Text("Lakukan Absensi"),
+                ),
+
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: _cekLokasiSekarang,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orangeAccent,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 40,
+                      vertical: 14,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  icon: const Icon(Icons.location_on),
+                  label: const Text("Cek Lokasi"),
                 ),
               ],
             ),

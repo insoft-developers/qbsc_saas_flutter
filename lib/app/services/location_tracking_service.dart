@@ -82,6 +82,7 @@ class LocationTrackingService {
   }
 
   /// SAVE LOCATION (OFFLINE FIRST)
+  /// SAVE LOCATION (ONLINE FIRST, FALLBACK OFFLINE)
   Future<void> _saveLocation(Position position) async {
     int satpamId = int.tryParse(AppPrefs.getUserId() ?? '') ?? 0;
     if (satpamId == 0) return;
@@ -98,10 +99,39 @@ class LocationTrackingService {
       synced: false,
     );
 
-    await box.add(location);
-    print('💾 Lokasi disimpan ke Hive');
+    final connectivity = await Connectivity().checkConnectivity();
 
-    await _syncPendingLocations();
+    if (connectivity != ConnectivityResult.none) {
+      // 🔹 Ada internet, coba kirim dulu
+      try {
+        final response = await api.post(
+          ApiEndpoint.updateSatpamLocation,
+          data: {
+            'uuid': location.uuid,
+            'satpam_id': location.satpamId,
+            'latitude': location.latitude,
+            'longitude': location.longitude,
+            'accuracy': location.accuracy,
+            'recorded_at': location.recordedAt,
+          },
+        );
+
+        if (response.data['success'] == true) {
+          print('✅ Lokasi terkirim ke server (${location.uuid})');
+          return; // sukses online, tidak perlu simpan offline
+        } else {
+          print('⚠️ Gagal kirim ke server, simpan offline');
+        }
+      } catch (e) {
+        print('❌ Error kirim lokasi: $e, simpan offline');
+      }
+    } else {
+      print('📴 Offline, simpan lokasi di Hive');
+    }
+
+    // 🔹 Simpan ke Hive sebagai fallback
+    await box.add(location);
+    print('💾 Lokasi disimpan ke Hive (${location.uuid})');
   }
 
   /// SYNC PENDING DATA TO SERVER
