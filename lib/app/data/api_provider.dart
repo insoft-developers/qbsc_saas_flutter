@@ -4,10 +4,10 @@ import 'package:flutter/foundation.dart';
 import 'package:qbsc_saas/app/utils/app_prefs.dart';
 
 class ApiProvider extends GetxService {
-  static const String appVersion = "1.0.9";
+  static const String appVersion = "1.1.1";
 
-  static const bool isFakeLogout = false;
-  static const bool isDev = true;
+  static const bool isFakeLogout = true;
+  static const bool isDev = false;
   static const String devUrl = "http://192.168.100.3:8000";
   static const String proUrl = "https://app.qbsc.cloud";
 

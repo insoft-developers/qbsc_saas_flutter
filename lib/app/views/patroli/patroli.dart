@@ -234,20 +234,6 @@ class _PatroliState extends State<Patroli> {
       timeLimit: const Duration(seconds: 15),
     );
 
-    // ⛔ Tolak jika akurasi buruk
-    if (position.accuracy > 30) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Akurasi GPS belum stabil (${position.accuracy.toStringAsFixed(0)} m). '
-            'Silakan refresh lokasi.',
-          ),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return null;
-    }
-
     return position;
   }
 
@@ -277,19 +263,37 @@ class _PatroliState extends State<Patroli> {
             match.longitude,
           );
 
+          double? overrideDistance;
+
           if (distance > _maxDistance) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Lokasi terlalu jauh dari titik patroli!\n'
-                  'Jarak: ${distance.toStringAsFixed(1)} m '
-                  '(Maks: ${_maxDistance.toStringAsFixed(1)} m)',
+            final lanjut = await _confirmJarakTerlaluJauh(distance);
+
+            if (!lanjut) {
+              setState(() => _isScanning = true);
+              return;
+            }
+            overrideDistance = distance;
+            // ✅ USER SETUJU LANJUT MESKI JAUH
+            if (match.id != widget.locationId) {
+              // ignore: use_build_context_synchronously
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'QR Code tidak sesuai dengan lokasi patroli ini!\n'
+                    'Lokasi scan: ${match.namaLokasi} '
+                    '(Lokasi patroli: ${widget.locationName})',
+                  ),
+                  backgroundColor: Colors.redAccent,
                 ),
-                backgroundColor: Colors.redAccent,
-                duration: const Duration(seconds: 4),
-              ),
-            );
+              );
+              setState(() => _isScanning = true);
+              return;
+            }
+
+            _showKondisiDialog(match, pos, overrideDistance);
+            return;
           } else if (match.id != widget.locationId) {
+            // ignore: use_build_context_synchronously
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
@@ -302,7 +306,7 @@ class _PatroliState extends State<Patroli> {
               ),
             );
           } else {
-            _showKondisiDialog(match, pos);
+            _showKondisiDialog(match, pos, null);
           }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -320,7 +324,43 @@ class _PatroliState extends State<Patroli> {
     }
   }
 
-  void _showKondisiDialog(LocationModel lokasi, Position pos) {
+  Future<bool> _confirmJarakTerlaluJauh(double distance) async {
+    return await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => AlertDialog(
+            title: const Text('Jarak Terlalu Jauh'),
+            content: Text(
+              'Jarak kamu ${distance.toStringAsFixed(1)} meter\n'
+              'Maksimal ${_maxDistance.toStringAsFixed(1)} meter\n\n'
+              'Apakah ingin tetap melanjutkan patroli?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Tidak'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.redAccent,
+                ),
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text(
+                  'Ya, Lanjutkan',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
+
+  void _showKondisiDialog(
+    LocationModel lokasi,
+    Position pos,
+    double? overrideDistance,
+  ) {
     final TextEditingController kondisiController = TextEditingController();
     final ImagePicker picker = ImagePicker();
     File? _fotoFile;
@@ -400,13 +440,18 @@ class _PatroliState extends State<Patroli> {
 
                     String? userId = AppPrefs.getUserId();
 
+                    final note = overrideDistance != null
+                        ? '${kondisiController.text}\n'
+                              '[JARAK: ${overrideDistance.toStringAsFixed(1)} m]'
+                        : kondisiController.text;
+
                     await patroliController.savePatroliLocal(
                       locationId: lokasi.id.toString(),
                       locationCode: lokasi.qrcode,
                       satpamId: userId!,
                       latitude: pos.latitude,
                       longitude: pos.longitude,
-                      note: kondisiController.text,
+                      note: note,
                       comid: lokasi.comid.toString(),
                       photoPath: _fotoFile?.path, // bisa null, opsional
                       jadwalId: widget.id,

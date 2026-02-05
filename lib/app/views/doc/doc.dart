@@ -80,6 +80,43 @@ class Doc extends StatelessWidget {
               ),
 
               _section("Informasi Pengiriman"),
+              _input(
+                label: "Nama Supir",
+                icon: Icons.person_outline,
+                validator: (v) =>
+                    v == null || v.isEmpty ? 'Nama supir wajib diisi' : null,
+                onChanged: c.setNamaSupir,
+              ),
+
+              _input(
+                label: "No Polisi",
+                icon: Icons.confirmation_number_outlined,
+                validator: (v) =>
+                    v == null || v.isEmpty ? 'No polisi wajib diisi' : null,
+                onChanged: c.setNoPolisi,
+              ),
+              Obx(
+                () => _dropdown(
+                  hint: "Pilih Ekspedisi",
+                  icon: Icons.local_shipping_outlined,
+                  value: c.ekspedisiTerpilih.value,
+                  items: c.ekspedisiList
+                      .map(
+                        (e) => DropdownMenuItem(value: e, child: Text(e.name)),
+                      )
+                      .toList(),
+                  validator: (v) => v == null ? 'Pilih ekspedisi' : null,
+                  onChanged: c.setEkspedisi,
+                ),
+              ),
+
+              _input(
+                label: "Tujuan",
+                icon: Icons.flag_outlined,
+                validator: (v) =>
+                    v == null || v.isEmpty ? 'Tujuan wajib diisi' : null,
+                onChanged: c.setTujuan,
+              ),
 
               Obx(
                 () => Column(
@@ -175,45 +212,6 @@ class Doc extends StatelessWidget {
                     ? 'Jumlah total ekor wajib diisi'
                     : null,
                 onChanged: c.setTotalEkor,
-              ),
-
-              Obx(
-                () => _dropdown(
-                  hint: "Pilih Ekspedisi",
-                  icon: Icons.local_shipping_outlined,
-                  value: c.ekspedisiTerpilih.value,
-                  items: c.ekspedisiList
-                      .map(
-                        (e) => DropdownMenuItem(value: e, child: Text(e.name)),
-                      )
-                      .toList(),
-                  validator: (v) => v == null ? 'Pilih ekspedisi' : null,
-                  onChanged: c.setEkspedisi,
-                ),
-              ),
-
-              _input(
-                label: "Tujuan",
-                icon: Icons.flag_outlined,
-                validator: (v) =>
-                    v == null || v.isEmpty ? 'Tujuan wajib diisi' : null,
-                onChanged: c.setTujuan,
-              ),
-
-              _input(
-                label: "Nama Supir",
-                icon: Icons.person_outline,
-                validator: (v) =>
-                    v == null || v.isEmpty ? 'Nama supir wajib diisi' : null,
-                onChanged: c.setNamaSupir,
-              ),
-
-              _input(
-                label: "No Polisi",
-                icon: Icons.confirmation_number_outlined,
-                validator: (v) =>
-                    v == null || v.isEmpty ? 'No polisi wajib diisi' : null,
-                onChanged: c.setNoPolisi,
               ),
 
               _input(

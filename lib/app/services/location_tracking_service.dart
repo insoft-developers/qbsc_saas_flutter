@@ -12,52 +12,59 @@ import 'package:qbsc_saas/app/utils/app_prefs.dart';
 
 class LocationTrackingService {
   final ApiProvider api = Get.find<ApiProvider>();
-  StreamSubscription<Position>? _positionStream;
-
   final _uuid = const Uuid();
 
-  /// START TRACKING
-  Future<void> startTracking() async {
-    if (_positionStream != null) return;
+  Timer? _timer;
+  bool _isRunning = false;
 
-    bool granted = await _handlePermission();
+  /// ⏱ INTERVAL TRACKING (MENIT)
+  /// ganti sesuai kebutuhan (2 / 5 / 10)
+  final int trackingIntervalMinutes = 1;
+
+  /* ===========================================================
+   * START TRACKING
+   * =========================================================== */
+  Future<void> startTracking() async {
+    if (_isRunning) return;
+
+    await _syncPendingLocations();
+
+    final granted = await _handlePermission();
     if (!granted) return;
 
-    _positionStream =
-        Geolocator.getPositionStream(
-          locationSettings: const LocationSettings(
-            accuracy: LocationAccuracy.high,
-            distanceFilter: 10,
-          ),
-        ).listen(
-          (Position position) {
-            _saveLocation(position);
-          },
-          onError: (error) {
-            print('❌ Location stream error: $error');
-          },
-        );
+    _isRunning = true;
 
-    print('🟢 Tracking lokasi dimulai');
+    // 🔔 ambil lokasi langsung saat start
+    await _captureLocation();
+
+    _timer = Timer.periodic(
+      Duration(minutes: trackingIntervalMinutes),
+      (_) => _captureLocation(),
+    );
+
+    print('🟢 Tracking dimulai (interval $trackingIntervalMinutes menit)');
   }
 
-  /// STOP TRACKING
+  /* ===========================================================
+   * STOP TRACKING
+   * =========================================================== */
   void stopTracking() {
-    _positionStream?.cancel();
-    _positionStream = null;
-    print('🔴 Tracking lokasi dihentikan');
+    _timer?.cancel();
+    _timer = null;
+    _isRunning = false;
+    print('🔴 Tracking dihentikan');
   }
 
-  /// HANDLE PERMISSION
+  /* ===========================================================
+   * PERMISSION
+   * =========================================================== */
   Future<bool> _handlePermission() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
+    if (!await Geolocator.isLocationServiceEnabled()) {
       Get.snackbar('GPS Mati', 'Aktifkan GPS terlebih dahulu');
       return false;
     }
 
     LocationPermission permission = await Geolocator.checkPermission();
-
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
@@ -81,8 +88,31 @@ class LocationTrackingService {
     return true;
   }
 
-  /// SAVE LOCATION (OFFLINE FIRST)
-  /// SAVE LOCATION (ONLINE FIRST, FALLBACK OFFLINE)
+  /* ===========================================================
+   * AMBIL 1 LOKASI (TIME BASED)
+   * =========================================================== */
+  Future<void> _captureLocation() async {
+    try {
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 15),
+      );
+
+      // ❌ accuracy jelek → skip
+      if (position.accuracy > 80) {
+        print('🚫 Accuracy ${position.accuracy} buruk, dilewati');
+        return;
+      }
+
+      await _saveLocation(position);
+    } catch (e) {
+      print('❌ Gagal ambil lokasi: $e');
+    }
+  }
+
+  /* ===========================================================
+   * SAVE LOCATION (ONLINE → OFFLINE)
+   * =========================================================== */
   Future<void> _saveLocation(Position position) async {
     int satpamId = int.tryParse(AppPrefs.getUserId() ?? '') ?? 0;
     if (satpamId == 0) return;
@@ -102,10 +132,9 @@ class LocationTrackingService {
     final connectivity = await Connectivity().checkConnectivity();
 
     if (connectivity != ConnectivityResult.none) {
-      // 🔹 Ada internet, coba kirim dulu
       try {
         final response = await api.post(
-          ApiEndpoint.updateSatpamLocation,
+          ApiEndpoint.updateLastPosition,
           data: {
             'uuid': location.uuid,
             'satpam_id': location.satpamId,
@@ -117,35 +146,27 @@ class LocationTrackingService {
         );
 
         if (response.data['success'] == true) {
-          print('✅ Lokasi terkirim ke server (${location.uuid})');
-          return; // sukses online, tidak perlu simpan offline
-        } else {
-          print('⚠️ Gagal kirim ke server, simpan offline');
+          print('✅ Lokasi terkirim (${location.uuid})');
+          return;
         }
       } catch (e) {
-        print('❌ Error kirim lokasi: $e, simpan offline');
+        print('❌ Error kirim lokasi: $e');
       }
-    } else {
-      print('📴 Offline, simpan lokasi di Hive');
     }
 
-    // 🔹 Simpan ke Hive sebagai fallback
     await box.add(location);
-    print('💾 Lokasi disimpan ke Hive (${location.uuid})');
+    print('💾 Lokasi disimpan offline (${location.uuid})');
   }
 
-  /// SYNC PENDING DATA TO SERVER
+  /* ===========================================================
+   * SYNC OFFLINE DATA
+   * =========================================================== */
   Future<void> _syncPendingLocations() async {
     final connectivity = await Connectivity().checkConnectivity();
-    if (connectivity == ConnectivityResult.none) {
-      print('📴 Offline, sync ditunda');
-      return;
-    }
+    if (connectivity == ConnectivityResult.none) return;
 
     final box = Hive.box<OfflineTrackingModel>('tracking');
-    final pending = box.values.where((e) => !e.synced).toList();
-
-    if (pending.isEmpty) return;
+    final pending = box.values.toList();
 
     for (final item in pending) {
       try {
@@ -162,11 +183,13 @@ class LocationTrackingService {
         );
 
         if (response.data['success'] == true) {
-          await item.delete(); // 🔥 hapus dari Hive
-          print('🗑️ Lokasi dihapus dari Hive (${item.uuid})');
+          await item.delete();
+          print('🗑️ Pending lokasi disync (${item.uuid})');
+        } else {
+          break;
         }
       } catch (e) {
-        print('❌ Gagal sync, akan dicoba ulang');
+        print('❌ Gagal sync pending lokasi');
         break;
       }
     }

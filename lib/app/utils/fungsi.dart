@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:intl/intl.dart';
+
 class Fungsi {
   static String formatToTime(String dateTimeString) {
     try {
@@ -69,5 +71,13 @@ class Fungsi {
     }
 
     return null;
+  }
+
+  static String getNamaHari(String tanggal) {
+    // Parse string Y-m-d ke DateTime
+    DateTime dt = DateTime.parse(tanggal); // misal "2026-02-04"
+
+    // Format ke nama hari bahasa Indonesia
+    return DateFormat('EEEE', 'id_ID').format(dt); // "Rabu"
   }
 }

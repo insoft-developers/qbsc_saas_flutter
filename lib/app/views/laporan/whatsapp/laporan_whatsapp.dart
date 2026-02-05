@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:qbsc_saas/app/utils/app_prefs.dart';
-import 'package:qbsc_saas/app/utils/snackbar_helper.dart';
-import 'package:qbsc_saas/app/views/laporan/whatsapp/laporan_whatsapp.dart';
+import 'package:qbsc_saas/app/views/laporan/whatsapp/bulan.dart';
 
-class Laporan extends StatelessWidget {
-  Laporan({super.key});
+class LaporanWhatsapp extends StatelessWidget {
+  LaporanWhatsapp({super.key});
 
   final String? isPeternakan = AppPrefs.getIsPeternakan();
 
@@ -14,58 +13,23 @@ class Laporan extends StatelessWidget {
   List<Map<String, dynamic>> _buildMenu() {
     final baseMenu = [
       {
-        'icon': Icons.chat_bubble,
-        'label': 'Whatsapp Laporan',
-        'route': '/laporan/whatsapp',
-      },
-      {
-        'icon': Icons.analytics,
-        'label': 'Laporan Kinerja',
-        'route': '/laporan/kinerja',
-      },
-      {
-        'icon': Icons.fingerprint,
-        'label': 'Laporan Absensi',
-        'route': '/laporan/absensi',
-      },
-      {
-        'icon': Icons.location_history,
-        'label': 'Laporan Patroli',
-        'route': '/laporan/patroli',
-      },
-      {
         'icon': Icons.location_on,
-        'label': 'Laporan Data Lokasi',
-        'route': '/laporan/lokasi',
-      },
-      {
-        'icon': Icons.info,
-        'label': 'Laporan Kejadian',
-        'route': '/laporan/kejadian',
-      },
-      {
-        'icon': Icons.people,
-        'label': 'Laporan Kerja Anggota',
-        'route': '/laporan/anggota',
+        'label': 'Kirim Patroli via WhatsApp',
+        'route': '',
       },
     ];
 
     if (isPeternakan == '1') {
-      baseMenu.insertAll(2, [
+      baseMenu.insertAll(1, [
         {
           'icon': Icons.bungalow_rounded,
-          'label': 'Laporan Kandang',
-          'route': '/laporan/kandang',
-        },
-        {
-          'icon': Icons.car_rental,
-          'label': 'Laporan Data Ekspedisi',
-          'route': '/laporan/ekspedisi',
+          'label': 'Kirim Laporan Kandang via WhatsApp',
+          'route': '',
         },
         {
           'icon': Icons.fire_truck,
-          'label': 'Laporan DOC Keluar',
-          'route': '/laporan/doc',
+          'label': 'Kirim Laporan DOC via WhatsApp',
+          'route': '',
         },
       ]);
     }
@@ -105,34 +69,12 @@ class Laporan extends StatelessWidget {
           return InkWell(
             borderRadius: BorderRadius.circular(18),
             onTap: () {
-              if (item['label'] == 'Laporan Patroli') {
-                Get.toNamed('/laporan/patroli');
-              } else if (item['label'] == 'Laporan Data Lokasi') {
-                Get.toNamed('/laporan/lokasi');
-              } else if (item['label'] == 'Laporan Kandang') {
-                Get.toNamed('/laporan/kandang');
-              } else if (item['label'] == 'Laporan Data Ekspedisi') {
-                Get.toNamed('/laporan/ekspedisi');
-              } else if (item['label'] == 'Laporan DOC Keluar') {
-                Get.toNamed('/laporan/doc');
-              } else if (item['label'] == 'Laporan Kejadian') {
-                Get.toNamed('/laporan/kejadian');
-              } else if (item['label'] == 'Laporan Kinerja') {
-                Get.toNamed('/laporan/kinerja');
-              } else if (item['label'] == 'Laporan Absensi') {
-                Get.toNamed('/laporan/absensi');
-              } else if (item['label'] == 'Laporan Kerja Anggota') {
-                final isDanru = AppPrefs.getIsDanru();
-                if (isDanru == '1') {
-                  Get.toNamed('/laporan/anggota');
-                } else {
-                  SnackbarHelper.error(
-                    'Warning',
-                    'Halaman ini khusus untuk Danru (Komandan Regu)',
-                  );
-                }
-              } else if (item['label'] == 'Whatsapp Laporan') {
-                Get.to(() => LaporanWhatsapp());
+              if (item['label'] == 'Kirim Laporan Kandang via WhatsApp') {
+                Get.to(() => Bulan(menu: 'kandang'));
+              } else if (item['label'] == 'Kirim Laporan DOC via WhatsApp') {
+                Get.to(() => Bulan(menu: 'doc'));
+              } else if (item['label'] == 'Kirim Patroli via WhatsApp') {
+                Get.to(() => Bulan(menu: 'patroli'));
               }
             },
             child: Ink(
@@ -222,27 +164,18 @@ class Laporan extends StatelessWidget {
 
 String _getSubtitle(String label) {
   switch (label) {
-    case 'Whatsapp Laporan':
-      return 'Kirim laporan melalui WhatsApp';
-    case 'Laporan Patroli':
-      return 'Riwayat aktivitas patroli Anda';
-    case 'Laporan Data Lokasi':
-      return 'Data titik lokasi patroli';
-    case 'Laporan Kandang':
-      return 'Monitoring aktivitas kandang';
-    case 'Laporan Data Ekspedisi':
-      return 'Riwayat pengiriman & ekspedisi';
-    case 'Laporan DOC Keluar':
-      return 'Distribusi DOC keluar';
-    case 'Laporan Kejadian':
-      return 'Catatan insiden & kejadian yang anda laporkan';
-    case 'Laporan Absensi':
-      return 'Riwayat Absensi Anda';
-    case 'Laporan Kerja Anggota':
-      return 'Riwayat Absensi dan Patroli Anggota Lainnya (Khusus untuk Danru)';
+    case 'Kirim Patroli via WhatsApp':
+      return 'Kirim laporan Patroli berdasarkan tanggal dan tempat melalui WhatsApp';
 
-    case 'Laporan Kinerja':
-      return 'Rangkuman Kehadiran, Terlambat, Pulang cepat, dan Patroli Semua Personil';
+    case 'Kirim Laporan Kejadian via WhatsApp':
+      return 'Kirim laporan Kejadian berdasarkan tanggal dan tempat melalui WhatsApp';
+
+    case 'Kirim Laporan Kandang via WhatsApp':
+      return 'Kirim laporan Kandang berdasarkan tanggal dan tempat melalui WhatsApp';
+
+    case 'Kirim Laporan DOC via WhatsApp':
+      return 'Kirim laporan DOC berdasarkan tanggal dan tempat melalui WhatsApp';
+
     default:
       return '';
   }
