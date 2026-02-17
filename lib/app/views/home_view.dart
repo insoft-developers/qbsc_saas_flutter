@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:qbsc_saas/app/components/satpam_summary_slider.dart';
 import 'package:qbsc_saas/app/controllers/absen_controller.dart';
 import 'package:qbsc_saas/app/controllers/auth_controller.dart';
 import 'package:qbsc_saas/app/controllers/home_controller.dart';
@@ -47,6 +46,7 @@ class _HomeViewState extends State<HomeView>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _marqueeAnimationController.repeat();
+      _showSyncDialog();
     });
   }
 
@@ -122,7 +122,7 @@ class _HomeViewState extends State<HomeView>
       await absenC.getLocationData();
       await homeC.getDataEkspedisi();
       await homeC.getJadwalPatroli();
-
+      await homeC.getDataBoxOption();
       Get.back();
       Get.snackbar(
         'Berhasil',

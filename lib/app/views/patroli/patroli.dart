@@ -54,101 +54,6 @@ class _PatroliState extends State<Patroli> {
     _loginUserId = AppPrefs.getUserId() ?? '0';
   }
 
-  Future<void> _cekLokasiSekarang() async {
-    final match = _box.values.firstWhereOrNull(
-      (loc) => loc.id == widget.locationId,
-    );
-
-    if (match == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Lokasi patroli tidak ditemukan'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
-      return;
-    }
-
-    Position? pos = await _getAccuratePosition();
-    if (pos == null) return;
-
-    double distance = await _getDistance(
-      pos.latitude,
-      pos.longitude,
-      match.latitude,
-      match.longitude,
-    );
-
-    bool aman = distance <= _maxDistance;
-
-    // Dialog interaktif
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setStateDialog) {
-            Future<void> _refreshLocation() async {
-              final newPos = await _getCurrentPosition();
-              if (newPos == null) return;
-
-              final newDistance = await _getDistance(
-                newPos.latitude,
-                newPos.longitude,
-                match.latitude,
-                match.longitude,
-              );
-
-              setStateDialog(() {
-                pos = newPos;
-                distance = newDistance;
-                aman = distance <= _maxDistance;
-              });
-            }
-
-            return AlertDialog(
-              title: const Text('Cek Lokasi'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Lokasi: ${match.namaLokasi}'),
-                  const SizedBox(height: 8),
-                  Text('Jarak kamu: ${distance.toStringAsFixed(1)} meter'),
-                  const SizedBox(height: 8),
-                  Text(
-                    aman ? 'Status: AMAN' : 'Status: TERLALU JAUH',
-                    style: TextStyle(
-                      color: aman ? Colors.green : Colors.red,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Batas maksimal: ${_maxDistance.toStringAsFixed(1)} meter',
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ],
-              ),
-              actions: [
-                if (!aman)
-                  ElevatedButton.icon(
-                    onPressed: _refreshLocation,
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Refresh Lokasi'),
-                  ),
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Tutup'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
   Future<void> _loadMaxDistance() async {
     final maxDistanceString = AppPrefs.getMaxDistance();
     setState(() {
@@ -217,24 +122,63 @@ class _PatroliState extends State<Patroli> {
   }
 
   Future<Position?> _getAccuratePosition() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) return null;
+    try {
+      // 1️⃣ Pastikan GPS aktif
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('GPS Tidak aktif'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+        return null;
+      }
 
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) return null;
+      // 2️⃣ Cek permission
+      LocationPermission permission = await Geolocator.checkPermission();
+
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Permission Ditolak'),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+          return null;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Permission Denied Forever'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+        return null;
+      }
+
+      // 3️⃣ Coba akurasi tertinggi dulu
+      try {
+        return await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.bestForNavigation,
+          timeLimit: const Duration(seconds: 10),
+        );
+      } catch (e) {
+        debugPrint("BestForNavigation gagal, fallback ke HIGH");
+      }
+
+      // 4️⃣ Fallback ke HIGH (lebih stabil)
+      return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+    } catch (e) {
+      debugPrint("Error ambil lokasi: $e");
+      return null;
     }
-
-    if (permission == LocationPermission.deniedForever) return null;
-
-    // 🔥 PAKSA GPS REAL-TIME
-    Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.bestForNavigation,
-      timeLimit: const Duration(seconds: 15),
-    );
-
-    return position;
   }
 
   void _onDetect(BarcodeCapture capture) async {
@@ -479,6 +423,136 @@ class _PatroliState extends State<Patroli> {
     );
   }
 
+  void _showManualDialog(LocationModel lokasi) {
+    final TextEditingController kondisiController = TextEditingController();
+    final ImagePicker picker = ImagePicker();
+    File? _fotoFile;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              title: Text('Laporan ${lokasi.namaLokasi} tidak bisa di scan'),
+              content: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: kondisiController,
+                      decoration: const InputDecoration(
+                        labelText: 'Keterangan tidak bisa scan',
+                        hintText: 'Contoh: hujan, barcode rusak, dsb.',
+                      ),
+                      maxLines: 2,
+                    ),
+                    const SizedBox(height: 16),
+                    // Preview foto kalau ada
+                    _fotoFile != null
+                        ? Column(
+                            children: [
+                              Image.file(_fotoFile!, height: 150),
+                              const SizedBox(height: 8),
+                              TextButton(
+                                onPressed: () {
+                                  setStateDialog(() => _fotoFile = null);
+                                },
+                                child: const Text('Hapus Foto'),
+                              ),
+                            ],
+                          )
+                        : ElevatedButton.icon(
+                            onPressed: () async {
+                              final XFile? foto = await picker.pickImage(
+                                source: ImageSource.gallery,
+                                imageQuality: 70,
+                              );
+                              if (foto != null) {
+                                setStateDialog(() {
+                                  _fotoFile = File(foto.path);
+                                });
+                              }
+                            },
+                            icon: const Icon(Icons.image),
+                            label: const Text('Bukti Foto'),
+                          ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    setState(() => _isScanning = true);
+                  },
+                  child: const Text('Batal'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    final kondisi = kondisiController.text.trim();
+                    if (kondisi.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Isi kondisi dulu sebelum simpan'),
+                          backgroundColor: Colors.redAccent,
+                        ),
+                      );
+                      return;
+                    }
+
+                    // ✅ VALIDASI FOTO WAJIB
+                    if (_fotoFile == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Foto bukti wajib diupload'),
+                          backgroundColor: Colors.redAccent,
+                        ),
+                      );
+                      return;
+                    }
+
+                    String? userId = AppPrefs.getUserId();
+
+                    final note =
+                        '${kondisiController.text}\n'
+                        '[TDK BS SCAN]';
+
+                    await patroliController.savePatroliLocal(
+                      locationId: lokasi.id.toString(),
+                      locationCode: lokasi.qrcode,
+                      satpamId: userId!,
+                      latitude:
+                          0.0, // karena tidak bisa scan, kita set lat/lng ke 0
+                      longitude: 0.0,
+                      note: note,
+                      comid: lokasi.comid.toString(),
+                      photoPath: _fotoFile?.path, // bisa null, opsional
+                      jadwalId: widget.id,
+                      jamAwal: widget.jamAwal,
+                      jamAkhir: widget.jamAkhir,
+                    );
+
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Data patroli disimpan ke lokal'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+
+                    setState(() => _isScanning = true);
+                  },
+                  child: const Text('Simpan'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   void _toggleTorch() async {
     await _controller.toggleTorch();
     setState(() {
@@ -547,12 +621,28 @@ class _PatroliState extends State<Patroli> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton.icon(
-                  onPressed: _cekLokasiSekarang,
-                  icon: const Icon(Icons.location_on),
-                  label: const Text('Cek Lokasi'),
+                  onPressed: () {
+                    final lokasi = _box.values.firstWhereOrNull(
+                      (loc) => loc.id == widget.locationId,
+                    );
+
+                    if (lokasi == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Lokasi tidak ditemukan"),
+                          backgroundColor: Colors.redAccent,
+                        ),
+                      );
+                      return;
+                    }
+
+                    _showManualDialog(lokasi);
+                  },
+                  icon: const Icon(Icons.location_off_outlined),
+                  label: const Text('Tidak bisa Scan'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orangeAccent,
-                    foregroundColor: Colors.black,
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
