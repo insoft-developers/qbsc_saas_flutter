@@ -73,9 +73,58 @@ class _AbsensiListState extends State<AbsensiList> {
                 child: ElevatedButton(
                   onPressed: () {
                     if (absenController.absenStatus == 'masuk') {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Anda belum absen pulang'),
+                      Get.dialog(
+                        AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          title: const Text(
+                            'Konfirmasi',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 20,
+                            ),
+                          ),
+                          content: const Text(
+                            'Anda belum absen pulang.\n\n'
+                            'Apakah anda ingin konfirmasi lupa absen pulang?',
+                            style: TextStyle(fontSize: 15, height: 1.5),
+                          ),
+                          actionsPadding: const EdgeInsets.fromLTRB(
+                            20,
+                            0,
+                            20,
+                            16,
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Get.back();
+                              },
+                              child: const Text(
+                                'Tidak',
+                                style: TextStyle(fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                Get.back();
+
+                                 absenController.lupaPulang(absenController.absenData['id']);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.indigo,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: const Text(
+                                'Ya',
+                                style: TextStyle(fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ],
                         ),
                       );
                     } else {

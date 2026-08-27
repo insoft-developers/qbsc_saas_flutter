@@ -65,4 +65,8 @@ class ApiEndpoint {
 
   // Quiz, Leaderboard, dst (sesuai project kamu)
   static const String leaderboard = "/quiz/leaderboard";
+
+  static const String newSlider = "/slider_new";
+  static const String appVersion = "/update_app_version";
+  static const String lupaPulang = "/lupa_pulang";
 }

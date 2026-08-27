@@ -8,6 +8,7 @@ import 'package:qbsc_saas/app/data/api_endpoint.dart';
 import 'package:qbsc_saas/app/data/api_provider.dart';
 import 'package:qbsc_saas/app/utils/app_prefs.dart';
 import 'package:qbsc_saas/app/utils/snackbar_helper.dart';
+import 'package:qbsc_saas/app/views/tamu/daftar_tamu.dart';
 
 class TamuController extends GetxController {
   final RxBool isLoading = false.obs;
@@ -118,6 +119,9 @@ class TamuController extends GetxController {
 
       if (body['success']) {
         SnackbarHelper.success('sukses', 'Sukses Tambah Data Tamu');
+        await Future.delayed(const Duration(milliseconds: 500));
+
+        Get.off(() => DaftarTamu());
       } else {
         SnackbarHelper.error('Warning', 'Data tidak ditemukan');
       }
@@ -128,25 +132,33 @@ class TamuController extends GetxController {
     }
   }
 
-  Future<void> updateStatusTamu(int id) async {
+  Future<bool> updateStatusTamu(int id) async {
     isLoading.value = true;
-    int satpamId = int.parse(AppPrefs.getUserId() ?? '0');
+
+    final satpamId = int.parse(AppPrefs.getUserId() ?? '0');
 
     try {
       final response = await api.post(
         ApiEndpoint.updateStatusTamu,
         data: {'id': id, 'satpam_id': satpamId},
       );
-      var body = response.data;
-      if (body['success']) {
-        SnackbarHelper.success('sukses', 'Sukses Simpan Data');
-        // Get.back();
-        getListTamu();
+
+      final body = response.data;
+
+      if (body['success'] == true) {
+        return true;
       } else {
-        SnackbarHelper.error('Warning', 'Data tidak ditemukan');
+        SnackbarHelper.error(
+          'Gagal',
+          body['message']?.toString() ?? 'Data tamu tidak ditemukan',
+        );
+
+        return false;
       }
     } catch (e) {
-      SnackbarHelper.error('Warning', e.toString());
+      SnackbarHelper.error('Error', e.toString());
+
+      return false;
     } finally {
       isLoading.value = false;
     }

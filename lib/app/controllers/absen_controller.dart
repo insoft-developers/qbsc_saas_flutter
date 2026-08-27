@@ -91,4 +91,25 @@ class AbsenController extends GetxController {
       Get.snackbar('Error', 'User id tidak ditemukan');
     }
   }
+
+  Future<void> lupaPulang(int absenId) async {
+   
+
+    try {
+      final response = await api.post(
+        ApiEndpoint.lupaPulang,
+        data: {'id': absenId},
+      );
+
+      final body = response.data;
+
+      if (body['success'] == true) {
+        getDataAbsensi();
+        debugPrint('Update absen pulang berhasil');
+
+      }
+    } catch (e) {
+      debugPrint('Error get slider: $e');
+    }
+  }
 }

@@ -35,15 +35,19 @@ class Patroli extends StatefulWidget {
 class _PatroliState extends State<Patroli> {
   final patroliController = Get.put(PatroliController());
   bool _isScanning = true;
+  bool _isProcessing = false;
+  bool _isHiveReady = false;
+
   bool _torchOn = false;
   String? _lastScanned;
+
   late Box<LocationModel> _box;
   Box<PatroliModel>? _boxPatroli;
   double _maxDistance = 0.0;
   late String _loginUserId;
 
   final MobileScannerController _controller = MobileScannerController(
-    detectionSpeed: DetectionSpeed.noDuplicates,
+    detectionSpeed: DetectionSpeed.normal,
   );
 
   @override
@@ -62,10 +66,31 @@ class _PatroliState extends State<Patroli> {
   }
 
   Future<void> _openHiveBox() async {
-    _box = await Hive.openBox<LocationModel>('locations');
-    _boxPatroli = await Hive.openBox<PatroliModel>('patroli');
+    try {
+      final locationBox = await Hive.openBox<LocationModel>('locations');
 
-    setState(() {});
+      final patroliBox = await Hive.openBox<PatroliModel>('patroli');
+
+      if (!mounted) return;
+
+      setState(() {
+        _box = locationBox;
+        _boxPatroli = patroliBox;
+        _isHiveReady = true;
+      });
+    } catch (e, stackTrace) {
+      debugPrint('Gagal membuka Hive: $e');
+      debugPrintStack(stackTrace: stackTrace);
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal memuat data lokasi: $e'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
   }
 
   Future<double> _getDistance(
@@ -75,50 +100,6 @@ class _PatroliState extends State<Patroli> {
     double endLng,
   ) async {
     return Geolocator.distanceBetween(startLat, startLng, endLat, endLng);
-  }
-
-  Future<Position?> _getCurrentPosition() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Layanan lokasi belum aktif'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
-      return null;
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Izin lokasi ditolak'),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
-        return null;
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Izin lokasi ditolak permanen'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
-      return null;
-    }
-
-    return await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
   }
 
   Future<Position?> _getAccuratePosition() async {
@@ -181,89 +162,149 @@ class _PatroliState extends State<Patroli> {
     }
   }
 
-  void _onDetect(BarcodeCapture capture) async {
-    final List<Barcode> barcodes = capture.barcodes;
-    for (final barcode in barcodes) {
-      final String? code = barcode.rawValue;
-      if (code != null && code != _lastScanned) {
-        setState(() {
-          _lastScanned = code;
-          _isScanning = false;
-        });
+  Future<void> _onDetect(BarcodeCapture capture) async {
+    // Jangan proses apabila Hive belum siap atau scan lain sedang diproses
+    if (!_isHiveReady || _isProcessing || !mounted) {
+      return;
+    }
 
-        final match = _box.values.firstWhereOrNull((loc) => loc.qrcode == code);
+    final String? code = capture.barcodes
+        .map((barcode) => barcode.rawValue?.trim())
+        .firstWhereOrNull((value) => value != null && value.isNotEmpty);
 
-        if (match != null) {
-          final pos = await _getAccuratePosition();
-          if (pos == null) {
-            setState(() => _isScanning = true);
-            return;
-          }
+    if (code == null) return;
 
-          final distance = await _getDistance(
-            pos.latitude,
-            pos.longitude,
-            match.latitude,
-            match.longitude,
-          );
+    setState(() {
+      _isProcessing = true;
+      _isScanning = false;
+      _lastScanned = code;
+    });
 
-          double? overrideDistance;
+    // Hentikan kamera sementara agar onDetect tidak terpanggil berkali-kali
+    try {
+      await _controller.stop();
+    } catch (e) {
+      debugPrint('Scanner gagal dihentikan: $e');
+    }
 
-          if (distance > _maxDistance) {
-            final lanjut = await _confirmJarakTerlaluJauh(distance);
+    try {
+      final match = _box.values.firstWhereOrNull(
+        (loc) => loc.qrcode.trim() == code,
+      );
 
-            if (!lanjut) {
-              setState(() => _isScanning = true);
-              return;
-            }
-            overrideDistance = distance;
-            // ✅ USER SETUJU LANJUT MESKI JAUH
-            if (match.id != widget.locationId) {
-              // ignore: use_build_context_synchronously
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'QR Code tidak sesuai dengan lokasi patroli ini!\n'
-                    'Lokasi scan: ${match.namaLokasi} '
-                    '(Lokasi patroli: ${widget.locationName})',
-                  ),
-                  backgroundColor: Colors.redAccent,
-                ),
-              );
-              setState(() => _isScanning = true);
-              return;
-            }
+      // QR tidak ditemukan
+      if (match == null) {
+        if (!mounted) return;
 
-            _showKondisiDialog(match, pos, overrideDistance);
-            return;
-          } else if (match.id != widget.locationId) {
-            // ignore: use_build_context_synchronously
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'QR Code tidak sesuai dengan lokasi patroli ini!\n'
-                  'Lokasi scan: ${match.namaLokasi} '
-                  '(Lokasi patroli: ${widget.locationName})',
-                ),
-                backgroundColor: Colors.redAccent,
-                duration: const Duration(seconds: 4),
-              ),
-            );
-          } else {
-            _showKondisiDialog(match, pos, null);
-          }
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
             const SnackBar(
               content: Text(
-                'QR Code tidak ditemukan atau lokasi di nonaktifkan',
+                'QR Code tidak ditemukan atau lokasi dinonaktifkan',
               ),
               backgroundColor: Colors.redAccent,
             ),
           );
+
+        return;
+      }
+
+      // Cek kesesuaian lokasi lebih dahulu sebelum mengambil GPS
+      if (match.id != widget.locationId) {
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(
+                'QR Code tidak sesuai dengan lokasi patroli ini!\n'
+                'Lokasi scan: ${match.namaLokasi}\n'
+                'Lokasi patroli: ${widget.locationName}',
+              ),
+              backgroundColor: Colors.redAccent,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+
+        return;
+      }
+
+      // Ambil posisi pengguna
+      final Position? pos = await _getAccuratePosition();
+
+      if (!mounted) return;
+
+      if (pos == null) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Posisi tidak berhasil diperoleh. Silakan scan ulang.',
+              ),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+
+        return;
+      }
+
+      final double distance = await _getDistance(
+        pos.latitude,
+        pos.longitude,
+        match.latitude,
+        match.longitude,
+      );
+
+      if (!mounted) return;
+
+      double? overrideDistance;
+
+      if (distance > _maxDistance) {
+        final bool lanjut = await _confirmJarakTerlaluJauh(distance);
+
+        if (!mounted || !lanjut) {
+          return;
         }
 
-        break;
+        overrideDistance = distance;
+      }
+
+      if (!mounted) return;
+
+      // Dialog ditunggu sampai pengguna menutup atau menyimpan
+      await _showKondisiDialog(match, pos, overrideDistance);
+    } catch (e, stackTrace) {
+      debugPrint('Error proses QR Code: $e');
+      debugPrintStack(stackTrace: stackTrace);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text('Terjadi kesalahan saat memproses QR Code: $e'),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+      }
+    } finally {
+      // Bagian ini selalu dijalankan:
+      // QR salah, GPS gagal, pengguna batal, maupun dialog selesai.
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+          _isScanning = true;
+          _lastScanned = null;
+        });
+
+        try {
+          await _controller.start();
+        } catch (e) {
+          debugPrint('Scanner gagal dijalankan kembali: $e');
+        }
       }
     }
   }
@@ -300,16 +341,16 @@ class _PatroliState extends State<Patroli> {
         false;
   }
 
-  void _showKondisiDialog(
+  Future<void> _showKondisiDialog(
     LocationModel lokasi,
     Position pos,
     double? overrideDistance,
-  ) {
+  ) async {
     final TextEditingController kondisiController = TextEditingController();
     final ImagePicker picker = ImagePicker();
     File? _fotoFile;
 
-    showDialog(
+    await showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (context) {
@@ -365,7 +406,6 @@ class _PatroliState extends State<Patroli> {
                 TextButton(
                   onPressed: () {
                     Navigator.pop(context);
-                    setState(() => _isScanning = true);
                   },
                   child: const Text('Batal'),
                 ),
@@ -410,8 +450,6 @@ class _PatroliState extends State<Patroli> {
                         backgroundColor: Colors.green,
                       ),
                     );
-
-                    setState(() => _isScanning = true);
                   },
                   child: const Text('Simpan'),
                 ),
@@ -584,13 +622,29 @@ class _PatroliState extends State<Patroli> {
       body: Stack(
         alignment: Alignment.center,
         children: [
-          if (_isScanning)
-            MobileScanner(controller: _controller, onDetect: _onDetect)
-          else
-            const Center(
-              child: Text(
-                'QR Code sudah discan',
-                style: TextStyle(fontSize: 18, color: Colors.white),
+          MobileScanner(controller: _controller, onDetect: _onDetect),
+          if (!_isHiveReady || _isProcessing)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black54,
+                alignment: Alignment.center,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const CircularProgressIndicator(color: Colors.white),
+                    const SizedBox(height: 16),
+                    Text(
+                      !_isHiveReady
+                          ? 'Menyiapkan data lokasi...'
+                          : 'Memeriksa QR Code dan posisi...',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           IgnorePointer(

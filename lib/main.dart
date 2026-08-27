@@ -37,6 +37,7 @@ import 'package:qbsc_saas/app/views/kandang/kandang.dart';
 import 'package:qbsc_saas/app/views/kejadian/kejadian.dart';
 import 'package:qbsc_saas/app/views/laporan/absensi/absensi.dart';
 import 'package:qbsc_saas/app/views/laporan/anggota/laporan_anggota.dart';
+import 'package:qbsc_saas/app/views/laporan/anggota/tamu/tamu_detail.dart';
 import 'package:qbsc_saas/app/views/laporan/doc/doc_report.dart';
 import 'package:qbsc_saas/app/views/laporan/ekspedisi/ekspedisi_report.dart';
 import 'package:qbsc_saas/app/views/laporan/kandang/kandang_laporan.dart';
@@ -55,6 +56,7 @@ import 'package:qbsc_saas/app/views/splash_view.dart';
 import 'package:qbsc_saas/app/views/tamu/daftar_tamu.dart';
 import 'package:qbsc_saas/app/views/tamu/tambah_tamu.dart';
 import 'package:qbsc_saas/app/views/tamu/tamu.dart';
+import 'package:qbsc_saas/app/views/tamu/tamu_detail.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -213,6 +215,7 @@ class _MyAppState extends State<MyApp> {
         GetPage(name: '/laporan/anggota', page: () => LaporanAnggota()),
         GetPage(name: '/jadwal_patroli', page: () => JadwalPatroli()),
         GetPage(name: '/laporan/kinerja', page: () => Kinerja()),
+        GetPage(name: '/tamu/detail', page: () => DetailTamu()),
       ],
     );
   }

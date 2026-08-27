@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:qbsc_saas/app/data/api_endpoint.dart';
@@ -20,6 +21,7 @@ class HomeController extends GetxController {
   var runningText = 'QBSC Running Text'.obs;
   var rtStatus = false.obs;
   var adminWhatsapp = ''.obs;
+  final RxList<Map<String, dynamic>> sliders = <Map<String, dynamic>>[].obs;
 
   final RxBool kandangLoading = false.obs;
   final RxList<KandangModel> kandangs = <KandangModel>[].obs;
@@ -358,6 +360,56 @@ class HomeController extends GetxController {
     // trik untuk open WA dulu lalu user klik call manual
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
       throw 'Tidak bisa membuka WhatsApp';
+    }
+  }
+
+  Future<void> getSlider() async {
+    final comid = AppPrefs.getComId().toString();
+
+    if (comid.isEmpty) {
+      return;
+    }
+
+    try {
+      final response = await api.post(
+        ApiEndpoint.newSlider,
+        data: {'comid': comid},
+      );
+
+      final body = response.data;
+
+      if (body['success'] == true) {
+        final List data = body['data'] ?? [];
+
+        sliders.value = data
+            .map((item) => Map<String, dynamic>.from(item))
+            .toList();
+      }
+    } catch (e) {
+      debugPrint('Error get slider: $e');
+    }
+  }
+
+  Future<void> updateAppVerson() async {
+    final userId = AppPrefs.getUserId().toString();
+
+    if (userId.isEmpty) {
+      return;
+    }
+
+    try {
+      final response = await api.post(
+        ApiEndpoint.appVersion,
+        data: {'userid': userId, "version": ApiProvider.appVersion},
+      );
+
+      final body = response.data;
+
+      if (body['success'] == true) {
+        debugPrint('Sukses update version');
+      }
+    } catch (e) {
+      debugPrint('Error get slider: $e');
     }
   }
 }

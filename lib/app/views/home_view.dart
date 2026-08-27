@@ -5,6 +5,7 @@ import 'package:qbsc_saas/app/controllers/auth_controller.dart';
 import 'package:qbsc_saas/app/controllers/home_controller.dart';
 import 'package:qbsc_saas/app/data/api_provider.dart';
 import 'package:qbsc_saas/app/utils/app_prefs.dart';
+import 'package:qbsc_saas/app/views/slider_detail_page.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -17,12 +18,14 @@ class _HomeViewState extends State<HomeView>
     with SingleTickerProviderStateMixin {
   late List<Map<String, dynamic>> menuItems;
 
-  final AuthController authC = Get.put(AuthController());
-  final HomeController homeC = Get.put(HomeController());
+  final AuthController authC = Get.find<AuthController>();
+  final HomeController homeC = Get.find<HomeController>();
   final AbsenController absenC = Get.put(AbsenController());
 
   late final ScrollController _marqueeScrollController;
   late final AnimationController _marqueeAnimationController;
+  late final PageController _bannerPageController;
+  int _currentBanner = 0;
 
   final String? isPeternakan = AppPrefs.getIsPeternakan();
 
@@ -32,6 +35,9 @@ class _HomeViewState extends State<HomeView>
     _loadUserPhoto();
     absenC.getLocationData();
     _initMenu();
+    homeC.getSlider();
+    homeC.updateAppVerson();
+    _bannerPageController = PageController();
     _marqueeScrollController = ScrollController();
     _marqueeAnimationController =
         AnimationController(vsync: this, duration: const Duration(seconds: 18))
@@ -50,8 +56,188 @@ class _HomeViewState extends State<HomeView>
     });
   }
 
+  Widget _buildBannerSlider() {
+    return Obx(() {
+      final banners = homeC.sliders;
+
+      if (banners.isEmpty) {
+        return const SizedBox.shrink();
+      }
+
+      return Column(
+        children: [
+          SizedBox(
+            height: 155,
+            child: PageView.builder(
+              controller: _bannerPageController,
+              itemCount: banners.length,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentBanner = index;
+                });
+              },
+              itemBuilder: (context, index) {
+                final banner = banners[index];
+
+                return GestureDetector(
+                  onTap: () {
+                    Get.to(() => SliderDetailPage(slider: banner));
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 1),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(22),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.08),
+                          blurRadius: 18,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(22),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          // =========================
+                          // IMAGE
+                          // =========================
+                          Image.network(
+                            "${ApiProvider.imageUrl}/" + banner['image'],
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: Colors.grey.shade200,
+                                child: const Icon(
+                                  Icons.image_not_supported_outlined,
+                                  size: 40,
+                                  color: Colors.grey,
+                                ),
+                              );
+                            },
+                          ),
+
+                          // =========================
+                          // OVERLAY
+                          // =========================
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
+                                colors: [
+                                  Colors.black.withOpacity(0.72),
+                                  Colors.black.withOpacity(0.25),
+                                  Colors.transparent,
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          // =========================
+                          // CONTENT
+                          // =========================
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 22,
+                              vertical: 18,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 9,
+                                    vertical: 5,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.18),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: const Text(
+                                    'QBSC',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 1,
+                                    ),
+                                  ),
+                                ),
+
+                                const SizedBox(height: 9),
+
+                                Text(
+                                  banner['title'] ?? '',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 19,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+
+                                const SizedBox(height: 5),
+
+                                SizedBox(
+                                  width: 250,
+                                  child: Text(
+                                    banner['subtitle'] ?? '',
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.85),
+                                      fontSize: 12,
+                                      height: 1.35,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          const SizedBox(height: 9),
+
+          // =========================
+          // INDICATOR
+          // =========================
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(banners.length, (index) {
+              final active = _currentBanner == index;
+
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                width: active ? 20 : 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: active ? Colors.indigo.shade600 : Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              );
+            }),
+          ),
+        ],
+      );
+    });
+  }
+
   @override
   void dispose() {
+    _bannerPageController.dispose();
+
     _marqueeAnimationController.dispose();
     _marqueeScrollController.dispose();
     super.dispose();
@@ -96,10 +282,15 @@ class _HomeViewState extends State<HomeView>
           'Apakah Anda yakin ingin menyinkronkan data sekarang?',
         ),
         actions: [
-          TextButton(onPressed: Get.back, child: const Text('Batal')),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context, rootNavigator: true).pop();
+            },
+            child: const Text('Batal'),
+          ),
           ElevatedButton(
             onPressed: () {
-              Get.back();
+              Navigator.of(context, rootNavigator: true).pop();
               _syncData();
             },
             child: const Text('Sinkronkan'),
@@ -111,9 +302,18 @@ class _HomeViewState extends State<HomeView>
   }
 
   Future<void> _syncData() async {
-    Get.dialog(
-      const Center(child: CircularProgressIndicator()),
+    bool dialogOpen = true;
+
+    showDialog(
+      context: context,
       barrierDismissible: false,
+      useRootNavigator: true,
+      builder: (dialogContext) {
+        return const PopScope(
+          canPop: false,
+          child: Center(child: CircularProgressIndicator()),
+        );
+      },
     );
 
     try {
@@ -123,20 +323,38 @@ class _HomeViewState extends State<HomeView>
       await homeC.getDataEkspedisi();
       await homeC.getJadwalPatroli();
       await homeC.getDataBoxOption();
-      Get.back();
-      Get.snackbar(
-        'Berhasil',
-        'Data berhasil disinkronkan',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
+
+      if (dialogOpen && mounted) {
+        dialogOpen = false;
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+
+      // Tunggu sampai dialog benar-benar hilang
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Data berhasil disinkronkan'),
+          backgroundColor: Colors.green,
+        ),
       );
     } catch (e) {
-      Get.back();
-      Get.snackbar(
-        'Gagal',
-        'Sinkronisasi gagal',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+      if (dialogOpen && mounted) {
+        dialogOpen = false;
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Sinkronisasi gagal'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -156,6 +374,16 @@ class _HomeViewState extends State<HomeView>
 
     if (routes.containsKey(label)) {
       Get.toNamed(routes[label]!);
+    }
+  }
+
+  void _closeDialog() {
+    if (!mounted) return;
+
+    final navigator = Navigator.of(context);
+
+    if (navigator.canPop()) {
+      navigator.pop();
     }
   }
 
@@ -274,6 +502,9 @@ class _HomeViewState extends State<HomeView>
           child: Column(
             children: [
               _buildProfileCard(isTablet),
+              const SizedBox(height: 14),
+
+              _buildBannerSlider(),
               const SizedBox(height: 14),
               _buildRunningText(),
 
